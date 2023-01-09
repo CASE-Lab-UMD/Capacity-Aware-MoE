@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "run_clm.py", line 62, in <module>
+    check_min_version("4.26.0.dev0")
+  File "/mnt/nfs-storage/Hashtag_ACL2023/analysis/MoE-Fusion/transformers/utils/__init__.py", line 32, in check_min_version
+    raise ImportError(
+ImportError: This example requires a source install from HuggingFace Transformers (see `https://huggingface.co/transformers/installation.html#installing-from-source`), but the version found is 4.9.0.dev0.
+Check out https://huggingface.co/transformers/examples.html for the examples corresponding to other versions of HuggingFace Transformers.

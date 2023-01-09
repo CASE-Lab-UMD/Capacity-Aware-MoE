@@ -15,8 +15,8 @@
 model_name_or_path=gpt2 # todo gpt2
 dataset_name=wikitext
 dataset_config_name=wikitext-2-raw-v1
-per_device_train_batch_size=24
-per_device_eval_batch_size=24
+per_device_train_batch_size=18
+per_device_eval_batch_size=18
 cache_dir=./cache_dir/${dataset_name}_${dataset_config_name}
 num_train_epochs=50
 dataloader_num_workers=16
