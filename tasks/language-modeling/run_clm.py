@@ -124,6 +124,21 @@ class ModelArguments:
             )
         },
     )
+    k: int = field(
+        default=2,
+        metadata={
+            "help": "the top-k of experts in moe"
+        },
+    )
+    n_experts: int = field(
+        default=8,
+        metadata={
+            "help": "the number of experts in moe"
+        },
+    )
+    use_moe: bool = field(
+        default=False,
+    )
 
     def __post_init__(self):
         if self.config_overrides is not None and (self.config_name is not None or self.model_name_or_path is not None):
@@ -361,6 +376,11 @@ def main():
             config.update_from_string(model_args.config_overrides)
             logger.info(f"New config: {config}")
 
+    setattr(config, 'n_experts', model_args.n_experts)
+    setattr(config, 'k', model_args.k)
+    setattr(config, 'use_moe', model_args.use_moe)
+    setattr(config, 'seed', training_args.seed)
+    
     tokenizer_kwargs = {
         "cache_dir": model_args.cache_dir,
         "use_fast": model_args.use_fast_tokenizer,
