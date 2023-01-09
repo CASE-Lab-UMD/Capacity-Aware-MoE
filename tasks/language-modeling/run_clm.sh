@@ -60,7 +60,7 @@ else
 rm -d ${output_dir}/${log_out}
 fi
 
-nohup /user/sunsiqi/openfold/lib/conda/envs/adapter/bin/python /user/sunsiqi/hs/MoE/tasks/language-modeling/run_mlm.py \
+nohup python run_clm.py \
       --use_moe ${use_moe} \
       --model_name_or_path ${model_name_or_path} \
       --output_dir ${output_dir} \
