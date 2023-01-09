@@ -54,8 +54,8 @@ def main():
             for i in range(len(config)):
                 if '--output_dir' in config[i]:
                     config[i] = ' --output_dir ' + dir_name + '/' + task_name
-            if os.path.exists(dir_name + '/' + task_name + '/' + sub_dir) and len(os.listdir(dir_name + '/' + task_name + '/' + sub_dir)) != 0:
-                continue
+            # if os.path.exists(dir_name + '/' + task_name + '/' + sub_dir) and len(os.listdir(dir_name + '/' + task_name + '/' + sub_dir)) != 0:
+            #     continue
             with open(state_file, 'r') as f:
                 train_state = json.load(f)
             log_history = train_state['log_history']

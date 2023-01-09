@@ -1448,30 +1448,27 @@ class GPT2ForSequenceClassification(GPT2PreTrainedModel):
 
 
 class GPT2MOE(nn.Module):
+
     def __init__(self, intermediate_size, config, noisy_gating=True, device='cpu'):
         super(GPT2MOE, self).__init__()
         self.device = device
         self.noisy_gating = noisy_gating
         self.num_experts = config.n_experts
         self.output_size = config.hidden_size
-        self.input_size = config.hidden_size
+        self.input_size = intermediate_size
         self.hidden_size = intermediate_size
         self.k = config.k
-        self.fc_phi, self.proj_phi = nn.Parameter(torch.Tensor([0]), requires_grad=False), \
-                                            nn.Parameter(torch.Tensor([0]), requires_grad=False)
+        self.config = config
         # instantiate experts
         self.experts = nn.ModuleList([SingleExpert(intermediate_size, config) for i in range(config.n_experts)])
-        self.w_gate = nn.Parameter(torch.zeros(config.hidden_size, config.n_experts), requires_grad=True).to(self.device)
-        self.w_noise = nn.Parameter(torch.zeros(config.hidden_size, config.n_experts), requires_grad=True).to(self.device)
-        self.c_fc_weight = nn.Parameter(torch.ones(self.input_size, intermediate_size), requires_grad=True)
-        self.c_proj_weight = nn.Parameter(torch.ones(intermediate_size, self.output_size), requires_grad=True)
+        self.w_gate = nn.Parameter(torch.zeros(intermediate_size, config.n_experts), requires_grad=True).to(self.device)
+        self.w_noise = nn.Parameter(torch.zeros(intermediate_size, config.n_experts), requires_grad=True).to(
+            self.device)
         self.mean = nn.Parameter(torch.tensor([0.0]), requires_grad=False).to(self.device)
         self.std = nn.Parameter(torch.tensor([1.0]), requires_grad=False).to(self.device)
         self.softplus = nn.Softplus()
         self.softmax = nn.Softmax(1)
-        self.register_buffer('c_fc_mask', torch.ones(self.input_size, intermediate_size))
-        self.register_buffer('c_proj_mask', torch.ones(intermediate_size, self.output_size))
-        assert(self.k <= config.n_experts)
+        assert (self.k <= config.n_experts)
 
     def reset_normal(self, device):
         self.device = device
@@ -1490,11 +1487,9 @@ class GPT2MOE(nn.Module):
         eps = 1e-10
         # if only num_experts = 1
 
-
         if x.shape[0] == 1:
             return torch.Tensor([0]).to(x.device)
-        return x.float().var() / (x.float().mean()**2 + eps)
-
+        return x.float().var() / (x.float().mean() ** 2 + eps)
 
     def _gates_to_load(self, gates):
         """Compute the true load per expert, given the gates.
@@ -1533,8 +1528,8 @@ class GPT2MOE(nn.Module):
         threshold_positions_if_out = threshold_positions_if_in - 1
         threshold_if_out = torch.unsqueeze(torch.gather(top_values_flat, 0, threshold_positions_if_out), 1)
         # is each value currently in the top k.
-        prob_if_in = normal.cdf((clean_values - threshold_if_in)/noise_stddev)
-        prob_if_out = normal.cdf((clean_values - threshold_if_out)/noise_stddev)
+        prob_if_in = normal.cdf((clean_values - threshold_if_in) / noise_stddev)
+        prob_if_out = normal.cdf((clean_values - threshold_if_out) / noise_stddev)
         prob = torch.where(is_in, prob_if_in, prob_if_out)
         return prob
 
@@ -1553,7 +1548,7 @@ class GPT2MOE(nn.Module):
         if self.noisy_gating and train:
             raw_noise_stddev = x @ self.w_noise
             noise_stddev = ((self.softplus(raw_noise_stddev) + noise_epsilon))
-            noisy_logits = clean_logits + ( torch.randn_like(clean_logits) * noise_stddev)
+            noisy_logits = clean_logits + (torch.randn_like(clean_logits) * noise_stddev)
             logits = noisy_logits
         else:
             logits = clean_logits
@@ -1593,13 +1588,10 @@ class GPT2MOE(nn.Module):
         importance = gates.sum(0)
         loss = self.cv_squared(importance) + self.cv_squared(load)
         loss *= loss_coef
-        fc_phi, proj_phi = torch.sigmoid(self.fc_phi), torch.sigmoid(self.proj_phi)
         dispatcher = SparseDispatcher(self.num_experts, gates, device=x.device)
         expert_inputs = dispatcher.dispatch(x)
         # gates = dispatcher.expert_to_gates()
-        # c_fc_mask_mean, c_proj_mask_mean = self.c_fc_mask.mean(), self.c_proj_mask.mean()
-        expert_outputs = [self.experts[i](expert_inputs[i], self.c_fc_weight, self.c_fc_mask,
-                                          self.c_proj_weight, self.c_proj_mask, fc_phi, proj_phi) for i in range(self.num_experts)]
+        expert_outputs = [self.experts[i](expert_inputs[i]) for i in range(self.num_experts)]
         y = dispatcher.combine(expert_outputs)
         y = y.reshape(original_shape + [self.output_size])
         return y, loss
@@ -1646,7 +1638,7 @@ class SparseDispatcher(object):
         # drop indices
         _, self._expert_index = sorted_experts.split(1, dim=1)
         # get according batch index for each expert
-        self._batch_index = torch.nonzero(gates)[index_sorted_experts[:, 1],0]
+        self._batch_index = torch.nonzero(gates)[index_sorted_experts[:, 1], 0]
         # calculate num samples that each expert gets
         self._part_sizes = (gates > 0).sum(0).tolist()
         # expand gates to match with self._batch_index
@@ -1669,7 +1661,6 @@ class SparseDispatcher(object):
         # expand according to batch index so we can just split by _part_sizes
         inp_exp = inp[self._batch_index].squeeze(1)
         return torch.split(inp_exp, self._part_sizes, dim=0)
-
 
     def combine(self, expert_out, multiply_by_gates=True):
         """Sum together the expert output, weighted by the gates.
@@ -1697,7 +1688,6 @@ class SparseDispatcher(object):
         # back to log space
         return combined
 
-
     def expert_to_gates(self):
         """Gate values corresponding to the examples in the per-expert `Tensor`s.
         Returns:
@@ -1712,14 +1702,7 @@ class SingleExpert(nn.Module):
     def __init__(self, intermediate_size, config):
         super().__init__()
         embed_dim = config.hidden_size
-        self.c_fc = Split_Conv1D(intermediate_size, embed_dim)
-        self.c_proj = Split_Conv1D(embed_dim, intermediate_size)
-        self.act = ACT2FN[config.activation_function]
-        self.dropout = nn.Dropout(config.resid_pdrop)
+        self.dense = nn.Linear(intermediate_size, embed_dim)
 
-    def forward(self, hidden_states, c_fc_weight, c_fc_mask, c_proj_weight, c_proj_mask, fc_phi, proj_phi):
-        hidden_states = self.c_fc(hidden_states, c_fc_weight, c_fc_mask, fc_phi)
-        hidden_states = self.act(hidden_states)
-        hidden_states = self.c_proj(hidden_states, c_proj_weight, c_proj_mask, proj_phi)
-        hidden_states = self.dropout(hidden_states)
-        return hidden_states
+    def forward(self, hidden_states):
+        return self.dense(hidden_states)

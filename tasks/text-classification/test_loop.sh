@@ -9,8 +9,12 @@
 #SBATCH --time=0
 #SBATCH --array=0-4%5
 
-root=/user/sunsiqi/hs/MoE/tasks/language-modeling/checkpoints/electra-base-discriminator/False
-task_name=rte
+root=/user/sunsiqi/hs/MoE/tasks/language-modeling/checkpoints/electra-base-discriminator/True # TODO electra
+#root=/user/sunsiqi/hs/MoE/tasks/language-modeling/checkpoints/bert-base-cased/True # TODO BERT
+#root=/user/sunsiqi/hs/MoE/tasks/language-modeling/checkpoints/roberta-base/True # TODO RoBERTa
+#root=/user/sunsiqi/hs/MoE/tasks/language-modeling/checkpoints/albert-base-v2/True # TODO Albert
+
+task_name=cola
 
 echo "${root}"
 echo "${task_name}"
