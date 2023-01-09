@@ -25,6 +25,11 @@ import logging
 import math
 import os
 import sys
+
+sys.path = ['/mnt/nfs-storage/Hashtag_ACL2023/analysis/MoE-Fusion', '/mnt/nfs-storage/Hashtag_ACL2023/analysis/MoE-Fusion/transformers',
+            '', '/opt/conda/lib/python38.zip', '/opt/conda/lib/python3.8', '/opt/conda/lib/python3.8/lib-dynload',
+             '/opt/conda/lib/python3.8/site-packages']
+
 from dataclasses import dataclass, field
 from itertools import chain
 from typing import Optional
@@ -49,7 +54,7 @@ from transformers import (
 )
 from transformers.testing_utils import CaptureLogger
 from transformers.trainer_utils import get_last_checkpoint
-from transformers.utils import check_min_version, send_example_telemetry
+from transformers.utils import check_min_version
 from transformers.utils.versions import require_version
 
 
@@ -217,7 +222,6 @@ def main():
 
     # Sending telemetry. Tracking the example usage helps us better allocate resources to maintain them. The
     # information sent is the one passed as arguments along with your Python/PyTorch versions.
-    send_example_telemetry("run_clm", model_args, data_args)
 
     # Setup logging
     logging.basicConfig(
