@@ -25,6 +25,11 @@ import logging
 import math
 import os
 import sys
+
+sys.path = ['/mnt/nfs-storage/Hashtag_ACL2023/analysis/MoE-Fusion', '/mnt/nfs-storage/Hashtag_ACL2023/analysis/MoE-Fusion/transformers',
+            '', '/opt/conda/lib/python38.zip', '/opt/conda/lib/python3.8', '/opt/conda/lib/python3.8/lib-dynload',
+             '/opt/conda/lib/python3.8/site-packages']
+
 from dataclasses import dataclass, field
 from itertools import chain
 from typing import Optional
@@ -49,12 +54,12 @@ from transformers import (
 )
 from transformers.testing_utils import CaptureLogger
 from transformers.trainer_utils import get_last_checkpoint
-from transformers.utils import check_min_version, send_example_telemetry
+from transformers.utils import check_min_version
 from transformers.utils.versions import require_version
 
 
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
-check_min_version("4.26.0.dev0")
+# check_min_version("4.26.0.dev0")
 
 require_version("datasets>=1.8.0", "To fix: pip install -r examples/pytorch/language-modeling/requirements.txt")
 
@@ -118,6 +123,21 @@ class ModelArguments:
                 "with private models)."
             )
         },
+    )
+    k: int = field(
+        default=2,
+        metadata={
+            "help": "the top-k of experts in moe"
+        },
+    )
+    n_experts: int = field(
+        default=8,
+        metadata={
+            "help": "the number of experts in moe"
+        },
+    )
+    use_moe: bool = field(
+        default=False,
     )
 
     def __post_init__(self):
@@ -217,7 +237,6 @@ def main():
 
     # Sending telemetry. Tracking the example usage helps us better allocate resources to maintain them. The
     # information sent is the one passed as arguments along with your Python/PyTorch versions.
-    send_example_telemetry("run_clm", model_args, data_args)
 
     # Setup logging
     logging.basicConfig(
@@ -357,6 +376,11 @@ def main():
             config.update_from_string(model_args.config_overrides)
             logger.info(f"New config: {config}")
 
+    setattr(config, 'n_experts', model_args.n_experts)
+    setattr(config, 'k', model_args.k)
+    setattr(config, 'use_moe', model_args.use_moe)
+    setattr(config, 'seed', training_args.seed)
+    
     tokenizer_kwargs = {
         "cache_dir": model_args.cache_dir,
         "use_fast": model_args.use_fast_tokenizer,
