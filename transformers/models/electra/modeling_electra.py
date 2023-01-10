@@ -429,7 +429,7 @@ class ElectraOutput(nn.Module):
         super().__init__()
         self.config = config
         if hasattr(config, 'use_moe') and config.use_moe:
-            self.dense = BertMoE(config.intermediate_size, config)
+            self.dense = ElectraMoE(config.intermediate_size, config)
         else:
             self.dense = nn.Linear(config.intermediate_size, config.hidden_size)
         self.LayerNorm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
@@ -1535,9 +1535,9 @@ class ElectraForMultipleChoice(ElectraPreTrainedModel):
             attentions=discriminator_hidden_states.attentions,
         )
 
-class BertMoE(nn.Module):
+class ElectraMoE(nn.Module):
     def __init__(self, intermediate_size, config, noisy_gating=True, device='cpu'):
-        super(BertMoE, self).__init__()
+        super(ElectraMoE, self).__init__()
         self.device = device
         self.noisy_gating = noisy_gating
         self.num_experts = config.n_experts

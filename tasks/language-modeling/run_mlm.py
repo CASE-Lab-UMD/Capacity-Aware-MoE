@@ -58,7 +58,7 @@ from transformers import (
 from transformers.trainer_utils import get_last_checkpoint
 from transformers.utils import check_min_version
 from transformers.utils.versions import require_version
-
+from petl.petl_setting import PETL_Setting
 
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
 check_min_version("4.9.0.dev0")
@@ -139,7 +139,18 @@ class ModelArguments:
     use_moe: bool = field(
         default=False,
     )
-
+    unfreeze_params: str = field(
+        default='output.dense',
+        metadata={
+            "help": "experts for moe tuning"
+        },
+    )
+    freeze_set: str = field(
+        default='attention',
+        metadata={
+            "help": "used to freeze attention layers. "
+        },
+    )
     def __post_init__(self):
         if self.config_overrides is not None and (self.config_name is not None or self.model_name_or_path is not None):
             raise ValueError(
@@ -384,6 +395,8 @@ def main():
             config.update_from_string(model_args.config_overrides)
             logger.info(f"New config: {config}")
 
+    setattr(config, 'unfreeze_params', model_args.unfreeze_params)
+    setattr(config, 'freeze_set', model_args.freeze_set)
     setattr(config, 'n_experts', model_args.n_experts)
     setattr(config, 'k', model_args.k)
     setattr(config, 'use_moe', model_args.use_moe)
@@ -418,6 +431,7 @@ def main():
         logger.info("Training new model from scratch")
         model = AutoModelForMaskedLM.from_config(config)
 
+    PETL_Setting(model, config, logger)
     # We resize the embeddings only when necessary to avoid index errors. If you are creating a model from scratch
     # on a small vocab and want a smaller embedding size, remove this test.
     embedding_size = model.get_input_embeddings().weight.shape[0]
