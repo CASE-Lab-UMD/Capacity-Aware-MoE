@@ -17,27 +17,26 @@
 # todo roberta-base-moe: 3500, bert-base-cased-moe: 3500
 #model_name_or_path=Unbabel/xlm-roberta-comet-small # todo roberta-small
 #model_name_or_path=aajrami/bert-mlm-small # todo bert-small
-#model_name_or_path=bert-base-cased # todo bert-base
+model_name_or_path=bert-base-cased # todo bert-base
 #model_name_or_path=roberta-base # todo roberta-base
-model_name_or_path=albert-base-v2 # todo albert
-#model_name_or_path=google/electra-base-discriminator # todo electra
+#model_name_or_path=albert-base-v2 # todo albert
+#model_name_or_path=google/electra-base-discriminator # todo
+use_moe=False
 dataset_name=wikitext
 dataset_config_name=wikitext-2-raw-v1
-per_device_train_batch_size=12
-per_device_eval_batch_size=12
+per_device_train_batch_size=16
+per_device_eval_batch_size=16
 cache_dir=./cache_dir/${dataset_name}_${dataset_config_name}
-num_train_epochs=150 # todo 150 for electra, 50 for bert and roberta
+num_train_epochs=50 # todo 150 for electra, 50 for bert and roberta
 dataloader_num_workers=16
 save_strategy=steps
 evaluation_strategy=steps
 save_steps=500
 eval_steps=500
 seed=42
-device_ids="0 1"
-#device_ids="0 1 2 3"
-use_moe=True
+device_ids="7 6 5 4"
 log_out=log.out
-output_dir=./checkpoints/${model_name_or_path##*/}/${use_moe}
+output_dir=./checkpoints/ffn/${model_name_or_path##*/}/${use_moe}
 echo "${output_dir}"
 mkdir -p ${output_dir}
 
