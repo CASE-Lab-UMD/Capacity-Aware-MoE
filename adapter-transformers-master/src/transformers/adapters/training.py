@@ -7,7 +7,6 @@ class AdapterArguments:
     """
     The subset of arguments related to adapter training.
     """
-
     train_adapter: bool = field(default=False, metadata={"help": "Train an adapter instead of the full model."})
     load_adapter: Optional[str] = field(
         default="", metadata={"help": "Pre-trained adapter module to be loaded from Hub."}

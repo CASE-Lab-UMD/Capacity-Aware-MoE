@@ -20,39 +20,39 @@
 GLUE (Bert, XLM, XLNet, RoBERTa, Albert, XLM-RoBERTa)."""
 
 
-import dataclasses
+
 import logging
 import os
 import sys
-from datasets import load_dataset, load_metric
-
+from shutil import copyfile
+import json
 sys.path = ['/user/sunsiqi/hs/MoE/adapter-transformers-master/src', '/user/sunsiqi/hs/MoE/adapter-transformers-master/src/transformers',
             '/user/sunsiqi/.pycharm_helpers/pydev', '/user/sunsiqi/.pycharm_helpers/pycharm_display', '/user/sunsiqi/.pycharm_helpers/third_party/thriftpy',
             '/Users/Lenovo/AppData/Local/JetBrains/PyCharm2021.2/cythonExtensions', '/user/sunsiqi/openfold/lib/conda/envs/ddg/lib/python38.zip', '/user/sunsiqi/openfold/lib/conda/envs/ddg/lib/python3.8',
             '/user/sunsiqi/openfold/lib/conda/envs/ddg/lib/python3.8/lib-dynload', '/user/sunsiqi/.local/lib/python3.8/site-packages', '/user/sunsiqi/.local/lib/python3.8/site-packages/pdbx-1.0-py3.8.egg', '/user/sunsiqi/openfold/lib/conda/envs/ddg/lib/python3.8/site-packages', '/user/sunsiqi/.pycharm_helpers/pycharm_matplotlib_backend']
 
 from dataclasses import dataclass, field
-from typing import Dict, Optional
+from typing import Optional
 from transformers.adapters.configuration import PfeifferConfig
 
-import numpy as np
+
 from tqdm import tqdm
 from transformers import (
     AdapterArguments,
     AdapterTrainer,
     AutoConfig,
     AutoModelForSequenceClassification,
-    AutoTokenizer,
-    EvalPrediction,
-    GlueDataset,
+
+
+
 )
 from transformers import GlueDataTrainingArguments as DataTrainingArguments
 from transformers import (
     HfArgumentParser,
     TrainingArguments,
-    glue_compute_metrics,
-    glue_output_modes,
-    glue_tasks_num_labels,
+
+
+
     set_seed,
 )
 
@@ -123,14 +123,14 @@ def main():
     )
     logger.info("Training/evaluation parameters %s", training_args)
 
-    # Set seed
-    set_seed(training_args.seed)
 
-    # Load pretrained model and tokenizer
-    #
-    # Distributed training:
-    # The .from_pretrained methods guarantee that only one local process can concurrently
-    # download model & vocab.
+
+
+
+
+
+
+
 
     config = AutoConfig.from_pretrained(
         model_args.config_name if model_args.config_name else model_args.model_name_or_path,
@@ -162,7 +162,7 @@ def main():
         "nli/sick@ukp",
         "nli/scitail@ukp",
         "qa/boolq@ukp",
-        "sentiment/imdb@ukp"
+        "sentiment/imdb@ukp",
     ]
     for elem in tqdm(adapters):
         left = elem.split('/')[0]
@@ -171,9 +171,110 @@ def main():
         name = model.load_adapter(os.path.join(root, elem), config=PfeifferConfig(), with_head=False)
         model.save_adapter(os.path.join(root, elem), name)
 
-    # save model
-    # model.save_pretrained('./path/to/model/directory/')# save adapter
-    # model.save_adapter(' ./path/to/adapter/directory/', 'sst-2')
+    # TODO Load model
+    root = '/user/sunsiqi/hs/MoE/adapter-transformers-master/adapters'
+    adapters = [
+        "sentiment/sst-2@ukp",
+        "nli/multinli@ukp",
+        "nli/rte@ukp",
+        "sts/mrpc@ukp",
+        "sts/qqp@ukp",
+        "comsense/cosmosqa@ukp",
+        "comsense/csqa@ukp",
+        "comsense/hellaswag@ukp",
+        "comsense/siqa@ukp",
+        "comsense/winogrande@ukp",
+        "nli/cb@ukp",
+        "nli/sick@ukp",
+        "nli/scitail@ukp",
+        "qa/boolq@ukp",
+        "sentiment/imdb@ukp",
+    ]
+    # todo prepare the pretrained adapters
+    for elem in tqdm(adapters):
+        if not os.path.exists(os.path.join(root, elem)):
+            left = elem.split('/')[0]
+            if not os.path.exists(os.path.join(root, left)):
+                os.mkdir(os.path.join(root, left))
+            name = model.load_adapter(os.path.join(root, elem), config=PfeifferConfig(), with_head=False)
+            model.save_adapter(os.path.join(root, elem), name)
+        else:
+            continue
+
+    # todo avg
+    def Average(root, adapters, Reduce=16, name='avg'):
+        import torch
+        params = {}
+        dicts = 0
+        for adapter in adapters:
+            adapter_dir = os.path.join(root, adapter)
+            adapter_config = os.path.join(adapter_dir, 'adapter_config.json')
+            with open(adapter_config, 'r') as f:
+                adapter_config = json.load(f)
+            adapter_name = adapter_config["name"]
+            config = adapter_config["config"]
+            reduce = config["reduction_factor"]
+            # todo adapter temporally, ignoring the head.
+            if reduce == Reduce:
+                state_dict = torch.load(os.path.join(adapter_dir, 'pytorch_adapter.bin'))
+                # todo rename the keys
+                for key in state_dict.keys():
+                    new_key = key.replace(adapter_name, 'avg')
+                    params[new_key] = state_dict[key] if new_key not in params else \
+                        params[new_key] + state_dict[key]
+                dicts += 1
+
+        # todo avg
+        for key in params:
+            params[key] = params[key] / dicts
+
+        # todo save fused adapter
+        tgt_root = os.path.join(root, name)
+        if not os.path.exists(tgt_root):
+            os.mkdir(tgt_root)
+        copyfile(os.path.join(adapter_dir, 'head_config.json'), os.path.join(tgt_root, 'head_config.json'))
+        copyfile(os.path.join(adapter_dir, 'pytorch_model_head.bin'), os.path.join(tgt_root, 'pytorch_model_head.bin'))
+        with open(os.path.join(tgt_root, 'adapter_config.json'), 'w') as f:
+            adapter_config["name"] = name
+            json.dump(adapter_config, f, indent=2, sort_keys=True)
+        torch.save(params, os.path.join(tgt_root, 'pytorch_adapter.bin'))
+
+    # todo sum
+    def Summation(root, adapters, Reduce=16, name='sum'):
+
+        import torch
+        params = {}
+        dicts = 0
+        for adapter in adapters:
+            adapter_dir = os.path.join(root, adapter)
+            adapter_config = os.path.join(adapter_dir, 'adapter_config.json')
+            with open(adapter_config, 'r') as f:
+                adapter_config = json.load(f)
+            adapter_name = adapter_config["name"]
+            config = adapter_config["config"]
+            reduce = config["reduction_factor"]
+            # todo adapter temporally, ignoring the head.
+            if reduce == Reduce:
+                state_dict = torch.load(os.path.join(adapter_dir, 'pytorch_adapter.bin'))
+                # todo rename the keys
+                for key in state_dict.keys():
+                    new_key = key.replace(adapter_name, 'avg')
+                    params[new_key] = state_dict[key] if new_key not in params else \
+                        params[new_key] + state_dict[key]
+                dicts += 1
+
+        # todo save fused adapter
+        tgt_root = os.path.join(root, name)
+        if not os.path.exists(tgt_root):
+            os.mkdir(tgt_root)
+        copyfile(os.path.join(adapter_dir, 'head_config.json'), os.path.join(tgt_root, 'head_config.json'))
+        copyfile(os.path.join(adapter_dir, 'pytorch_model_head.bin'), os.path.join(tgt_root, 'pytorch_model_head.bin'))
+        with open(os.path.join(tgt_root, 'adapter_config.json'), 'w') as f:
+            adapter_config["name"] = name
+            json.dump(adapter_config, f, indent=2, sort_keys=True)
+        torch.save(params, os.path.join(tgt_root, 'pytorch_adapter.bin'))
+    Average(root, adapters)
+    Summation(root, adapters)
 
 if __name__ == "__main__":
     main()

@@ -90,7 +90,7 @@ if is_tf_available():
         processor = glue_processors[task]()
         examples = [processor.tfds_map(processor.get_example_from_tensor_dict(example)) for example in examples]
         features = glue_convert_examples_to_features(examples, tokenizer, max_length=max_length, task=task)
-        label_type = tf.float32 if task == "sts-b" else tf.int64
+        label_type = tf.float32 if task == "stsb" else tf.int64
 
         def gen():
             for ex in features:
@@ -609,8 +609,8 @@ glue_tasks_num_labels = {
     "cola": 2,
     "mnli": 3,
     "mrpc": 2,
-    "sst-2": 2,
-    "sts-b": 1,
+    "sst2": 2,
+    "stsb": 1,
     "qqp": 2,
     "qnli": 2,
     "rte": 2,
@@ -622,8 +622,8 @@ glue_processors = {
     "mnli": MnliProcessor,
     "mnli-mm": MnliMismatchedProcessor,
     "mrpc": MrpcProcessor,
-    "sst-2": Sst2Processor,
-    "sts-b": StsbProcessor,
+    "sst2": Sst2Processor,
+    "stsb": StsbProcessor,
     "qqp": QqpProcessor,
     "qnli": QnliProcessor,
     "rte": RteProcessor,
@@ -635,8 +635,8 @@ glue_output_modes = {
     "mnli": "classification",
     "mnli-mm": "classification",
     "mrpc": "classification",
-    "sst-2": "classification",
-    "sts-b": "regression",
+    "sst2": "classification",
+    "stsb": "regression",
     "qqp": "classification",
     "qnli": "classification",
     "rte": "classification",

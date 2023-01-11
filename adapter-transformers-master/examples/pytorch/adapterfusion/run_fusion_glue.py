@@ -228,8 +228,11 @@ def main():
     set_seed(training_args.seed)
 
     try:
-        num_labels = glue_tasks_num_labels[data_args.task_name]
-        output_mode = glue_output_modes[data_args.task_name]
+        refine = {'sst2': 'sst-2', 'stsb': 'sts-b'}
+        num_labels = glue_tasks_num_labels[data_args.task_name] if data_args.task_name not in refine \
+                                            else glue_tasks_num_labels[refine[data_args.task_name]]
+        output_mode = glue_output_modes[data_args.task_name] if data_args.task_name not in refine \
+                                            else glue_output_modes[refine[data_args.task_name]]
     except KeyError:
         raise ValueError("Task not found: %s" % (data_args.task_name))
 
