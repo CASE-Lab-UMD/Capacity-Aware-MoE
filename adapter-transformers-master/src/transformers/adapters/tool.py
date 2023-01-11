@@ -169,7 +169,7 @@ def main():
         if not os.path.exists(os.path.join(root, left)):
             os.mkdir(os.path.join(root, left))
         name = model.load_adapter(os.path.join(root, elem), config=PfeifferConfig(), with_head=False)
-        # model.save_adapter(os.path.join(root, elem), name)
+        model.save_adapter(os.path.join(root, elem), name)
 
     # save model
     # model.save_pretrained('./path/to/model/directory/')# save adapter
