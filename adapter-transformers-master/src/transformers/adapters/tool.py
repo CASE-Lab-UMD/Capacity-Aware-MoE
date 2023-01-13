@@ -1,6 +1,4 @@
 
-
-
 # coding=utf-8
 # Copyright 2018 The Google AI Language Team Authors and The HuggingFace Inc. team.
 # Copyright (c) 2018, NVIDIA CORPORATION.  All rights reserved.
@@ -34,28 +32,20 @@ sys.path = ['/user/sunsiqi/hs/MoE/adapter-transformers-master/src', '/user/sunsi
 from dataclasses import dataclass, field
 from typing import Optional
 from transformers.adapters.configuration import PfeifferConfig
-
-
 from tqdm import tqdm
 from transformers import (
     AdapterArguments,
     AdapterTrainer,
     AutoConfig,
     AutoModelForSequenceClassification,
-
-
-
 )
 from transformers import GlueDataTrainingArguments as DataTrainingArguments
 from transformers import (
     HfArgumentParser,
     TrainingArguments,
-
-
-
-    set_seed,
 )
-
+# todo package for otfusion
+import wasserstein_ensemble
 
 logger = logging.getLogger(__name__)
 
@@ -122,15 +112,6 @@ def main():
         training_args.fp16,
     )
     logger.info("Training/evaluation parameters %s", training_args)
-
-
-
-
-
-
-
-
-
 
     config = AutoConfig.from_pretrained(
         model_args.config_name if model_args.config_name else model_args.model_name_or_path,
@@ -275,6 +256,8 @@ def main():
         torch.save(params, os.path.join(tgt_root, 'pytorch_adapter.bin'))
     Average(root, adapters)
     Summation(root, adapters)
+
+    # todo otfusion
 
 if __name__ == "__main__":
     main()
