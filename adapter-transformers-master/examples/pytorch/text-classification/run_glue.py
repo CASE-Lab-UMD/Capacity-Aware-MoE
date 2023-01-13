@@ -73,7 +73,7 @@ task_to_keys = {
 }
 
 logger = logging.getLogger(__name__)
-
+TOKENIZERS_PARALLELISM=False
 
 @dataclass
 class DataTrainingArguments:

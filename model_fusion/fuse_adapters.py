@@ -306,7 +306,7 @@ def main():
 
     config = AutoConfig.from_pretrained(
         model_args.config_name if model_args.config_name else model_args.model_name_or_path,
-        num_labels=2,
+        num_labels=2, # TODO NUM_LABELS, 可能需要删除
         finetuning_task=data_args.task_name,
         cache_dir=model_args.cache_dir,
     )
@@ -315,7 +315,7 @@ def main():
         model_args.tokenizer_name if model_args.tokenizer_name else model_args.model_name_or_path,
         cache_dir=model_args.cache_dir,
     )
-
+    # TODO ONLY FOR GLUE
     model = AutoModelForSequenceClassification.from_pretrained(
         model_args.model_name_or_path,
         from_tf=bool(".ckpt" in model_args.model_name_or_path),
@@ -358,7 +358,7 @@ def main():
             else:
                 raise ValueError("Need either a GLUE task or a test file for `do_predict`.")
 
-    # Labels
+    # todo Labels for GLUE (其他数据集可能需要改)， label 的问题
     if data_args.task_name is not None:
         is_regression = data_args.task_name == "stsb"
         if not is_regression:
@@ -379,7 +379,7 @@ def main():
             num_labels = len(label_list)
 
     # Preprocessing the raw_datasets
-    if data_args.task_name is not None:
+    if data_args.task_name is not None: # todo task_name
         sentence1_key, sentence2_key = task_to_keys[data_args.task_name]
     else:
         # Again, we try to have some nice defaults but don't hesitate to tweak to your use case.
@@ -392,7 +392,7 @@ def main():
             else:
                 sentence1_key, sentence2_key = non_label_column_names[0], None
 
-    # Padding strategy
+    # Padding strategy, todo 不确定不同任务操作是否一样
     if data_args.pad_to_max_length:
         padding = "max_length"
     else:
@@ -400,7 +400,7 @@ def main():
         padding = False
 
     # Some models have set the order of the labels to use, so let's make sure we do use it.
-    label_to_id = None
+    label_to_id = None # todo NLG可能不需要
     if (
             model.config.label2id != PretrainedConfig(num_labels=num_labels).label2id
             and data_args.task_name is not None
@@ -433,7 +433,7 @@ def main():
         )
     max_seq_length = min(data_args.max_seq_length, tokenizer.model_max_length)
 
-    def preprocess_function(examples):
+    def preprocess_function(examples): # todo replace
         # Tokenize the texts
         args = (
             (examples[sentence1_key],) if sentence2_key is None else (examples[sentence1_key], examples[sentence2_key])
@@ -472,7 +472,7 @@ def main():
     else:
         train_loader = None
 
-    # TODO Load model
+    # TODO Load model, 需要换一下
     root = '/user/sunsiqi/hs/MoE/adapter-transformers-master/adapters'
     adapter_names = []
     adapters = [

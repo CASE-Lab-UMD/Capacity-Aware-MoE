@@ -123,7 +123,7 @@ def get_wassersteinized_layers_modularized(args, networks, activations=None, ski
             assert args.proper_marginals
 
         cpuM = M.data.cpu().numpy()
-        # if args.exact:
+        # if args.exact: # todo 两个值不相等。
         #     T = ot.emd(mu, nu, cpuM)
         # else:
         T = ot.bregman.sinkhorn(mu, nu, cpuM, reg=args.reg)
@@ -529,7 +529,7 @@ def get_network_from_param_list(args, param_list, new_network):
     return acc, new_network
 
 
-skip_layers = ['.embeddings', '.bias', '.LayerNorm', '.pooler', 'classifier']
+skip_layers = ['.embeddings', '.bias', '.LayerNorm', '.pooler', 'classifier'] # todo 1维参数，跳过报错的层
 
 def geometric_ensembling_modularized(args, networks, activations=None, skip_layers=skip_layers):
     avg_aligned_layers = None

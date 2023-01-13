@@ -65,7 +65,7 @@ from transformers import (
     set_seed,
 )
 
-
+TOKENIZERS_PARALLELISM=False
 logger = logging.getLogger(__name__)
 
 
