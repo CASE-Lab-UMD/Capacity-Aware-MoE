@@ -24,6 +24,13 @@ import sys
 from dataclasses import dataclass, field
 from typing import Optional
 
+sys.path = ['/user/sunsiqi/hs/MoE/adapter-transformers-master/src', '/user/sunsiqi/hs/MoE/adapter-transformers-master/src/transformers',
+            '/user/sunsiqi/hs/MoE/adapter-transformers-master/examples/pytorch/question-answering',
+            '/user/sunsiqi/.pycharm_helpers/pydev', '/user/sunsiqi/.pycharm_helpers/pycharm_display', '/user/sunsiqi/.pycharm_helpers/third_party/thriftpy',
+            '/Users/Lenovo/AppData/Local/JetBrains/PyCharm2021.2/cythonExtensions', '/user/sunsiqi/openfold/lib/conda/envs/ddg/lib/python38.zip', '/user/sunsiqi/openfold/lib/conda/envs/ddg/lib/python3.8',
+            '/user/sunsiqi/openfold/lib/conda/envs/ddg/lib/python3.8/lib-dynload', '/user/sunsiqi/.local/lib/python3.8/site-packages', '/user/sunsiqi/.local/lib/python3.8/site-packages/pdbx-1.0-py3.8.egg',
+            '/user/sunsiqi/openfold/lib/conda/envs/ddg/lib/python3.8/site-packages', '/user/sunsiqi/.pycharm_helpers/pycharm_matplotlib_backend']
+
 import datasets
 from datasets import load_dataset, load_metric
 
@@ -55,6 +62,7 @@ check_min_version("4.21.0")
 
 require_version("datasets>=1.8.0", "To fix: pip install -r examples/pytorch/question-answering/requirements.txt")
 
+TOKENIZERS_PARALLELISM=False
 logger = logging.getLogger(__name__)
 
 
@@ -230,6 +238,9 @@ def main():
         )
     else:
         model_args, data_args, training_args, adapter_args = parser.parse_args_into_dataclasses()
+
+    if "wandb" in training_args.report_to:
+        training_args.report_to.remove("wandb")
 
     # Setup logging
     logging.basicConfig(
