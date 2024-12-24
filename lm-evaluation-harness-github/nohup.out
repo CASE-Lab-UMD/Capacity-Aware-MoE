@@ -1,0 +1,1724 @@
+/workspace/models/Meta-Llama-3-8B
+/workspace/models/Meta-Llama-3-8B
+/workspace/MoD/results/trained_models/Meta-Llama-3-8B/alpaca/0/epoch1_lr3e-4_wd0.
+removed '/workspace/MoD/results/trained_models/Meta-Llama-3-8B/alpaca/0/epoch1_lr3e-4_wd0./openbookqa.json/__workspace__MoD__results__trained_models__Meta-Llama-3-8B__alpaca__0__epoch1_lr3e-4_wd0./results_2024-11-24T16-08-43.802483.json'
+removed directory '/workspace/MoD/results/trained_models/Meta-Llama-3-8B/alpaca/0/epoch1_lr3e-4_wd0./openbookqa.json/__workspace__MoD__results__trained_models__Meta-Llama-3-8B__alpaca__0__epoch1_lr3e-4_wd0.'
+removed directory '/workspace/MoD/results/trained_models/Meta-Llama-3-8B/alpaca/0/epoch1_lr3e-4_wd0./openbookqa.json'
+removed '/workspace/MoD/results/trained_models/Meta-Llama-3-8B/alpaca/0/epoch1_lr3e-4_wd0./piqa.json/results_2024-11-24T16-09-31.265700.json'
+removed directory '/workspace/MoD/results/trained_models/Meta-Llama-3-8B/alpaca/0/epoch1_lr3e-4_wd0./piqa.json'
+/workspace/models/Meta-Llama-3-8B
+/workspace/models/Meta-Llama-3-8B
+/workspace/MoD/results/trained_models/Meta-Llama-3-8B/mixed/0/epoch3_lr1e-4_wd0.
+/workspace/models/Meta-Llama-3-8B
+/workspace/models/Meta-Llama-3-8B
+/workspace/MoD/results/trained_models/Meta-Llama-3-8B/mixed/20000/epoch1_lr1e-5_wd0.
+/workspace/models/deepseek-moe-16b-base-temp
+2024-12-20:22:44:42,530 INFO     [__main__.py:254] Verbosity set to INFO
+2024-12-20:22:44:46,757 INFO     [__main__.py:341] Selected Tasks: ['openbookqa']
+2024-12-20:22:44:46,759 INFO     [evaluator.py:141] Setting random seed to 0 | Setting numpy seed to 1234 | Setting torch manual seed to 1234
+2024-12-20:22:44:46,759 INFO     [evaluator.py:178] Initializing hf model, with arguments: {'pretrained': '/workspace/models/deepseek-moe-16b-base-temp', 'router_dir': '', 'expert_capacity': 12.0, 'strategy': 'score', 'parallelize': True, 'trust_remote_code': True, 'dtype': 'bfloat16', 'autoawq': False}
+2024-12-20:22:44:46,929 WARNING  [other.py:349] Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+2024-12-20:22:44:46,932 INFO     [huggingface.py:293] router_dir: . 
+2024-12-20:22:44:47,876 INFO     [modeling.py:1086] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+<module 'transformers' from '/opt/conda/lib/python3.10/site-packages/transformers/__init__.py'>
+['output_path=/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/score/openbookqa.json', 'token=None']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=12.0', 'strategy=score', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=12.0', 'strategy=score', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+Loading checkpoint shards:   0%|          | 0/7 [00:00<?, ?it/s]Loading checkpoint shards:  14%|█▍        | 1/7 [00:01<00:06,  1.09s/it]Loading checkpoint shards:  29%|██▊       | 2/7 [00:02<00:07,  1.41s/it]Loading checkpoint shards:  43%|████▎     | 3/7 [00:11<00:18,  4.73s/it]Loading checkpoint shards:  57%|█████▋    | 4/7 [00:12<00:10,  3.42s/it]Loading checkpoint shards:  71%|███████▏  | 5/7 [00:14<00:05,  2.76s/it]Loading checkpoint shards:  86%|████████▌ | 6/7 [00:16<00:02,  2.37s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:16<00:00,  1.91s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:16<00:00,  2.42s/it]
+2024-12-20:22:45:10,471 INFO     [huggingface.py:767] self._model: DeepseekForCausalLM(
+  (model): DeepseekModel(
+    (embed_tokens): Embedding(102400, 2048)
+    (layers): ModuleList(
+      (0): DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMLP(
+          (gate_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (up_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (down_proj): Linear(in_features=10944, out_features=2048, bias=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+      (1-27): 27 x DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMoE(
+          (experts): ModuleList(
+            (0-63): 64 x DeepseekMLP(
+              (gate_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (up_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (down_proj): Linear(in_features=1408, out_features=2048, bias=False)
+              (act_fn): SiLU()
+            )
+          )
+          (gate): MoEGate()
+          (shared_experts): DeepseekMLP(
+            (gate_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (up_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (down_proj): Linear(in_features=2816, out_features=2048, bias=False)
+            (act_fn): SiLU()
+          )
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+    )
+    (norm): DeepseekRMSNorm()
+  )
+  (lm_head): Linear(in_features=2048, out_features=102400, bias=False)
+)
+2024-12-20:22:45:10,471 INFO     [huggingface.py:774]  ** Max Memory (device: 0): 30.64 GB (64.64%)
+2024-12-20:22:45:10,471 INFO     [huggingface.py:776] Memory (VRAM): 30.64 GB (64.64%)
+2024-12-20:22:45:10,471 INFO     [huggingface.py:319] router_dir: . 
+Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+2024-12-20:22:45:11,996 WARNING  [evaluator.py:240] Overwriting default num_fewshot of openbookqa from None to 0
+2024-12-20:22:45:11,996 INFO     [evaluator.py:245] Setting fewshot random generator seed to 1234
+2024-12-20:22:45:11,997 INFO     [task.py:398] Building contexts for openbookqa on rank 0...
+  0%|          | 0/500 [00:00<?, ?it/s] 64%|██████▍   | 321/500 [00:00<00:00, 3202.95it/s]100%|██████████| 500/500 [00:00<00:00, 3219.18it/s]
+2024-12-20:22:45:12,172 INFO     [evaluator.py:395] Running loglikelihood requests
+Running loglikelihood requests:   0%|          | 0/2000 [00:00<?, ?it/s]2024-12-20:22:45:12,461 INFO     [huggingface.py:1091] Passed argument batch_size = auto:1. Detecting largest batch size
+2024-12-20:22:45:14,897 INFO     [huggingface.py:1095] Determined largest batch size: 64
+Running loglikelihood requests:   0%|          | 1/2000 [00:03<1:48:47,  3.27s/it]Running loglikelihood requests:   4%|▍         | 81/2000 [00:03<01:10, 27.09it/s] Running loglikelihood requests:   8%|▊         | 161/2000 [00:04<00:37, 48.88it/s]Running loglikelihood requests:  12%|█▏        | 235/2000 [00:05<00:27, 64.53it/s]Running loglikelihood requests:  16%|█▌        | 312/2000 [00:05<00:21, 78.33it/s]Running loglikelihood requests:  19%|█▉        | 384/2000 [00:06<00:18, 85.62it/s]Running loglikelihood requests:  24%|██▎       | 470/2000 [00:07<00:15, 97.07it/s]Running loglikelihood requests:  28%|██▊       | 560/2000 [00:08<00:13, 107.94it/s]Running loglikelihood requests:  32%|███▏      | 636/2000 [00:08<00:12, 109.93it/s]Running loglikelihood requests:  36%|███▌      | 720/2000 [00:09<00:11, 113.16it/s]Running loglikelihood requests:  40%|███▉      | 796/2000 [00:10<00:10, 114.44it/s]Running loglikelihood requests:  43%|████▎     | 869/2000 [00:10<00:09, 113.83it/s]Running loglikelihood requests:  48%|████▊     | 951/2000 [00:11<00:09, 114.68it/s]Running loglikelihood requests:  52%|█████▏    | 1035/2000 [00:12<00:08, 118.18it/s]Running loglikelihood requests:  56%|█████▌    | 1121/2000 [00:12<00:07, 122.93it/s]Running loglikelihood requests:  59%|█████▉    | 1189/2000 [00:13<00:07, 114.74it/s]Running loglikelihood requests:  63%|██████▎   | 1264/2000 [00:14<00:06, 111.74it/s]Running loglikelihood requests:  67%|██████▋   | 1340/2000 [00:14<00:05, 113.43it/s]Running loglikelihood requests:  72%|███████▏  | 1433/2000 [00:15<00:04, 119.88it/s]Running loglikelihood requests:  76%|███████▌  | 1523/2000 [00:16<00:03, 122.37it/s]Running loglikelihood requests:  80%|████████  | 1606/2000 [00:16<00:03, 123.99it/s]Running loglikelihood requests:  84%|████████▍ | 1690/2000 [00:17<00:02, 126.14it/s]Running loglikelihood requests:  89%|████████▉ | 1781/2000 [00:18<00:01, 127.63it/s]Running loglikelihood requests:  94%|█████████▍| 1875/2000 [00:18<00:00, 131.07it/s]Running loglikelihood requests:  98%|█████████▊| 1957/2000 [00:19<00:00, 131.62it/s]Running loglikelihood requests: 100%|██████████| 2000/2000 [00:19<00:00, 102.89it/s]
+2024-12-20:22:45:32,450 WARNING  [huggingface.py:1477] Failed to get model SHA for /workspace/models/deepseek-moe-16b-base-temp at revision main. Error: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/workspace/models/deepseek-moe-16b-base-temp'. Use `repo_type` argument if needed.
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+2024-12-20:22:45:36,184 INFO     [evaluation_tracker.py:133] Saving results aggregated
+hf (pretrained=/workspace/models/deepseek-moe-16b-base-temp,router_dir=,expert_capacity=12.0,strategy=score,parallelize=True,trust_remote_code=True,dtype=bfloat16,autoawq=False), gen_kwargs: (None), limit: None, num_fewshot: 0, batch_size: auto (64)
+|  Tasks   |Version|Filter|n-shot| Metric |Value|   |Stderr|
+|----------|------:|------|-----:|--------|----:|---|-----:|
+|openbookqa|      1|none  |     0|acc     |0.302|±  |0.0206|
+|          |       |none  |     0|acc_norm|0.414|±  |0.0220|
+
+/workspace/models/deepseek-moe-16b-base-temp
+2024-12-20:22:46:23,261 INFO     [__main__.py:254] Verbosity set to INFO
+2024-12-20:22:46:27,582 INFO     [__main__.py:341] Selected Tasks: ['openbookqa']
+2024-12-20:22:46:27,586 INFO     [evaluator.py:141] Setting random seed to 0 | Setting numpy seed to 1234 | Setting torch manual seed to 1234
+2024-12-20:22:46:27,586 INFO     [evaluator.py:178] Initializing hf model, with arguments: {'pretrained': '/workspace/models/deepseek-moe-16b-base-temp', 'router_dir': '', 'expert_capacity': 12.0, 'strategy': 'random', 'parallelize': True, 'trust_remote_code': True, 'dtype': 'bfloat16', 'autoawq': False}
+2024-12-20:22:46:27,891 WARNING  [other.py:349] Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+2024-12-20:22:46:27,894 INFO     [huggingface.py:293] router_dir: . 
+2024-12-20:22:46:30,224 INFO     [modeling.py:1086] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+<module 'transformers' from '/opt/conda/lib/python3.10/site-packages/transformers/__init__.py'>
+['output_path=/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/random/openbookqa.json', 'token=None']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=12.0', 'strategy=random', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=12.0', 'strategy=random', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+Loading checkpoint shards:   0%|          | 0/7 [00:00<?, ?it/s]Loading checkpoint shards:  14%|█▍        | 1/7 [00:02<00:13,  2.22s/it]Loading checkpoint shards:  29%|██▊       | 2/7 [00:04<00:12,  2.49s/it]Loading checkpoint shards:  43%|████▎     | 3/7 [00:07<00:09,  2.40s/it]Loading checkpoint shards:  57%|█████▋    | 4/7 [00:09<00:07,  2.34s/it]Loading checkpoint shards:  71%|███████▏  | 5/7 [00:11<00:04,  2.38s/it]Loading checkpoint shards:  86%|████████▌ | 6/7 [00:14<00:02,  2.37s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:15<00:00,  2.12s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:15<00:00,  2.26s/it]
+2024-12-20:22:46:51,794 INFO     [huggingface.py:767] self._model: DeepseekForCausalLM(
+  (model): DeepseekModel(
+    (embed_tokens): Embedding(102400, 2048)
+    (layers): ModuleList(
+      (0): DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMLP(
+          (gate_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (up_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (down_proj): Linear(in_features=10944, out_features=2048, bias=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+      (1-27): 27 x DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMoE(
+          (experts): ModuleList(
+            (0-63): 64 x DeepseekMLP(
+              (gate_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (up_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (down_proj): Linear(in_features=1408, out_features=2048, bias=False)
+              (act_fn): SiLU()
+            )
+          )
+          (gate): MoEGate()
+          (shared_experts): DeepseekMLP(
+            (gate_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (up_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (down_proj): Linear(in_features=2816, out_features=2048, bias=False)
+            (act_fn): SiLU()
+          )
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+    )
+    (norm): DeepseekRMSNorm()
+  )
+  (lm_head): Linear(in_features=2048, out_features=102400, bias=False)
+)
+2024-12-20:22:46:51,794 INFO     [huggingface.py:774]  ** Max Memory (device: 0): 30.64 GB (64.64%)
+2024-12-20:22:46:51,794 INFO     [huggingface.py:776] Memory (VRAM): 30.64 GB (64.64%)
+2024-12-20:22:46:51,794 INFO     [huggingface.py:319] router_dir: . 
+Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+2024-12-20:22:46:53,277 WARNING  [evaluator.py:240] Overwriting default num_fewshot of openbookqa from None to 0
+2024-12-20:22:46:53,277 INFO     [evaluator.py:245] Setting fewshot random generator seed to 1234
+2024-12-20:22:46:53,277 INFO     [task.py:398] Building contexts for openbookqa on rank 0...
+  0%|          | 0/500 [00:00<?, ?it/s] 61%|██████    | 304/500 [00:00<00:00, 3037.50it/s]100%|██████████| 500/500 [00:00<00:00, 3011.67it/s]
+2024-12-20:22:46:53,462 INFO     [evaluator.py:395] Running loglikelihood requests
+Running loglikelihood requests:   0%|          | 0/2000 [00:00<?, ?it/s]2024-12-20:22:46:53,752 INFO     [huggingface.py:1091] Passed argument batch_size = auto:1. Detecting largest batch size
+2024-12-20:22:46:58,299 INFO     [huggingface.py:1095] Determined largest batch size: 64
+Running loglikelihood requests:   0%|          | 1/2000 [00:06<3:34:03,  6.42s/it]Running loglikelihood requests:   4%|▍         | 81/2000 [00:07<02:03, 15.56it/s] Running loglikelihood requests:   8%|▊         | 161/2000 [00:07<00:57, 31.90it/s]Running loglikelihood requests:  12%|█▏        | 235/2000 [00:08<00:38, 45.92it/s]Running loglikelihood requests:  16%|█▌        | 312/2000 [00:09<00:28, 60.09it/s]Running loglikelihood requests:  19%|█▉        | 384/2000 [00:09<00:22, 71.35it/s]Running loglikelihood requests:  24%|██▎       | 470/2000 [00:10<00:18, 84.78it/s]Running loglikelihood requests:  28%|██▊       | 560/2000 [00:11<00:14, 97.04it/s]Running loglikelihood requests:  32%|███▏      | 636/2000 [00:11<00:13, 102.22it/s]Running loglikelihood requests:  36%|███▌      | 720/2000 [00:12<00:11, 107.99it/s]Running loglikelihood requests:  40%|███▉      | 796/2000 [00:13<00:11, 108.58it/s]Running loglikelihood requests:  43%|████▎     | 869/2000 [00:13<00:10, 108.85it/s]Running loglikelihood requests:  48%|████▊     | 951/2000 [00:14<00:09, 113.36it/s]Running loglikelihood requests:  52%|█████▏    | 1035/2000 [00:15<00:08, 114.98it/s]Running loglikelihood requests:  56%|█████▌    | 1121/2000 [00:15<00:07, 118.61it/s]Running loglikelihood requests:  59%|█████▉    | 1189/2000 [00:16<00:07, 115.12it/s]Running loglikelihood requests:  63%|██████▎   | 1264/2000 [00:17<00:06, 113.40it/s]Running loglikelihood requests:  67%|██████▋   | 1340/2000 [00:17<00:05, 112.27it/s]Running loglikelihood requests:  72%|███████▏  | 1433/2000 [00:18<00:04, 120.88it/s]Running loglikelihood requests:  76%|███████▌  | 1523/2000 [00:19<00:03, 125.31it/s]Running loglikelihood requests:  80%|████████  | 1606/2000 [00:19<00:03, 123.84it/s]Running loglikelihood requests:  84%|████████▍ | 1690/2000 [00:20<00:02, 124.16it/s]Running loglikelihood requests:  89%|████████▉ | 1781/2000 [00:21<00:01, 128.35it/s]Running loglikelihood requests:  94%|█████████▍| 1875/2000 [00:21<00:00, 131.06it/s]Running loglikelihood requests:  98%|█████████▊| 1957/2000 [00:23<00:00, 105.53it/s]Running loglikelihood requests: 100%|██████████| 2000/2000 [00:23<00:00, 86.60it/s] 
+2024-12-20:22:47:17,347 WARNING  [huggingface.py:1477] Failed to get model SHA for /workspace/models/deepseek-moe-16b-base-temp at revision main. Error: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/workspace/models/deepseek-moe-16b-base-temp'. Use `repo_type` argument if needed.
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+2024-12-20:22:47:21,581 INFO     [evaluation_tracker.py:133] Saving results aggregated
+hf (pretrained=/workspace/models/deepseek-moe-16b-base-temp,router_dir=,expert_capacity=12.0,strategy=random,parallelize=True,trust_remote_code=True,dtype=bfloat16,autoawq=False), gen_kwargs: (None), limit: None, num_fewshot: 0, batch_size: auto (64)
+|  Tasks   |Version|Filter|n-shot| Metric |Value|   |Stderr|
+|----------|------:|------|-----:|--------|----:|---|-----:|
+|openbookqa|      1|none  |     0|acc     |0.312|±  |0.0207|
+|          |       |none  |     0|acc_norm|0.422|±  |0.0221|
+
+/workspace/models/deepseek-moe-16b-base-temp
+2024-12-20:22:48:30,310 INFO     [__main__.py:254] Verbosity set to INFO
+2024-12-20:22:48:34,752 INFO     [__main__.py:341] Selected Tasks: ['openbookqa']
+2024-12-20:22:48:34,758 INFO     [evaluator.py:141] Setting random seed to 0 | Setting numpy seed to 1234 | Setting torch manual seed to 1234
+2024-12-20:22:48:34,758 INFO     [evaluator.py:178] Initializing hf model, with arguments: {'pretrained': '/workspace/models/deepseek-moe-16b-base-temp', 'router_dir': '', 'expert_capacity': 12.0, 'strategy': 'first', 'parallelize': True, 'trust_remote_code': True, 'dtype': 'bfloat16', 'autoawq': False}
+2024-12-20:22:48:34,970 WARNING  [other.py:349] Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+2024-12-20:22:48:34,974 INFO     [huggingface.py:293] router_dir: . 
+2024-12-20:22:48:37,342 INFO     [modeling.py:1086] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+rm: cannot remove '/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/last': No such file or directory
+/workspace/models/deepseek-moe-16b-base-temp
+2024-12-20:22:48:42,759 INFO     [__main__.py:254] Verbosity set to INFO
+<module 'transformers' from '/opt/conda/lib/python3.10/site-packages/transformers/__init__.py'>
+['output_path=/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/first/openbookqa.json', 'token=None']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=12.0', 'strategy=first', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=12.0', 'strategy=first', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+Loading checkpoint shards:   0%|          | 0/7 [00:00<?, ?it/s]Loading checkpoint shards:  14%|█▍        | 1/7 [00:02<00:15,  2.56s/it]2024-12-20:22:48:47,294 INFO     [__main__.py:341] Selected Tasks: ['openbookqa']
+2024-12-20:22:48:47,298 INFO     [evaluator.py:141] Setting random seed to 0 | Setting numpy seed to 1234 | Setting torch manual seed to 1234
+2024-12-20:22:48:47,298 INFO     [evaluator.py:178] Initializing hf model, with arguments: {'pretrained': '/workspace/models/deepseek-moe-16b-base-temp', 'router_dir': '', 'expert_capacity': 12.0, 'strategy': 'last', 'parallelize': True, 'trust_remote_code': True, 'dtype': 'bfloat16', 'autoawq': False}
+2024-12-20:22:48:47,473 WARNING  [other.py:349] Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+2024-12-20:22:48:47,477 INFO     [huggingface.py:293] router_dir: . 
+Loading checkpoint shards:  29%|██▊       | 2/7 [00:04<00:11,  2.24s/it]2024-12-20:22:48:48,927 INFO     [modeling.py:1086] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+Loading checkpoint shards:  43%|████▎     | 3/7 [00:09<00:13,  3.49s/it]<module 'transformers' from '/opt/conda/lib/python3.10/site-packages/transformers/__init__.py'>
+['output_path=/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/last/openbookqa.json', 'token=None']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=12.0', 'strategy=last', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=12.0', 'strategy=last', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+Loading checkpoint shards:   0%|          | 0/7 [00:00<?, ?it/s]Loading checkpoint shards:  57%|█████▋    | 4/7 [00:11<00:09,  3.06s/it]Loading checkpoint shards:  71%|███████▏  | 5/7 [00:14<00:05,  2.77s/it]Loading checkpoint shards:  14%|█▍        | 1/7 [00:02<00:16,  2.81s/it]Loading checkpoint shards:  29%|██▊       | 2/7 [00:04<00:11,  2.29s/it]Loading checkpoint shards:  86%|████████▌ | 6/7 [00:16<00:02,  2.61s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:18<00:00,  2.33s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:18<00:00,  2.61s/it]
+2024-12-20:22:49:01,438 INFO     [huggingface.py:767] self._model: DeepseekForCausalLM(
+  (model): DeepseekModel(
+    (embed_tokens): Embedding(102400, 2048)
+    (layers): ModuleList(
+      (0): DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMLP(
+          (gate_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (up_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (down_proj): Linear(in_features=10944, out_features=2048, bias=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+      (1-27): 27 x DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMoE(
+          (experts): ModuleList(
+            (0-63): 64 x DeepseekMLP(
+              (gate_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (up_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (down_proj): Linear(in_features=1408, out_features=2048, bias=False)
+              (act_fn): SiLU()
+            )
+          )
+          (gate): MoEGate()
+          (shared_experts): DeepseekMLP(
+            (gate_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (up_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (down_proj): Linear(in_features=2816, out_features=2048, bias=False)
+            (act_fn): SiLU()
+          )
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+    )
+    (norm): DeepseekRMSNorm()
+  )
+  (lm_head): Linear(in_features=2048, out_features=102400, bias=False)
+)
+2024-12-20:22:49:01,438 INFO     [huggingface.py:774]  ** Max Memory (device: 0): 30.64 GB (64.64%)
+2024-12-20:22:49:01,438 INFO     [huggingface.py:776] Memory (VRAM): 30.64 GB (64.64%)
+2024-12-20:22:49:01,438 INFO     [huggingface.py:319] router_dir: . 
+Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+Loading checkpoint shards:  43%|████▎     | 3/7 [00:07<00:09,  2.50s/it]2024-12-20:22:49:02,900 WARNING  [evaluator.py:240] Overwriting default num_fewshot of openbookqa from None to 0
+2024-12-20:22:49:02,900 INFO     [evaluator.py:245] Setting fewshot random generator seed to 1234
+2024-12-20:22:49:02,900 INFO     [task.py:398] Building contexts for openbookqa on rank 0...
+  0%|          | 0/500 [00:00<?, ?it/s] 54%|█████▍    | 270/500 [00:00<00:00, 2695.10it/s]100%|██████████| 500/500 [00:00<00:00, 2723.10it/s]
+2024-12-20:22:49:03,106 INFO     [evaluator.py:395] Running loglikelihood requests
+Running loglikelihood requests:   0%|          | 0/2000 [00:00<?, ?it/s]2024-12-20:22:49:03,385 INFO     [huggingface.py:1091] Passed argument batch_size = auto:1. Detecting largest batch size
+Loading checkpoint shards:  57%|█████▋    | 4/7 [00:09<00:06,  2.27s/it]/workspace/models/deepseek-moe-16b-base-temp
+Loading checkpoint shards:  71%|███████▏  | 5/7 [00:11<00:04,  2.29s/it]2024-12-20:22:49:07,664 INFO     [huggingface.py:1095] Determined largest batch size: 64
+2024-12-20:22:49:08,262 INFO     [__main__.py:254] Verbosity set to INFO
+Running loglikelihood requests:   0%|          | 1/2000 [00:05<2:49:07,  5.08s/it]Loading checkpoint shards:  86%|████████▌ | 6/7 [00:14<00:02,  2.31s/it]Running loglikelihood requests:   4%|▍         | 81/2000 [00:05<01:39, 19.25it/s] Running loglikelihood requests:   8%|▊         | 161/2000 [00:06<00:48, 38.10it/s]Loading checkpoint shards:  86%|████████▌ | 6/7 [00:15<00:02,  2.59s/it]
+Traceback (most recent call last):
+  File "/opt/conda/bin/lm_eval", line 8, in <module>
+    sys.exit(cli_evaluate())
+  File "/workspace/lm-evaluation-harness-github/lm_eval/__main__.py", line 347, in cli_evaluate
+    results = evaluator.simple_evaluate(
+  File "/workspace/lm-evaluation-harness-github/lm_eval/utils.py", line 322, in _wrapper
+    return fn(*args, **kwargs)
+  File "/workspace/lm-evaluation-harness-github/lm_eval/evaluator.py", line 181, in simple_evaluate
+    lm = lm_eval.api.registry.get_model(model).create_from_arg_string(
+  File "/workspace/lm-evaluation-harness-github/lm_eval/api/model.py", line 134, in create_from_arg_string
+    return cls(**args, **args2)
+  File "/workspace/lm-evaluation-harness-github/lm_eval/models/huggingface.py", line 298, in __init__
+    self._create_model(
+  File "/workspace/lm-evaluation-harness-github/lm_eval/models/huggingface.py", line 716, in _create_model
+    self._model = self.AUTO_MODEL_CLASS.from_pretrained(
+  File "/opt/conda/lib/python3.10/site-packages/transformers/models/auto/auto_factory.py", line 558, in from_pretrained
+    return model_class.from_pretrained(
+  File "/opt/conda/lib/python3.10/site-packages/transformers/modeling_utils.py", line 3677, in from_pretrained
+    ) = cls._load_pretrained_model(
+  File "/opt/conda/lib/python3.10/site-packages/transformers/modeling_utils.py", line 4104, in _load_pretrained_model
+    new_error_msgs, offload_index, state_dict_index = _load_state_dict_into_meta_model(
+  File "/opt/conda/lib/python3.10/site-packages/transformers/modeling_utils.py", line 886, in _load_state_dict_into_meta_model
+    set_module_tensor_to_device(model, param_name, param_device, **set_module_kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/accelerate/utils/modeling.py", line 416, in set_module_tensor_to_device
+    new_value = value.to(device)
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 12.00 MiB. GPU 0 has a total capacty of 47.40 GiB of which 5.94 MiB is free. Process 3527258 has 11.63 GiB memory in use. Process 4081191 has 35.75 GiB memory in use. Of the allocated memory 29.44 GiB is allocated by PyTorch, and 5.90 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+Running loglikelihood requests:  12%|█▏        | 235/2000 [00:07<00:32, 53.71it/s]Running loglikelihood requests:  16%|█▌        | 312/2000 [00:07<00:24, 68.89it/s]Running loglikelihood requests:  19%|█▉        | 384/2000 [00:08<00:20, 79.30it/s]Running loglikelihood requests:  24%|██▎       | 470/2000 [00:08<00:16, 93.02it/s]/workspace/lm-evaluation-harness-github/runs_prune/eval_baseline.sh: 107: cannot create /workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/last/piqa.out: Directory nonexistent
+/workspace/lm-evaluation-harness-github/runs_prune/eval_baseline.sh: 123: cannot create /workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/last/rte.out: Directory nonexistent
+/workspace/lm-evaluation-harness-github/runs_prune/eval_baseline.sh: 139: cannot create /workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/last/winogrande.out: Directory nonexistent
+/workspace/lm-evaluation-harness-github/runs_prune/eval_baseline.sh: 155: cannot create /workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/last/boolq.out: Directory nonexistent
+/workspace/lm-evaluation-harness-github/runs_prune/eval_baseline.sh: 170: cannot create /workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/last/arc_challenge.out: Directory nonexistent
+/workspace/lm-evaluation-harness-github/runs_prune/eval_baseline.sh: 186: cannot create /workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/last/hellaswag.out: Directory nonexistent
+/workspace/lm-evaluation-harness-github/runs_prune/eval_baseline.sh: 201: cannot create /workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/last/mmlu.out: Directory nonexistent
+/workspace/lm-evaluation-harness-github/runs_prune/eval_baseline.sh: 216: cannot create /workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/last/gsm8k.out: Directory nonexistent
+2024-12-20:22:49:12,787 INFO     [__main__.py:341] Selected Tasks: ['openbookqa']
+2024-12-20:22:49:12,788 INFO     [evaluator.py:141] Setting random seed to 0 | Setting numpy seed to 1234 | Setting torch manual seed to 1234
+2024-12-20:22:49:12,788 INFO     [evaluator.py:178] Initializing hf model, with arguments: {'pretrained': '/workspace/models/deepseek-moe-16b-base-temp', 'router_dir': '', 'expert_capacity': 6.0, 'strategy': 'last', 'parallelize': True, 'trust_remote_code': True, 'dtype': 'bfloat16', 'autoawq': False}
+2024-12-20:22:49:12,944 WARNING  [other.py:349] Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+Running loglikelihood requests:  28%|██▊       | 560/2000 [00:09<00:13, 106.68it/s]2024-12-20:22:49:12,947 INFO     [huggingface.py:293] router_dir: . 
+Running loglikelihood requests:  32%|███▏      | 636/2000 [00:10<00:12, 111.06it/s]Running loglikelihood requests:  36%|███▌      | 720/2000 [00:10<00:10, 116.46it/s]Running loglikelihood requests:  40%|███▉      | 796/2000 [00:11<00:10, 116.71it/s]2024-12-20:22:49:14,900 INFO     [modeling.py:1086] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+Running loglikelihood requests:  43%|████▎     | 869/2000 [00:12<00:09, 117.10it/s]Running loglikelihood requests:  48%|████▊     | 951/2000 [00:12<00:08, 122.34it/s]Running loglikelihood requests:  52%|█████▏    | 1035/2000 [00:13<00:07, 123.76it/s]Running loglikelihood requests:  56%|█████▌    | 1121/2000 [00:13<00:06, 127.66it/s]Running loglikelihood requests:  59%|█████▉    | 1189/2000 [00:14<00:06, 123.76it/s]Running loglikelihood requests:  63%|██████▎   | 1264/2000 [00:15<00:05, 123.49it/s]Running loglikelihood requests:  67%|██████▋   | 1340/2000 [00:15<00:05, 122.49it/s]Running loglikelihood requests:  72%|███████▏  | 1433/2000 [00:16<00:04, 131.32it/s]Running loglikelihood requests:  76%|███████▌  | 1523/2000 [00:17<00:03, 138.24it/s]<module 'transformers' from '/opt/conda/lib/python3.10/site-packages/transformers/__init__.py'>
+['output_path=/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-6.0/last/openbookqa.json', 'token=None']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=6.0', 'strategy=last', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=6.0', 'strategy=last', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+Loading checkpoint shards:   0%|          | 0/7 [00:00<?, ?it/s]Running loglikelihood requests:  80%|████████  | 1606/2000 [00:17<00:02, 136.49it/s]Running loglikelihood requests:  84%|████████▍ | 1690/2000 [00:18<00:02, 135.20it/s]Running loglikelihood requests:  89%|████████▉ | 1781/2000 [00:18<00:01, 141.11it/s]Loading checkpoint shards:  14%|█▍        | 1/7 [00:02<00:13,  2.28s/it]Running loglikelihood requests:  94%|█████████▍| 1875/2000 [00:19<00:00, 149.17it/s]Running loglikelihood requests:  98%|█████████▊| 1957/2000 [00:21<00:00, 96.93it/s] Running loglikelihood requests: 100%|██████████| 2000/2000 [00:21<00:00, 95.18it/s]
+2024-12-20:22:49:24,902 WARNING  [huggingface.py:1477] Failed to get model SHA for /workspace/models/deepseek-moe-16b-base-temp at revision main. Error: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/workspace/models/deepseek-moe-16b-base-temp'. Use `repo_type` argument if needed.
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+Loading checkpoint shards:  29%|██▊       | 2/7 [00:05<00:12,  2.58s/it]/workspace/models/deepseek-moe-16b-base-temp
+2024-12-20:22:49:29,400 INFO     [evaluation_tracker.py:133] Saving results aggregated
+hf (pretrained=/workspace/models/deepseek-moe-16b-base-temp,router_dir=,expert_capacity=12.0,strategy=first,parallelize=True,trust_remote_code=True,dtype=bfloat16,autoawq=False), gen_kwargs: (None), limit: None, num_fewshot: 0, batch_size: auto (64)
+|  Tasks   |Version|Filter|n-shot| Metric |Value|   |Stderr|
+|----------|------:|------|-----:|--------|----:|---|-----:|
+|openbookqa|      1|none  |     0|acc     |0.294|±  |0.0204|
+|          |       |none  |     0|acc_norm|0.412|±  |0.0220|
+
+Loading checkpoint shards:  43%|████▎     | 3/7 [00:09<00:13,  3.38s/it]2024-12-20:22:49:31,557 INFO     [__main__.py:254] Verbosity set to INFO
+Loading checkpoint shards:  57%|█████▋    | 4/7 [00:12<00:09,  3.17s/it]2024-12-20:22:49:35,944 INFO     [__main__.py:341] Selected Tasks: ['openbookqa']
+2024-12-20:22:49:35,946 INFO     [evaluator.py:141] Setting random seed to 0 | Setting numpy seed to 1234 | Setting torch manual seed to 1234
+2024-12-20:22:49:35,946 INFO     [evaluator.py:178] Initializing hf model, with arguments: {'pretrained': '/workspace/models/deepseek-moe-16b-base-temp', 'router_dir': '', 'expert_capacity': 6.0, 'strategy': 'first', 'parallelize': True, 'trust_remote_code': True, 'dtype': 'bfloat16', 'autoawq': False}
+2024-12-20:22:49:36,167 WARNING  [other.py:349] Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+2024-12-20:22:49:36,171 INFO     [huggingface.py:293] router_dir: . 
+Loading checkpoint shards:  71%|███████▏  | 5/7 [00:16<00:06,  3.40s/it]2024-12-20:22:49:38,519 INFO     [modeling.py:1086] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+Loading checkpoint shards:  86%|████████▌ | 6/7 [00:18<00:03,  3.24s/it]/workspace/models/deepseek-moe-16b-base-temp
+Loading checkpoint shards: 100%|██████████| 7/7 [00:21<00:00,  2.90s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:21<00:00,  3.03s/it]
+2024-12-20:22:49:41,805 INFO     [huggingface.py:767] self._model: DeepseekForCausalLM(
+  (model): DeepseekModel(
+    (embed_tokens): Embedding(102400, 2048)
+    (layers): ModuleList(
+      (0): DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMLP(
+          (gate_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (up_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (down_proj): Linear(in_features=10944, out_features=2048, bias=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+      (1-27): 27 x DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMoE(
+          (experts): ModuleList(
+            (0-63): 64 x DeepseekMLP(
+              (gate_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (up_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (down_proj): Linear(in_features=1408, out_features=2048, bias=False)
+              (act_fn): SiLU()
+            )
+          )
+          (gate): MoEGate()
+          (shared_experts): DeepseekMLP(
+            (gate_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (up_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (down_proj): Linear(in_features=2816, out_features=2048, bias=False)
+            (act_fn): SiLU()
+          )
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+    )
+    (norm): DeepseekRMSNorm()
+  )
+  (lm_head): Linear(in_features=2048, out_features=102400, bias=False)
+)
+2024-12-20:22:49:41,805 INFO     [huggingface.py:774]  ** Max Memory (device: 0): 30.64 GB (64.64%)
+2024-12-20:22:49:41,805 INFO     [huggingface.py:776] Memory (VRAM): 30.64 GB (64.64%)
+2024-12-20:22:49:41,805 INFO     [huggingface.py:319] router_dir: . 
+Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+2024-12-20:22:49:43,185 WARNING  [evaluator.py:240] Overwriting default num_fewshot of openbookqa from None to 0
+2024-12-20:22:49:43,185 INFO     [evaluator.py:245] Setting fewshot random generator seed to 1234
+2024-12-20:22:49:43,185 INFO     [task.py:398] Building contexts for openbookqa on rank 0...
+  0%|          | 0/500 [00:00<?, ?it/s] 63%|██████▎   | 314/500 [00:00<00:00, 3133.29it/s]100%|██████████| 500/500 [00:00<00:00, 3148.35it/s]
+2024-12-20:22:49:43,363 INFO     [evaluator.py:395] Running loglikelihood requests
+2024-12-20:22:49:43,576 INFO     [__main__.py:254] Verbosity set to INFO
+Running loglikelihood requests:   0%|          | 0/2000 [00:00<?, ?it/s]2024-12-20:22:49:43,638 INFO     [huggingface.py:1091] Passed argument batch_size = auto:1. Detecting largest batch size
+<module 'transformers' from '/opt/conda/lib/python3.10/site-packages/transformers/__init__.py'>
+['output_path=/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-6.0/first/openbookqa.json', 'token=None']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=6.0', 'strategy=first', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=6.0', 'strategy=first', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+Loading checkpoint shards:   0%|          | 0/7 [00:00<?, ?it/s]Loading checkpoint shards:  14%|█▍        | 1/7 [00:02<00:13,  2.29s/it]2024-12-20:22:49:47,703 INFO     [huggingface.py:1095] Determined largest batch size: 64
+2024-12-20:22:49:48,081 INFO     [__main__.py:341] Selected Tasks: ['openbookqa']
+2024-12-20:22:49:48,084 INFO     [evaluator.py:141] Setting random seed to 0 | Setting numpy seed to 1234 | Setting torch manual seed to 1234
+2024-12-20:22:49:48,084 INFO     [evaluator.py:178] Initializing hf model, with arguments: {'pretrained': '/workspace/models/deepseek-moe-16b-base-temp', 'router_dir': '', 'expert_capacity': 6.0, 'strategy': 'random', 'parallelize': True, 'trust_remote_code': True, 'dtype': 'bfloat16', 'autoawq': False}
+2024-12-20:22:49:48,246 WARNING  [other.py:349] Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+2024-12-20:22:49:48,249 INFO     [huggingface.py:293] router_dir: . 
+Running loglikelihood requests:   0%|          | 1/2000 [00:04<2:40:19,  4.81s/it]Running loglikelihood requests:   4%|▍         | 81/2000 [00:05<01:35, 20.05it/s] Loading checkpoint shards:  29%|██▊       | 2/7 [00:05<00:12,  2.56s/it]Running loglikelihood requests:   8%|▊         | 161/2000 [00:06<00:46, 39.25it/s]2024-12-20:22:49:50,187 INFO     [modeling.py:1086] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+Running loglikelihood requests:  12%|█▏        | 235/2000 [00:06<00:32, 55.10it/s]Running loglikelihood requests:  16%|█▌        | 312/2000 [00:07<00:23, 70.48it/s]Loading checkpoint shards:  43%|████▎     | 3/7 [00:06<00:08,  2.25s/it]Running loglikelihood requests:  19%|█▉        | 384/2000 [00:08<00:20, 80.04it/s]Running loglikelihood requests:  24%|██▎       | 470/2000 [00:08<00:16, 92.38it/s]Running loglikelihood requests:  28%|██▊       | 560/2000 [00:09<00:13, 104.99it/s]Running loglikelihood requests:  32%|███▏      | 636/2000 [00:10<00:12, 108.13it/s]Running loglikelihood requests:  36%|███▌      | 720/2000 [00:10<00:11, 114.86it/s]Running loglikelihood requests:  40%|███▉      | 796/2000 [00:11<00:10, 115.87it/s]/workspace/models/deepseek-moe-16b-base-temp
+Running loglikelihood requests:  43%|████▎     | 869/2000 [00:11<00:09, 117.21it/s]Loading checkpoint shards:  57%|█████▋    | 4/7 [00:11<00:09,  3.15s/it]<module 'transformers' from '/opt/conda/lib/python3.10/site-packages/transformers/__init__.py'>
+['output_path=/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-6.0/random/openbookqa.json', 'token=None']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=6.0', 'strategy=random', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=6.0', 'strategy=random', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+Loading checkpoint shards:   0%|          | 0/7 [00:00<?, ?it/s]Running loglikelihood requests:  48%|████▊     | 951/2000 [00:12<00:08, 119.94it/s]Running loglikelihood requests:  52%|█████▏    | 1035/2000 [00:13<00:07, 123.00it/s]Running loglikelihood requests:  56%|█████▌    | 1121/2000 [00:13<00:06, 127.04it/s]Running loglikelihood requests:  59%|█████▉    | 1189/2000 [00:14<00:06, 121.24it/s]Running loglikelihood requests:  63%|██████▎   | 1264/2000 [00:15<00:06, 120.44it/s]Running loglikelihood requests:  67%|██████▋   | 1340/2000 [00:15<00:05, 120.33it/s]2024-12-20:22:49:59,764 INFO     [__main__.py:254] Verbosity set to INFO
+Running loglikelihood requests:  72%|███████▏  | 1433/2000 [00:16<00:04, 128.61it/s]Loading checkpoint shards:  14%|█▍        | 1/7 [00:03<00:23,  3.90s/it]Loading checkpoint shards:  71%|███████▏  | 5/7 [00:15<00:07,  3.51s/it]Running loglikelihood requests:  76%|███████▌  | 1523/2000 [00:16<00:03, 134.44it/s]Running loglikelihood requests:  80%|████████  | 1606/2000 [00:17<00:02, 134.87it/s]Running loglikelihood requests:  84%|████████▍ | 1690/2000 [00:18<00:02, 135.03it/s]Loading checkpoint shards:  29%|██▊       | 2/7 [00:06<00:14,  2.98s/it]Running loglikelihood requests:  89%|████████▉ | 1781/2000 [00:18<00:01, 139.79it/s]Loading checkpoint shards:  86%|████████▌ | 6/7 [00:18<00:03,  3.28s/it]Running loglikelihood requests:  94%|█████████▍| 1875/2000 [00:19<00:00, 146.55it/s]2024-12-20:22:50:04,247 INFO     [__main__.py:341] Selected Tasks: ['openbookqa']
+2024-12-20:22:50:04,250 INFO     [evaluator.py:141] Setting random seed to 0 | Setting numpy seed to 1234 | Setting torch manual seed to 1234
+2024-12-20:22:50:04,250 INFO     [evaluator.py:178] Initializing hf model, with arguments: {'pretrained': '/workspace/models/deepseek-moe-16b-base-temp', 'router_dir': '', 'expert_capacity': 6.0, 'strategy': 'score', 'parallelize': True, 'trust_remote_code': True, 'dtype': 'bfloat16', 'autoawq': False}
+2024-12-20:22:50:04,508 WARNING  [other.py:349] Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+2024-12-20:22:50:04,511 INFO     [huggingface.py:293] router_dir: . 
+Running loglikelihood requests:  98%|█████████▊| 1957/2000 [00:20<00:00, 96.09it/s] Running loglikelihood requests: 100%|██████████| 2000/2000 [00:20<00:00, 95.27it/s]
+Loading checkpoint shards: 100%|██████████| 7/7 [00:20<00:00,  2.89s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:20<00:00,  2.93s/it]
+Loading checkpoint shards:  43%|████▎     | 3/7 [00:08<00:11,  2.84s/it]2024-12-20:22:50:05,204 WARNING  [huggingface.py:1477] Failed to get model SHA for /workspace/models/deepseek-moe-16b-base-temp at revision main. Error: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/workspace/models/deepseek-moe-16b-base-temp'. Use `repo_type` argument if needed.
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+2024-12-20:22:50:05,219 INFO     [huggingface.py:767] self._model: DeepseekForCausalLM(
+  (model): DeepseekModel(
+    (embed_tokens): Embedding(102400, 2048)
+    (layers): ModuleList(
+      (0): DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMLP(
+          (gate_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (up_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (down_proj): Linear(in_features=10944, out_features=2048, bias=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+      (1-27): 27 x DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMoE(
+          (experts): ModuleList(
+            (0-63): 64 x DeepseekMLP(
+              (gate_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (up_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (down_proj): Linear(in_features=1408, out_features=2048, bias=False)
+              (act_fn): SiLU()
+            )
+          )
+          (gate): MoEGate()
+          (shared_experts): DeepseekMLP(
+            (gate_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (up_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (down_proj): Linear(in_features=2816, out_features=2048, bias=False)
+            (act_fn): SiLU()
+          )
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+    )
+    (norm): DeepseekRMSNorm()
+  )
+  (lm_head): Linear(in_features=2048, out_features=102400, bias=False)
+)
+2024-12-20:22:50:05,220 INFO     [huggingface.py:774]  ** Max Memory (device: 0): 30.64 GB (64.64%)
+2024-12-20:22:50:05,220 INFO     [huggingface.py:776] Memory (VRAM): 30.64 GB (64.64%)
+2024-12-20:22:50:05,220 INFO     [huggingface.py:319] router_dir: . 
+Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+2024-12-20:22:50:06,846 WARNING  [evaluator.py:240] Overwriting default num_fewshot of openbookqa from None to 0
+2024-12-20:22:50:06,846 INFO     [evaluator.py:245] Setting fewshot random generator seed to 1234
+2024-12-20:22:50:06,847 INFO     [task.py:398] Building contexts for openbookqa on rank 0...
+  0%|          | 0/500 [00:00<?, ?it/s] 57%|█████▋    | 283/500 [00:00<00:00, 2822.69it/s]2024-12-20:22:50:07,039 INFO     [modeling.py:1086] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+100%|██████████| 500/500 [00:00<00:00, 2867.37it/s]
+2024-12-20:22:50:07,042 INFO     [evaluator.py:395] Running loglikelihood requests
+Running loglikelihood requests:   0%|          | 0/2000 [00:00<?, ?it/s]2024-12-20:22:50:07,347 INFO     [huggingface.py:1091] Passed argument batch_size = auto:1. Detecting largest batch size
+Loading checkpoint shards:  57%|█████▋    | 4/7 [00:13<00:10,  3.55s/it]2024-12-20:22:50:10,156 INFO     [evaluation_tracker.py:133] Saving results aggregated
+hf (pretrained=/workspace/models/deepseek-moe-16b-base-temp,router_dir=,expert_capacity=6.0,strategy=last,parallelize=True,trust_remote_code=True,dtype=bfloat16,autoawq=False), gen_kwargs: (None), limit: None, num_fewshot: 0, batch_size: auto (64)
+|  Tasks   |Version|Filter|n-shot| Metric |Value|   |Stderr|
+|----------|------:|------|-----:|--------|----:|---|-----:|
+|openbookqa|      1|none  |     0|acc     |0.230|±  |0.0188|
+|          |       |none  |     0|acc_norm|0.332|±  |0.0211|
+
+2024-12-20:22:50:12,015 INFO     [huggingface.py:1095] Determined largest batch size: 64
+Loading checkpoint shards:  71%|███████▏  | 5/7 [00:15<00:06,  3.09s/it]<module 'transformers' from '/opt/conda/lib/python3.10/site-packages/transformers/__init__.py'>
+['output_path=/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-6.0/score/openbookqa.json', 'token=None']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=6.0', 'strategy=score', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=6.0', 'strategy=score', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+Loading checkpoint shards:   0%|          | 0/7 [00:00<?, ?it/s]Running loglikelihood requests:   0%|          | 1/2000 [00:05<3:03:20,  5.50s/it]Loading checkpoint shards:  86%|████████▌ | 6/7 [00:17<00:02,  2.46s/it]Running loglikelihood requests:   4%|▍         | 81/2000 [00:06<01:46, 17.97it/s] Loading checkpoint shards: 100%|██████████| 7/7 [00:17<00:00,  1.90s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:17<00:00,  2.55s/it]
+Running loglikelihood requests:   8%|▊         | 161/2000 [00:06<00:50, 36.08it/s]2024-12-20:22:50:14,171 INFO     [huggingface.py:767] self._model: DeepseekForCausalLM(
+  (model): DeepseekModel(
+    (embed_tokens): Embedding(102400, 2048)
+    (layers): ModuleList(
+      (0): DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMLP(
+          (gate_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (up_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (down_proj): Linear(in_features=10944, out_features=2048, bias=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+      (1-27): 27 x DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMoE(
+          (experts): ModuleList(
+            (0-63): 64 x DeepseekMLP(
+              (gate_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (up_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (down_proj): Linear(in_features=1408, out_features=2048, bias=False)
+              (act_fn): SiLU()
+            )
+          )
+          (gate): MoEGate()
+          (shared_experts): DeepseekMLP(
+            (gate_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (up_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (down_proj): Linear(in_features=2816, out_features=2048, bias=False)
+            (act_fn): SiLU()
+          )
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+    )
+    (norm): DeepseekRMSNorm()
+  )
+  (lm_head): Linear(in_features=2048, out_features=102400, bias=False)
+)
+2024-12-20:22:50:14,171 INFO     [huggingface.py:774]  ** Max Memory (device: 0): 30.64 GB (64.64%)
+2024-12-20:22:50:14,171 INFO     [huggingface.py:776] Memory (VRAM): 30.64 GB (64.64%)
+2024-12-20:22:50:14,171 INFO     [huggingface.py:319] router_dir: . 
+Loading checkpoint shards:  14%|█▍        | 1/7 [00:01<00:09,  1.53s/it]Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+Running loglikelihood requests:  12%|█▏        | 235/2000 [00:07<00:34, 51.22it/s]Running loglikelihood requests:  16%|█▌        | 312/2000 [00:08<00:25, 66.24it/s]Loading checkpoint shards:  29%|██▊       | 2/7 [00:02<00:06,  1.33s/it]2024-12-20:22:50:15,638 WARNING  [evaluator.py:240] Overwriting default num_fewshot of openbookqa from None to 0
+2024-12-20:22:50:15,638 INFO     [evaluator.py:245] Setting fewshot random generator seed to 1234
+2024-12-20:22:50:15,639 INFO     [task.py:398] Building contexts for openbookqa on rank 0...
+  0%|          | 0/500 [00:00<?, ?it/s] 56%|█████▌    | 281/500 [00:00<00:00, 2808.80it/s]100%|██████████| 500/500 [00:00<00:00, 2800.90it/s]
+2024-12-20:22:50:15,837 INFO     [evaluator.py:395] Running loglikelihood requests
+Running loglikelihood requests:  19%|█▉        | 384/2000 [00:08<00:20, 77.30it/s]Running loglikelihood requests:   0%|          | 0/2000 [00:00<?, ?it/s]2024-12-20:22:50:16,140 INFO     [huggingface.py:1091] Passed argument batch_size = auto:1. Detecting largest batch size
+Running loglikelihood requests:  24%|██▎       | 470/2000 [00:09<00:16, 92.23it/s]Loading checkpoint shards:  43%|████▎     | 3/7 [00:04<00:05,  1.41s/it]Running loglikelihood requests:  28%|██▊       | 560/2000 [00:10<00:14, 102.61it/s]Running loglikelihood requests:  32%|███▏      | 636/2000 [00:10<00:12, 105.43it/s]Loading checkpoint shards:  57%|█████▋    | 4/7 [00:05<00:03,  1.28s/it]Running loglikelihood requests:  36%|███▌      | 720/2000 [00:11<00:11, 112.95it/s]Loading checkpoint shards:  71%|███████▏  | 5/7 [00:06<00:02,  1.23s/it]Running loglikelihood requests:  40%|███▉      | 796/2000 [00:11<00:10, 114.43it/s]Running loglikelihood requests:  43%|████▎     | 869/2000 [00:12<00:09, 114.18it/s]2024-12-20:22:50:20,254 INFO     [huggingface.py:1095] Determined largest batch size: 64
+Loading checkpoint shards:  86%|████████▌ | 6/7 [00:07<00:01,  1.21s/it]Running loglikelihood requests:  48%|████▊     | 951/2000 [00:13<00:08, 117.29it/s]Loading checkpoint shards: 100%|██████████| 7/7 [00:08<00:00,  1.07s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:08<00:00,  1.20s/it]
+Running loglikelihood requests:  52%|█████▏    | 1035/2000 [00:13<00:08, 120.32it/s]Running loglikelihood requests:   0%|          | 1/2000 [00:05<2:51:58,  5.16s/it]2024-12-20:22:50:21,390 INFO     [huggingface.py:767] self._model: DeepseekForCausalLM(
+  (model): DeepseekModel(
+    (embed_tokens): Embedding(102400, 2048)
+    (layers): ModuleList(
+      (0): DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMLP(
+          (gate_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (up_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (down_proj): Linear(in_features=10944, out_features=2048, bias=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+      (1-27): 27 x DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMoE(
+          (experts): ModuleList(
+            (0-63): 64 x DeepseekMLP(
+              (gate_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (up_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (down_proj): Linear(in_features=1408, out_features=2048, bias=False)
+              (act_fn): SiLU()
+            )
+          )
+          (gate): MoEGate()
+          (shared_experts): DeepseekMLP(
+            (gate_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (up_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (down_proj): Linear(in_features=2816, out_features=2048, bias=False)
+            (act_fn): SiLU()
+          )
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+    )
+    (norm): DeepseekRMSNorm()
+  )
+  (lm_head): Linear(in_features=2048, out_features=102400, bias=False)
+)
+2024-12-20:22:50:21,391 INFO     [huggingface.py:774]  ** Max Memory (device: 0): 30.64 GB (64.64%)
+2024-12-20:22:50:21,391 INFO     [huggingface.py:776] Memory (VRAM): 30.64 GB (64.64%)
+2024-12-20:22:50:21,391 INFO     [huggingface.py:319] router_dir: . 
+Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+Running loglikelihood requests:  56%|█████▌    | 1121/2000 [00:14<00:06, 125.83it/s]Running loglikelihood requests:   4%|▍         | 81/2000 [00:06<01:46, 18.10it/s] Running loglikelihood requests:  59%|█████▉    | 1189/2000 [00:15<00:06, 119.82it/s]2024-12-20:22:50:22,913 WARNING  [evaluator.py:240] Overwriting default num_fewshot of openbookqa from None to 0
+2024-12-20:22:50:22,914 INFO     [evaluator.py:245] Setting fewshot random generator seed to 1234
+2024-12-20:22:50:22,914 INFO     [task.py:398] Building contexts for openbookqa on rank 0...
+  0%|          | 0/500 [00:00<?, ?it/s]Running loglikelihood requests:   8%|▊         | 161/2000 [00:06<00:53, 34.26it/s] 55%|█████▌    | 277/500 [00:00<00:00, 2765.87it/s]100%|██████████| 500/500 [00:00<00:00, 2809.92it/s]
+2024-12-20:22:50:23,114 INFO     [evaluator.py:395] Running loglikelihood requests
+Running loglikelihood requests:  63%|██████▎   | 1264/2000 [00:15<00:06, 119.45it/s]Running loglikelihood requests:   0%|          | 0/2000 [00:00<?, ?it/s]2024-12-20:22:50:23,419 INFO     [huggingface.py:1091] Passed argument batch_size = auto:1. Detecting largest batch size
+Running loglikelihood requests:  67%|██████▋   | 1340/2000 [00:16<00:05, 120.32it/s]Running loglikelihood requests:  12%|█▏        | 235/2000 [00:07<00:37, 46.88it/s]Running loglikelihood requests:  72%|███████▏  | 1433/2000 [00:17<00:04, 127.99it/s]Running loglikelihood requests:  16%|█▌        | 312/2000 [00:08<00:29, 58.16it/s]Running loglikelihood requests:  76%|███████▌  | 1523/2000 [00:17<00:03, 132.67it/s]2024-12-20:22:50:25,496 INFO     [huggingface.py:1095] Determined largest batch size: 64
+Running loglikelihood requests:  19%|█▉        | 384/2000 [00:09<00:24, 65.56it/s]Running loglikelihood requests:  80%|████████  | 1606/2000 [00:18<00:02, 131.74it/s]Running loglikelihood requests:  24%|██▎       | 470/2000 [00:10<00:20, 75.87it/s]Running loglikelihood requests:  84%|████████▍ | 1690/2000 [00:19<00:02, 130.20it/s]Running loglikelihood requests:   0%|          | 1/2000 [00:03<1:41:55,  3.06s/it]Running loglikelihood requests:  89%|████████▉ | 1781/2000 [00:19<00:01, 133.65it/s]Running loglikelihood requests:  28%|██▊       | 560/2000 [00:11<00:16, 85.20it/s]Running loglikelihood requests:   4%|▍         | 81/2000 [00:03<01:11, 26.89it/s] Running loglikelihood requests:  94%|█████████▍| 1875/2000 [00:20<00:00, 140.57it/s]Running loglikelihood requests:  32%|███▏      | 636/2000 [00:11<00:15, 87.05it/s]Running loglikelihood requests:  98%|█████████▊| 1957/2000 [00:20<00:00, 141.49it/s]Running loglikelihood requests: 100%|██████████| 2000/2000 [00:20<00:00, 95.95it/s] 
+Running loglikelihood requests:   8%|▊         | 161/2000 [00:04<00:40, 45.90it/s]2024-12-20:22:50:28,710 WARNING  [huggingface.py:1477] Failed to get model SHA for /workspace/models/deepseek-moe-16b-base-temp at revision main. Error: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/workspace/models/deepseek-moe-16b-base-temp'. Use `repo_type` argument if needed.
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+Running loglikelihood requests:  36%|███▌      | 720/2000 [00:12<00:13, 91.54it/s]Running loglikelihood requests:  12%|█▏        | 235/2000 [00:05<00:30, 57.53it/s]Running loglikelihood requests:  40%|███▉      | 796/2000 [00:13<00:13, 91.44it/s]Running loglikelihood requests:  16%|█▌        | 312/2000 [00:06<00:25, 65.88it/s]Running loglikelihood requests:  43%|████▎     | 869/2000 [00:14<00:12, 89.37it/s]Running loglikelihood requests:  19%|█▉        | 384/2000 [00:07<00:22, 70.33it/s]Running loglikelihood requests:  48%|████▊     | 951/2000 [00:15<00:11, 92.98it/s]Running loglikelihood requests:  24%|██▎       | 470/2000 [00:08<00:19, 79.40it/s]Running loglikelihood requests:  52%|█████▏    | 1035/2000 [00:15<00:10, 95.74it/s]2024-12-20:22:50:32,349 INFO     [evaluation_tracker.py:133] Saving results aggregated
+hf (pretrained=/workspace/models/deepseek-moe-16b-base-temp,router_dir=,expert_capacity=6.0,strategy=first,parallelize=True,trust_remote_code=True,dtype=bfloat16,autoawq=False), gen_kwargs: (None), limit: None, num_fewshot: 0, batch_size: auto (64)
+|  Tasks   |Version|Filter|n-shot| Metric |Value|   |Stderr|
+|----------|------:|------|-----:|--------|----:|---|-----:|
+|openbookqa|      1|none  |     0|acc     |0.268|±  |0.0198|
+|          |       |none  |     0|acc_norm|0.360|±  |0.0215|
+
+Running loglikelihood requests:  28%|██▊       | 560/2000 [00:09<00:16, 86.21it/s]Running loglikelihood requests:  56%|█████▌    | 1121/2000 [00:16<00:08, 97.98it/s]Running loglikelihood requests:  32%|███▏      | 636/2000 [00:10<00:15, 86.47it/s]Running loglikelihood requests:  59%|█████▉    | 1189/2000 [00:17<00:08, 93.02it/s]Running loglikelihood requests:  36%|███▌      | 720/2000 [00:10<00:14, 89.42it/s]Running loglikelihood requests:  63%|██████▎   | 1264/2000 [00:18<00:07, 92.53it/s]Running loglikelihood requests:  40%|███▉      | 796/2000 [00:11<00:13, 89.78it/s]Running loglikelihood requests:  67%|██████▋   | 1340/2000 [00:19<00:07, 93.35it/s]Running loglikelihood requests:  43%|████▎     | 869/2000 [00:12<00:12, 87.79it/s]Running loglikelihood requests:  72%|███████▏  | 1433/2000 [00:20<00:05, 99.10it/s]Running loglikelihood requests:  48%|████▊     | 951/2000 [00:13<00:11, 90.17it/s]Running loglikelihood requests:  76%|███████▌  | 1523/2000 [00:20<00:04, 103.15it/s]Running loglikelihood requests:  52%|█████▏    | 1035/2000 [00:14<00:10, 92.87it/s]Running loglikelihood requests:  80%|████████  | 1606/2000 [00:21<00:03, 103.03it/s]Running loglikelihood requests:  84%|████████▍ | 1690/2000 [00:22<00:02, 104.40it/s]Running loglikelihood requests:  56%|█████▌    | 1121/2000 [00:15<00:09, 95.02it/s]Running loglikelihood requests:  89%|████████▉ | 1781/2000 [00:23<00:02, 107.61it/s]Running loglikelihood requests:  59%|█████▉    | 1189/2000 [00:16<00:08, 90.58it/s]Running loglikelihood requests:  94%|█████████▍| 1875/2000 [00:24<00:01, 110.23it/s]Running loglikelihood requests:  63%|██████▎   | 1264/2000 [00:16<00:08, 87.85it/s]Running loglikelihood requests:  67%|██████▋   | 1340/2000 [00:17<00:07, 87.46it/s]Running loglikelihood requests:  98%|█████████▊| 1957/2000 [00:25<00:00, 94.59it/s] Running loglikelihood requests: 100%|██████████| 2000/2000 [00:25<00:00, 79.16it/s]
+2024-12-20:22:50:41,971 WARNING  [huggingface.py:1477] Failed to get model SHA for /workspace/models/deepseek-moe-16b-base-temp at revision main. Error: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/workspace/models/deepseek-moe-16b-base-temp'. Use `repo_type` argument if needed.
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+Running loglikelihood requests:  72%|███████▏  | 1433/2000 [00:18<00:06, 92.38it/s]Running loglikelihood requests:  76%|███████▌  | 1523/2000 [00:19<00:05, 94.62it/s]Running loglikelihood requests:  80%|████████  | 1606/2000 [00:20<00:04, 94.72it/s]Running loglikelihood requests:  84%|████████▍ | 1690/2000 [00:21<00:03, 96.81it/s]2024-12-20:22:50:45,582 INFO     [evaluation_tracker.py:133] Saving results aggregated
+Running loglikelihood requests:  89%|████████▉ | 1781/2000 [00:22<00:02, 100.58it/s]hf (pretrained=/workspace/models/deepseek-moe-16b-base-temp,router_dir=,expert_capacity=6.0,strategy=random,parallelize=True,trust_remote_code=True,dtype=bfloat16,autoawq=False), gen_kwargs: (None), limit: None, num_fewshot: 0, batch_size: auto (64)
+|  Tasks   |Version|Filter|n-shot| Metric |Value|   |Stderr|
+|----------|------:|------|-----:|--------|----:|---|-----:|
+|openbookqa|      1|none  |     0|acc     |0.238|±  |0.0191|
+|          |       |none  |     0|acc_norm|0.352|±  |0.0214|
+
+Running loglikelihood requests:  94%|█████████▍| 1875/2000 [00:22<00:01, 105.68it/s]Running loglikelihood requests:  98%|█████████▊| 1957/2000 [00:23<00:00, 101.08it/s]Running loglikelihood requests: 100%|██████████| 2000/2000 [00:23<00:00, 83.77it/s] 
+2024-12-20:22:50:47,824 WARNING  [huggingface.py:1477] Failed to get model SHA for /workspace/models/deepseek-moe-16b-base-temp at revision main. Error: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/workspace/models/deepseek-moe-16b-base-temp'. Use `repo_type` argument if needed.
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+2024-12-20:22:50:51,391 INFO     [evaluation_tracker.py:133] Saving results aggregated
+hf (pretrained=/workspace/models/deepseek-moe-16b-base-temp,router_dir=,expert_capacity=6.0,strategy=score,parallelize=True,trust_remote_code=True,dtype=bfloat16,autoawq=False), gen_kwargs: (None), limit: None, num_fewshot: 0, batch_size: auto (64)
+|  Tasks   |Version|Filter|n-shot| Metric |Value|   |Stderr|
+|----------|------:|------|-----:|--------|----:|---|-----:|
+|openbookqa|      1|none  |     0|acc     |0.256|±  |0.0195|
+|          |       |none  |     0|acc_norm|0.364|±  |0.0215|
+
+rm: cannot remove '/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/last': No such file or directory
+/workspace/models/deepseek-moe-16b-base-temp
+2024-12-20:23:10:30,646 INFO     [__main__.py:254] Verbosity set to INFO
+2024-12-20:23:10:34,850 INFO     [__main__.py:341] Selected Tasks: ['openbookqa']
+2024-12-20:23:10:34,852 INFO     [evaluator.py:141] Setting random seed to 0 | Setting numpy seed to 1234 | Setting torch manual seed to 1234
+2024-12-20:23:10:34,852 INFO     [evaluator.py:178] Initializing hf model, with arguments: {'pretrained': '/workspace/models/deepseek-moe-16b-base-temp', 'router_dir': '', 'expert_capacity': 12.0, 'strategy': 'last', 'parallelize': True, 'trust_remote_code': True, 'dtype': 'bfloat16', 'autoawq': False}
+2024-12-20:23:10:35,009 WARNING  [other.py:349] Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+2024-12-20:23:10:35,012 INFO     [huggingface.py:293] router_dir: . 
+2024-12-20:23:10:36,580 INFO     [modeling.py:1086] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+<module 'transformers' from '/opt/conda/lib/python3.10/site-packages/transformers/__init__.py'>
+['output_path=/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/last/openbookqa.json', 'token=None']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=12.0', 'strategy=last', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=12.0', 'strategy=last', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+Loading checkpoint shards:   0%|          | 0/7 [00:00<?, ?it/s]Loading checkpoint shards:  14%|█▍        | 1/7 [00:01<00:07,  1.19s/it]Loading checkpoint shards:  29%|██▊       | 2/7 [00:02<00:07,  1.52s/it]Loading checkpoint shards:  43%|████▎     | 3/7 [00:04<00:05,  1.50s/it]Loading checkpoint shards:  57%|█████▋    | 4/7 [00:05<00:04,  1.49s/it]Loading checkpoint shards:  71%|███████▏  | 5/7 [00:07<00:03,  1.54s/it]Loading checkpoint shards:  86%|████████▌ | 6/7 [00:09<00:01,  1.58s/it]Loading checkpoint shards:  86%|████████▌ | 6/7 [00:09<00:01,  1.59s/it]
+Traceback (most recent call last):
+  File "/opt/conda/bin/lm_eval", line 8, in <module>
+    sys.exit(cli_evaluate())
+  File "/workspace/lm-evaluation-harness-github/lm_eval/__main__.py", line 347, in cli_evaluate
+    results = evaluator.simple_evaluate(
+  File "/workspace/lm-evaluation-harness-github/lm_eval/utils.py", line 322, in _wrapper
+    return fn(*args, **kwargs)
+  File "/workspace/lm-evaluation-harness-github/lm_eval/evaluator.py", line 181, in simple_evaluate
+    lm = lm_eval.api.registry.get_model(model).create_from_arg_string(
+  File "/workspace/lm-evaluation-harness-github/lm_eval/api/model.py", line 134, in create_from_arg_string
+    return cls(**args, **args2)
+  File "/workspace/lm-evaluation-harness-github/lm_eval/models/huggingface.py", line 298, in __init__
+    self._create_model(
+  File "/workspace/lm-evaluation-harness-github/lm_eval/models/huggingface.py", line 716, in _create_model
+    self._model = self.AUTO_MODEL_CLASS.from_pretrained(
+  File "/opt/conda/lib/python3.10/site-packages/transformers/models/auto/auto_factory.py", line 558, in from_pretrained
+    return model_class.from_pretrained(
+  File "/opt/conda/lib/python3.10/site-packages/transformers/modeling_utils.py", line 3677, in from_pretrained
+    ) = cls._load_pretrained_model(
+  File "/opt/conda/lib/python3.10/site-packages/transformers/modeling_utils.py", line 4104, in _load_pretrained_model
+    new_error_msgs, offload_index, state_dict_index = _load_state_dict_into_meta_model(
+  File "/opt/conda/lib/python3.10/site-packages/transformers/modeling_utils.py", line 886, in _load_state_dict_into_meta_model
+    set_module_tensor_to_device(model, param_name, param_device, **set_module_kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/accelerate/utils/modeling.py", line 416, in set_module_tensor_to_device
+    new_value = value.to(device)
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 12.00 MiB. GPU 0 has a total capacty of 47.40 GiB of which 5.94 MiB is free. Process 3527258 has 11.63 GiB memory in use. Process 4144255 has 35.75 GiB memory in use. Of the allocated memory 29.44 GiB is allocated by PyTorch, and 5.90 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+/workspace/lm-evaluation-harness-github/runs_prune/eval_baseline.sh: 107: cannot create /workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/last/piqa.out: Directory nonexistent
+/workspace/lm-evaluation-harness-github/runs_prune/eval_baseline.sh: 123: cannot create /workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/last/rte.out: Directory nonexistent
+/workspace/lm-evaluation-harness-github/runs_prune/eval_baseline.sh: 139: cannot create /workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/last/winogrande.out: Directory nonexistent
+/workspace/lm-evaluation-harness-github/runs_prune/eval_baseline.sh: 155: cannot create /workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/last/boolq.out: Directory nonexistent
+/workspace/lm-evaluation-harness-github/runs_prune/eval_baseline.sh: 170: cannot create /workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/last/arc_challenge.out: Directory nonexistent
+/workspace/lm-evaluation-harness-github/runs_prune/eval_baseline.sh: 186: cannot create /workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/last/hellaswag.out: Directory nonexistent
+/workspace/lm-evaluation-harness-github/runs_prune/eval_baseline.sh: 201: cannot create /workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/last/mmlu.out: Directory nonexistent
+/workspace/lm-evaluation-harness-github/runs_prune/eval_baseline.sh: 216: cannot create /workspace/models/deepseek-moe-16b-base-temp/expert_capacity-12.0/last/gsm8k.out: Directory nonexistent
+/workspace/models/deepseek-moe-16b-base
+2024-12-21:14:44:07,156 INFO     [__main__.py:254] Verbosity set to INFO
+2024-12-21:14:44:11,313 INFO     [__main__.py:341] Selected Tasks: ['openbookqa']
+2024-12-21:14:44:11,315 INFO     [evaluator.py:141] Setting random seed to 0 | Setting numpy seed to 1234 | Setting torch manual seed to 1234
+2024-12-21:14:44:11,315 INFO     [evaluator.py:178] Initializing hf model, with arguments: {'pretrained': '/workspace/models/deepseek-moe-16b-base', 'parallelize': True, 'trust_remote_code': True, 'dtype': 'bfloat16', 'autoawq': False}
+2024-12-21:14:44:11,494 WARNING  [other.py:349] Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+2024-12-21:14:44:11,497 INFO     [huggingface.py:293] router_dir: . 
+2024-12-21:14:44:12,741 INFO     [modeling.py:1086] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+<module 'transformers' from '/opt/conda/lib/python3.10/site-packages/transformers/__init__.py'>
+['output_path=/workspace/models/deepseek-moe-16b-base/openbookqa.json', 'token=None']
+['pretrained=/workspace/models/deepseek-moe-16b-base', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+['pretrained=/workspace/models/deepseek-moe-16b-base', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+Loading checkpoint shards:   0%|          | 0/7 [00:00<?, ?it/s]Loading checkpoint shards:  14%|█▍        | 1/7 [00:01<00:10,  1.67s/it]Loading checkpoint shards:  29%|██▊       | 2/7 [00:02<00:07,  1.41s/it]Loading checkpoint shards:  43%|████▎     | 3/7 [00:04<00:06,  1.62s/it]Loading checkpoint shards:  57%|█████▋    | 4/7 [00:06<00:05,  1.70s/it]Loading checkpoint shards:  71%|███████▏  | 5/7 [00:08<00:03,  1.60s/it]Loading checkpoint shards:  86%|████████▌ | 6/7 [00:09<00:01,  1.67s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:10<00:00,  1.41s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:10<00:00,  1.53s/it]
+2024-12-21:14:44:29,013 INFO     [huggingface.py:767] self._model: DeepseekForCausalLM(
+  (model): DeepseekModel(
+    (embed_tokens): Embedding(102400, 2048)
+    (layers): ModuleList(
+      (0): DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMLP(
+          (gate_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (up_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (down_proj): Linear(in_features=10944, out_features=2048, bias=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+      (1-27): 27 x DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMoE(
+          (experts): ModuleList(
+            (0-63): 64 x DeepseekMLP(
+              (gate_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (up_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (down_proj): Linear(in_features=1408, out_features=2048, bias=False)
+              (act_fn): SiLU()
+            )
+          )
+          (gate): MoEGate()
+          (shared_experts): DeepseekMLP(
+            (gate_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (up_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (down_proj): Linear(in_features=2816, out_features=2048, bias=False)
+            (act_fn): SiLU()
+          )
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+    )
+    (norm): DeepseekRMSNorm()
+  )
+  (lm_head): Linear(in_features=2048, out_features=102400, bias=False)
+)
+2024-12-21:14:44:29,014 INFO     [huggingface.py:774]  ** Max Memory (device: 0): 30.64 GB (64.64%)
+2024-12-21:14:44:29,014 INFO     [huggingface.py:776] Memory (VRAM): 30.64 GB (64.64%)
+2024-12-21:14:44:29,014 INFO     [huggingface.py:319] router_dir: . 
+Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+2024-12-21:14:44:30,493 WARNING  [evaluator.py:240] Overwriting default num_fewshot of openbookqa from None to 0
+2024-12-21:14:44:30,493 INFO     [evaluator.py:245] Setting fewshot random generator seed to 1234
+2024-12-21:14:44:30,494 INFO     [task.py:398] Building contexts for openbookqa on rank 0...
+  0%|          | 0/500 [00:00<?, ?it/s] 62%|██████▏   | 309/500 [00:00<00:00, 3088.47it/s]100%|██████████| 500/500 [00:00<00:00, 2982.23it/s]
+2024-12-21:14:44:30,681 INFO     [evaluator.py:395] Running loglikelihood requests
+Running loglikelihood requests:   0%|          | 0/2000 [00:00<?, ?it/s]2024-12-21:14:44:30,958 INFO     [huggingface.py:1091] Passed argument batch_size = auto:1. Detecting largest batch size
+2024-12-21:14:44:33,056 INFO     [huggingface.py:1095] Determined largest batch size: 64
+Running loglikelihood requests:   0%|          | 1/2000 [00:02<1:35:51,  2.88s/it]Running loglikelihood requests:   4%|▍         | 81/2000 [00:03<01:02, 30.62it/s] Running loglikelihood requests:   8%|▊         | 161/2000 [00:04<00:33, 55.14it/s]Running loglikelihood requests:  12%|█▏        | 235/2000 [00:04<00:24, 72.29it/s]Running loglikelihood requests:  16%|█▌        | 312/2000 [00:05<00:19, 86.69it/s]Running loglikelihood requests:  19%|█▉        | 384/2000 [00:05<00:16, 95.84it/s]Running loglikelihood requests:  24%|██▎       | 470/2000 [00:06<00:14, 107.89it/s]Running loglikelihood requests:  28%|██▊       | 560/2000 [00:07<00:12, 119.91it/s]Running loglikelihood requests:  32%|███▏      | 636/2000 [00:07<00:11, 121.60it/s]Running loglikelihood requests:  36%|███▌      | 720/2000 [00:08<00:10, 125.72it/s]Running loglikelihood requests:  40%|███▉      | 796/2000 [00:09<00:09, 126.34it/s]Running loglikelihood requests:  43%|████▎     | 869/2000 [00:09<00:09, 125.46it/s]Running loglikelihood requests:  48%|████▊     | 951/2000 [00:10<00:08, 128.33it/s]Running loglikelihood requests:  52%|█████▏    | 1035/2000 [00:10<00:07, 130.38it/s]Running loglikelihood requests:  56%|█████▌    | 1121/2000 [00:11<00:06, 134.53it/s]Running loglikelihood requests:  59%|█████▉    | 1189/2000 [00:12<00:06, 128.55it/s]Running loglikelihood requests:  63%|██████▎   | 1264/2000 [00:12<00:05, 126.60it/s]Running loglikelihood requests:  67%|██████▋   | 1340/2000 [00:13<00:05, 126.49it/s]Running loglikelihood requests:  72%|███████▏  | 1433/2000 [00:13<00:04, 135.54it/s]Running loglikelihood requests:  76%|███████▌  | 1523/2000 [00:14<00:03, 139.28it/s]Running loglikelihood requests:  80%|████████  | 1606/2000 [00:15<00:02, 139.58it/s]Running loglikelihood requests:  84%|████████▍ | 1690/2000 [00:15<00:02, 140.04it/s]Running loglikelihood requests:  89%|████████▉ | 1781/2000 [00:16<00:01, 145.03it/s]Running loglikelihood requests:  94%|█████████▍| 1875/2000 [00:16<00:00, 149.35it/s]Running loglikelihood requests:  98%|█████████▊| 1957/2000 [00:17<00:00, 150.36it/s]Running loglikelihood requests: 100%|██████████| 2000/2000 [00:17<00:00, 115.41it/s]
+2024-12-21:14:44:48,794 WARNING  [huggingface.py:1477] Failed to get model SHA for /workspace/models/deepseek-moe-16b-base at revision main. Error: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/workspace/models/deepseek-moe-16b-base'. Use `repo_type` argument if needed.
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+2024-12-21:14:44:52,179 INFO     [evaluation_tracker.py:133] Saving results aggregated
+hf (pretrained=/workspace/models/deepseek-moe-16b-base,parallelize=True,trust_remote_code=True,dtype=bfloat16,autoawq=False), gen_kwargs: (None), limit: None, num_fewshot: 0, batch_size: auto (64)
+|  Tasks   |Version|Filter|n-shot| Metric |Value|   |Stderr|
+|----------|------:|------|-----:|--------|----:|---|-----:|
+|openbookqa|      1|none  |     0|acc     |0.326|±  |0.0210|
+|          |       |none  |     0|acc_norm|0.438|±  |0.0222|
+
+rm: cannot remove '/workspace/models/deepseek-moe-16b-base/expert_capacity-9.0/last': No such file or directory
+/workspace/models/deepseek-moe-16b-base
+2024-12-21:14:55:09,970 INFO     [__main__.py:254] Verbosity set to INFO
+2024-12-21:14:55:14,200 INFO     [__main__.py:341] Selected Tasks: ['openbookqa']
+2024-12-21:14:55:14,202 INFO     [evaluator.py:141] Setting random seed to 0 | Setting numpy seed to 1234 | Setting torch manual seed to 1234
+2024-12-21:14:55:14,202 INFO     [evaluator.py:178] Initializing hf model, with arguments: {'pretrained': '/workspace/models/deepseek-moe-16b-base', 'router_dir': '', 'expert_capacity': 9.0, 'strategy': 'last', 'parallelize': True, 'trust_remote_code': True, 'dtype': 'bfloat16', 'autoawq': False}
+2024-12-21:14:55:14,350 WARNING  [other.py:349] Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+2024-12-21:14:55:14,353 INFO     [huggingface.py:293] router_dir: . 
+2024-12-21:14:55:15,585 INFO     [modeling.py:1086] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+<module 'transformers' from '/opt/conda/lib/python3.10/site-packages/transformers/__init__.py'>
+['output_path=/workspace/models/deepseek-moe-16b-base/expert_capacity-9.0/last/openbookqa.json', 'token=None']
+['pretrained=/workspace/models/deepseek-moe-16b-base', 'router_dir=', 'expert_capacity=9.0', 'strategy=last', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+['pretrained=/workspace/models/deepseek-moe-16b-base', 'router_dir=', 'expert_capacity=9.0', 'strategy=last', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+Loading checkpoint shards:   0%|          | 0/7 [00:00<?, ?it/s]Loading checkpoint shards:  14%|█▍        | 1/7 [00:01<00:07,  1.27s/it]Loading checkpoint shards:  29%|██▊       | 2/7 [00:02<00:06,  1.39s/it]Loading checkpoint shards:  43%|████▎     | 3/7 [00:04<00:05,  1.41s/it]Loading checkpoint shards:  57%|█████▋    | 4/7 [00:05<00:04,  1.36s/it]Loading checkpoint shards:  71%|███████▏  | 5/7 [00:06<00:02,  1.31s/it]Loading checkpoint shards:  86%|████████▌ | 6/7 [00:08<00:01,  1.42s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:09<00:00,  1.22s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:09<00:00,  1.30s/it]
+2024-12-21:14:55:30,253 INFO     [huggingface.py:767] self._model: DeepseekForCausalLM(
+  (model): DeepseekModel(
+    (embed_tokens): Embedding(102400, 2048)
+    (layers): ModuleList(
+      (0): DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMLP(
+          (gate_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (up_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (down_proj): Linear(in_features=10944, out_features=2048, bias=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+      (1-27): 27 x DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMoE(
+          (experts): ModuleList(
+            (0-63): 64 x DeepseekMLP(
+              (gate_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (up_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (down_proj): Linear(in_features=1408, out_features=2048, bias=False)
+              (act_fn): SiLU()
+            )
+          )
+          (gate): MoEGate()
+          (shared_experts): DeepseekMLP(
+            (gate_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (up_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (down_proj): Linear(in_features=2816, out_features=2048, bias=False)
+            (act_fn): SiLU()
+          )
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+    )
+    (norm): DeepseekRMSNorm()
+  )
+  (lm_head): Linear(in_features=2048, out_features=102400, bias=False)
+)
+2024-12-21:14:55:30,254 INFO     [huggingface.py:774]  ** Max Memory (device: 0): 30.64 GB (64.64%)
+2024-12-21:14:55:30,254 INFO     [huggingface.py:776] Memory (VRAM): 30.64 GB (64.64%)
+2024-12-21:14:55:30,254 INFO     [huggingface.py:319] router_dir: . 
+Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+2024-12-21:14:55:31,657 WARNING  [evaluator.py:240] Overwriting default num_fewshot of openbookqa from None to 0
+2024-12-21:14:55:31,657 INFO     [evaluator.py:245] Setting fewshot random generator seed to 1234
+2024-12-21:14:55:31,657 INFO     [task.py:398] Building contexts for openbookqa on rank 0...
+  0%|          | 0/500 [00:00<?, ?it/s] 60%|█████▉    | 299/500 [00:00<00:00, 2981.38it/s]100%|██████████| 500/500 [00:00<00:00, 2975.81it/s]
+2024-12-21:14:55:31,847 INFO     [evaluator.py:395] Running loglikelihood requests
+Running loglikelihood requests:   0%|          | 0/2000 [00:00<?, ?it/s]2024-12-21:14:55:32,120 INFO     [huggingface.py:1091] Passed argument batch_size = auto:1. Detecting largest batch size
+2024-12-21:14:55:34,185 INFO     [huggingface.py:1095] Determined largest batch size: 64
+Running loglikelihood requests:   0%|          | 1/2000 [00:02<1:34:20,  2.83s/it]Running loglikelihood requests:   4%|▍         | 81/2000 [00:03<01:01, 31.05it/s] Running loglikelihood requests:   8%|▊         | 161/2000 [00:04<00:32, 55.74it/s]Running loglikelihood requests:  12%|█▏        | 235/2000 [00:04<00:24, 72.90it/s]Running loglikelihood requests:  16%|█▌        | 312/2000 [00:05<00:19, 87.64it/s]Running loglikelihood requests:  19%|█▉        | 384/2000 [00:05<00:16, 96.57it/s]Running loglikelihood requests:  24%|██▎       | 470/2000 [00:06<00:14, 109.09it/s]Running loglikelihood requests:  28%|██▊       | 560/2000 [00:07<00:11, 120.47it/s]Running loglikelihood requests:  32%|███▏      | 636/2000 [00:07<00:11, 122.56it/s]Running loglikelihood requests:  36%|███▌      | 720/2000 [00:08<00:10, 127.60it/s]Running loglikelihood requests:  40%|███▉      | 796/2000 [00:08<00:09, 126.90it/s]Running loglikelihood requests:  43%|████▎     | 869/2000 [00:09<00:09, 124.91it/s]Running loglikelihood requests:  48%|████▊     | 951/2000 [00:10<00:08, 127.98it/s]Running loglikelihood requests:  52%|█████▏    | 1035/2000 [00:10<00:07, 129.09it/s]Running loglikelihood requests:  56%|█████▌    | 1121/2000 [00:11<00:06, 133.65it/s]Running loglikelihood requests:  59%|█████▉    | 1189/2000 [00:11<00:06, 127.60it/s]Running loglikelihood requests:  63%|██████▎   | 1264/2000 [00:12<00:05, 126.27it/s]Running loglikelihood requests:  67%|██████▋   | 1340/2000 [00:13<00:05, 126.01it/s]Running loglikelihood requests:  72%|███████▏  | 1433/2000 [00:13<00:04, 135.05it/s]Running loglikelihood requests:  76%|███████▌  | 1523/2000 [00:14<00:03, 140.23it/s]Running loglikelihood requests:  80%|████████  | 1606/2000 [00:14<00:02, 140.43it/s]Running loglikelihood requests:  84%|████████▍ | 1690/2000 [00:15<00:02, 141.46it/s]Running loglikelihood requests:  89%|████████▉ | 1781/2000 [00:16<00:01, 145.87it/s]Running loglikelihood requests:  94%|█████████▍| 1875/2000 [00:16<00:00, 150.30it/s]Running loglikelihood requests:  98%|█████████▊| 1957/2000 [00:17<00:00, 152.04it/s]Running loglikelihood requests: 100%|██████████| 2000/2000 [00:17<00:00, 116.04it/s]
+2024-12-21:14:55:49,885 WARNING  [huggingface.py:1477] Failed to get model SHA for /workspace/models/deepseek-moe-16b-base at revision main. Error: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/workspace/models/deepseek-moe-16b-base'. Use `repo_type` argument if needed.
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+2024-12-21:14:55:53,309 INFO     [evaluation_tracker.py:133] Saving results aggregated
+hf (pretrained=/workspace/models/deepseek-moe-16b-base,router_dir=,expert_capacity=9.0,strategy=last,parallelize=True,trust_remote_code=True,dtype=bfloat16,autoawq=False), gen_kwargs: (None), limit: None, num_fewshot: 0, batch_size: auto (64)
+|  Tasks   |Version|Filter|n-shot| Metric |Value|   |Stderr|
+|----------|------:|------|-----:|--------|----:|---|-----:|
+|openbookqa|      1|none  |     0|acc     |0.326|±  |0.0210|
+|          |       |none  |     0|acc_norm|0.438|±  |0.0222|
+
+/workspace/models/deepseek-moe-16b-base
+2024-12-21:14:58:36,637 INFO     [__main__.py:254] Verbosity set to INFO
+2024-12-21:14:58:40,936 INFO     [__main__.py:341] Selected Tasks: ['openbookqa']
+2024-12-21:14:58:40,945 INFO     [evaluator.py:141] Setting random seed to 0 | Setting numpy seed to 1234 | Setting torch manual seed to 1234
+2024-12-21:14:58:40,945 INFO     [evaluator.py:178] Initializing hf model, with arguments: {'pretrained': '/workspace/models/deepseek-moe-16b-base', 'parallelize': True, 'trust_remote_code': True, 'dtype': 'bfloat16', 'autoawq': False}
+2024-12-21:14:58:41,279 WARNING  [other.py:349] Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+2024-12-21:14:58:41,285 INFO     [huggingface.py:293] router_dir: . 
+2024-12-21:14:58:42,992 INFO     [modeling.py:1086] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+<module 'transformers' from '/opt/conda/lib/python3.10/site-packages/transformers/__init__.py'>
+['output_path=/workspace/models/deepseek-moe-16b-base/openbookqa.json', 'token=None']
+['pretrained=/workspace/models/deepseek-moe-16b-base', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+['pretrained=/workspace/models/deepseek-moe-16b-base', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+Loading checkpoint shards:   0%|          | 0/7 [00:00<?, ?it/s]Loading checkpoint shards:  14%|█▍        | 1/7 [00:01<00:10,  1.79s/it]Loading checkpoint shards:  29%|██▊       | 2/7 [00:02<00:05,  1.19s/it]Loading checkpoint shards:  43%|████▎     | 3/7 [00:02<00:02,  1.36it/s]Loading checkpoint shards:  57%|█████▋    | 4/7 [00:02<00:01,  1.88it/s]Loading checkpoint shards:  71%|███████▏  | 5/7 [00:03<00:00,  2.39it/s]Loading checkpoint shards:  86%|████████▌ | 6/7 [00:03<00:00,  2.81it/s]Loading checkpoint shards: 100%|██████████| 7/7 [00:03<00:00,  3.40it/s]Loading checkpoint shards: 100%|██████████| 7/7 [00:03<00:00,  1.95it/s]
+2024-12-21:14:58:52,950 WARNING  [big_modeling.py:436] Some parameters are on the meta device because they were offloaded to the cpu.
+2024-12-21:14:58:52,968 INFO     [huggingface.py:767] self._model: DeepseekForCausalLM(
+  (model): DeepseekModel(
+    (embed_tokens): Embedding(102400, 2048)
+    (layers): ModuleList(
+      (0): DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMLP(
+          (gate_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (up_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (down_proj): Linear(in_features=10944, out_features=2048, bias=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+      (1-27): 27 x DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMoE(
+          (experts): ModuleList(
+            (0-63): 64 x DeepseekMLP(
+              (gate_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (up_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (down_proj): Linear(in_features=1408, out_features=2048, bias=False)
+              (act_fn): SiLU()
+            )
+          )
+          (gate): MoEGate()
+          (shared_experts): DeepseekMLP(
+            (gate_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (up_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (down_proj): Linear(in_features=2816, out_features=2048, bias=False)
+            (act_fn): SiLU()
+          )
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+    )
+    (norm): DeepseekRMSNorm()
+  )
+  (lm_head): Linear(in_features=2048, out_features=102400, bias=False)
+)
+2024-12-21:14:58:52,968 INFO     [huggingface.py:774]  ** Max Memory (device: 0): 7.19 GB (15.17%)
+2024-12-21:14:58:52,968 INFO     [huggingface.py:776] Memory (VRAM): 7.19 GB (15.17%)
+2024-12-21:14:58:52,968 INFO     [huggingface.py:319] router_dir: . 
+Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+2024-12-21:14:58:54,303 WARNING  [evaluator.py:240] Overwriting default num_fewshot of openbookqa from None to 0
+2024-12-21:14:58:54,303 INFO     [evaluator.py:245] Setting fewshot random generator seed to 1234
+2024-12-21:14:58:54,304 INFO     [task.py:398] Building contexts for openbookqa on rank 0...
+  0%|          | 0/500 [00:00<?, ?it/s] 61%|██████    | 305/500 [00:00<00:00, 3046.77it/s]100%|██████████| 500/500 [00:00<00:00, 3091.26it/s]
+2024-12-21:14:58:54,488 INFO     [evaluator.py:395] Running loglikelihood requests
+Running loglikelihood requests:   0%|          | 0/2000 [00:00<?, ?it/s]2024-12-21:14:58:54,922 INFO     [huggingface.py:1091] Passed argument batch_size = auto:1. Detecting largest batch size
+2024-12-21:14:59:06,355 INFO     [huggingface.py:1095] Determined largest batch size: 1
+Running loglikelihood requests:   0%|          | 1/2000 [00:18<10:09:44, 18.30s/it]Running loglikelihood requests:   0%|          | 2/2000 [00:23<5:49:27, 10.49s/it] Traceback (most recent call last):
+  File "/opt/conda/bin/lm_eval", line 8, in <module>
+    sys.exit(cli_evaluate())
+  File "/workspace/lm-evaluation-harness-github/lm_eval/__main__.py", line 347, in cli_evaluate
+    results = evaluator.simple_evaluate(
+  File "/workspace/lm-evaluation-harness-github/lm_eval/utils.py", line 322, in _wrapper
+    return fn(*args, **kwargs)
+  File "/workspace/lm-evaluation-harness-github/lm_eval/evaluator.py", line 256, in simple_evaluate
+    results = evaluate(
+  File "/workspace/lm-evaluation-harness-github/lm_eval/utils.py", line 322, in _wrapper
+    return fn(*args, **kwargs)
+  File "/workspace/lm-evaluation-harness-github/lm_eval/evaluator.py", line 406, in evaluate
+    resps = getattr(lm, reqtype)(cloned_reqs)
+  File "/workspace/lm-evaluation-harness-github/lm_eval/api/model.py", line 336, in loglikelihood
+    return self._loglikelihood_tokens(new_reqs, disable_tqdm=disable_tqdm)
+  File "/workspace/lm-evaluation-harness-github/lm_eval/models/huggingface.py", line 1257, in _loglikelihood_tokens
+    self._model_call(batched_inps, **call_kwargs), dim=-1
+  File "/workspace/lm-evaluation-harness-github/lm_eval/models/huggingface.py", line 970, in _model_call
+    return self.model(inps).logits
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/accelerate/hooks.py", line 170, in new_forward
+    output = module._old_forward(*args, **kwargs)
+  File "/root/.cache/huggingface/modules/transformers_modules/deepseek-moe-16b-base/modeling_deepseek.py", line 1347, in forward
+    logits = self.lm_head(hidden_states)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/accelerate/hooks.py", line 165, in new_forward
+    args, kwargs = module._hf_hook.pre_forward(module, *args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/accelerate/hooks.py", line 355, in pre_forward
+    set_module_tensor_to_device(
+  File "/opt/conda/lib/python3.10/site-packages/accelerate/utils/modeling.py", line 416, in set_module_tensor_to_device
+    new_value = value.to(device)
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 400.00 MiB. GPU 0 has a total capacty of 47.40 GiB of which 169.81 MiB is free. Process 1500779 has 576.00 MiB memory in use. Process 2315298 has 37.18 GiB memory in use. Process 2317319 has 9.47 GiB memory in use. Of the allocated memory 7.19 GiB is allocated by PyTorch, and 1.79 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+Running loglikelihood requests:   0%|          | 2/2000 [00:29<8:14:48, 14.86s/it]
+/workspace/models/deepseek-moe-16b-base
+2024-12-21:15:01:04,776 INFO     [__main__.py:254] Verbosity set to INFO
+2024-12-21:15:01:08,971 INFO     [__main__.py:341] Selected Tasks: ['openbookqa']
+2024-12-21:15:01:08,973 INFO     [evaluator.py:141] Setting random seed to 0 | Setting numpy seed to 1234 | Setting torch manual seed to 1234
+2024-12-21:15:01:08,973 INFO     [evaluator.py:178] Initializing hf model, with arguments: {'pretrained': '/workspace/models/deepseek-moe-16b-base', 'parallelize': True, 'trust_remote_code': True, 'dtype': 'bfloat16', 'autoawq': False}
+2024-12-21:15:01:09,118 WARNING  [other.py:349] Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+2024-12-21:15:01:09,121 INFO     [huggingface.py:293] router_dir: . 
+2024-12-21:15:01:10,257 INFO     [modeling.py:1086] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+<module 'transformers' from '/opt/conda/lib/python3.10/site-packages/transformers/__init__.py'>
+['output_path=/workspace/models/deepseek-moe-16b-base/openbookqa.json', 'token=None']
+['pretrained=/workspace/models/deepseek-moe-16b-base', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+['pretrained=/workspace/models/deepseek-moe-16b-base', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+Loading checkpoint shards:   0%|          | 0/7 [00:00<?, ?it/s]Loading checkpoint shards:  14%|█▍        | 1/7 [00:01<00:10,  1.77s/it]Loading checkpoint shards:  29%|██▊       | 2/7 [00:03<00:08,  1.77s/it]Loading checkpoint shards:  43%|████▎     | 3/7 [00:05<00:07,  1.85s/it]Loading checkpoint shards:  57%|█████▋    | 4/7 [00:07<00:05,  1.79s/it]Loading checkpoint shards:  71%|███████▏  | 5/7 [00:08<00:03,  1.72s/it]Loading checkpoint shards:  86%|████████▌ | 6/7 [00:10<00:01,  1.74s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:11<00:00,  1.44s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:11<00:00,  1.63s/it]
+2024-12-21:15:01:27,242 INFO     [huggingface.py:767] self._model: DeepseekForCausalLM(
+  (model): DeepseekModel(
+    (embed_tokens): Embedding(102400, 2048)
+    (layers): ModuleList(
+      (0): DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMLP(
+          (gate_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (up_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (down_proj): Linear(in_features=10944, out_features=2048, bias=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+      (1-27): 27 x DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMoE(
+          (experts): ModuleList(
+            (0-63): 64 x DeepseekMLP(
+              (gate_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (up_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (down_proj): Linear(in_features=1408, out_features=2048, bias=False)
+              (act_fn): SiLU()
+            )
+          )
+          (gate): MoEGate()
+          (shared_experts): DeepseekMLP(
+            (gate_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (up_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (down_proj): Linear(in_features=2816, out_features=2048, bias=False)
+            (act_fn): SiLU()
+          )
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+    )
+    (norm): DeepseekRMSNorm()
+  )
+  (lm_head): Linear(in_features=2048, out_features=102400, bias=False)
+)
+2024-12-21:15:01:27,242 INFO     [huggingface.py:774]  ** Max Memory (device: 0): 30.64 GB (64.64%)
+2024-12-21:15:01:27,242 INFO     [huggingface.py:776] Memory (VRAM): 30.64 GB (64.64%)
+2024-12-21:15:01:27,242 INFO     [huggingface.py:319] router_dir: . 
+Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+2024-12-21:15:01:29,612 WARNING  [evaluator.py:240] Overwriting default num_fewshot of openbookqa from None to 0
+2024-12-21:15:01:29,612 INFO     [evaluator.py:245] Setting fewshot random generator seed to 1234
+2024-12-21:15:01:29,612 INFO     [task.py:398] Building contexts for openbookqa on rank 0...
+  0%|          | 0/500 [00:00<?, ?it/s] 64%|██████▍   | 320/500 [00:00<00:00, 3193.47it/s]100%|██████████| 500/500 [00:00<00:00, 3192.15it/s]
+2024-12-21:15:01:29,788 INFO     [evaluator.py:395] Running loglikelihood requests
+Running loglikelihood requests:   0%|          | 0/2000 [00:00<?, ?it/s]2024-12-21:15:01:30,065 INFO     [huggingface.py:1091] Passed argument batch_size = auto:1. Detecting largest batch size
+2024-12-21:15:01:32,169 INFO     [huggingface.py:1095] Determined largest batch size: 64
+Running loglikelihood requests:   0%|          | 1/2000 [00:02<1:35:31,  2.87s/it]Running loglikelihood requests:   4%|▍         | 81/2000 [00:03<01:02, 30.82it/s] Running loglikelihood requests:   8%|▊         | 161/2000 [00:04<00:32, 56.32it/s]Running loglikelihood requests:  12%|█▏        | 235/2000 [00:04<00:23, 73.98it/s]Running loglikelihood requests:  16%|█▌        | 312/2000 [00:05<00:19, 88.78it/s]Running loglikelihood requests:  19%|█▉        | 384/2000 [00:05<00:16, 97.86it/s]Running loglikelihood requests:  24%|██▎       | 470/2000 [00:06<00:13, 111.70it/s]Running loglikelihood requests:  28%|██▊       | 560/2000 [00:07<00:11, 124.01it/s]Running loglikelihood requests:  32%|███▏      | 636/2000 [00:07<00:10, 124.89it/s]Running loglikelihood requests:  36%|███▌      | 720/2000 [00:08<00:09, 131.44it/s]Running loglikelihood requests:  40%|███▉      | 796/2000 [00:08<00:09, 131.82it/s]Running loglikelihood requests:  43%|████▎     | 869/2000 [00:09<00:08, 130.13it/s]Running loglikelihood requests:  48%|████▊     | 951/2000 [00:09<00:07, 133.03it/s]Running loglikelihood requests:  52%|█████▏    | 1035/2000 [00:10<00:07, 136.93it/s]Running loglikelihood requests:  56%|█████▌    | 1121/2000 [00:11<00:06, 140.73it/s]Running loglikelihood requests:  59%|█████▉    | 1189/2000 [00:11<00:06, 133.45it/s]Running loglikelihood requests:  63%|██████▎   | 1264/2000 [00:12<00:05, 131.93it/s]Running loglikelihood requests:  67%|██████▋   | 1340/2000 [00:12<00:05, 131.82it/s]Running loglikelihood requests:  72%|███████▏  | 1433/2000 [00:13<00:04, 141.16it/s]Running loglikelihood requests:  76%|███████▌  | 1523/2000 [00:13<00:03, 144.87it/s]Running loglikelihood requests:  80%|████████  | 1606/2000 [00:14<00:02, 145.53it/s]Running loglikelihood requests:  84%|████████▍ | 1690/2000 [00:15<00:02, 146.91it/s]Running loglikelihood requests:  89%|████████▉ | 1781/2000 [00:15<00:01, 150.47it/s]Running loglikelihood requests:  94%|█████████▍| 1875/2000 [00:16<00:00, 155.55it/s]Running loglikelihood requests:  98%|█████████▊| 1957/2000 [00:16<00:00, 155.43it/s]Running loglikelihood requests: 100%|██████████| 2000/2000 [00:16<00:00, 119.26it/s]
+2024-12-21:15:01:47,339 WARNING  [huggingface.py:1477] Failed to get model SHA for /workspace/models/deepseek-moe-16b-base at revision main. Error: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/workspace/models/deepseek-moe-16b-base'. Use `repo_type` argument if needed.
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+2024-12-21:15:01:50,770 INFO     [evaluation_tracker.py:133] Saving results aggregated
+hf (pretrained=/workspace/models/deepseek-moe-16b-base,parallelize=True,trust_remote_code=True,dtype=bfloat16,autoawq=False), gen_kwargs: (None), limit: None, num_fewshot: 0, batch_size: auto (64)
+|  Tasks   |Version|Filter|n-shot| Metric |Value|   |Stderr|
+|----------|------:|------|-----:|--------|----:|---|-----:|
+|openbookqa|      1|none  |     0|acc     |0.326|±  |0.0210|
+|          |       |none  |     0|acc_norm|0.438|±  |0.0222|
+
+rm: cannot remove '/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-9.0/last': No such file or directory
+/workspace/models/deepseek-moe-16b-base-temp
+2024-12-21:15:02:13,822 INFO     [__main__.py:254] Verbosity set to INFO
+2024-12-21:15:02:18,011 INFO     [__main__.py:341] Selected Tasks: ['openbookqa']
+2024-12-21:15:02:18,014 INFO     [evaluator.py:141] Setting random seed to 0 | Setting numpy seed to 1234 | Setting torch manual seed to 1234
+2024-12-21:15:02:18,014 INFO     [evaluator.py:178] Initializing hf model, with arguments: {'pretrained': '/workspace/models/deepseek-moe-16b-base-temp', 'router_dir': '', 'expert_capacity': 9.0, 'strategy': 'last', 'parallelize': True, 'trust_remote_code': True, 'dtype': 'bfloat16', 'autoawq': False}
+2024-12-21:15:02:18,165 WARNING  [other.py:349] Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+2024-12-21:15:02:18,169 INFO     [huggingface.py:293] router_dir: . 
+2024-12-21:15:02:19,447 INFO     [modeling.py:1086] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+<module 'transformers' from '/opt/conda/lib/python3.10/site-packages/transformers/__init__.py'>
+['output_path=/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-9.0/last/openbookqa.json', 'token=None']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=9.0', 'strategy=last', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=9.0', 'strategy=last', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+Loading checkpoint shards:   0%|          | 0/7 [00:00<?, ?it/s]Loading checkpoint shards:  14%|█▍        | 1/7 [00:01<00:07,  1.22s/it]Loading checkpoint shards:  29%|██▊       | 2/7 [00:02<00:07,  1.52s/it]Loading checkpoint shards:  43%|████▎     | 3/7 [00:04<00:06,  1.66s/it]Loading checkpoint shards:  57%|█████▋    | 4/7 [00:06<00:04,  1.60s/it]Loading checkpoint shards:  71%|███████▏  | 5/7 [00:07<00:03,  1.62s/it]Loading checkpoint shards:  86%|████████▌ | 6/7 [00:09<00:01,  1.65s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:10<00:00,  1.43s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:10<00:00,  1.52s/it]
+2024-12-21:15:02:35,566 INFO     [huggingface.py:767] self._model: DeepseekForCausalLM(
+  (model): DeepseekModel(
+    (embed_tokens): Embedding(102400, 2048)
+    (layers): ModuleList(
+      (0): DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMLP(
+          (gate_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (up_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (down_proj): Linear(in_features=10944, out_features=2048, bias=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+      (1-27): 27 x DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMoE(
+          (experts): ModuleList(
+            (0-63): 64 x DeepseekMLP(
+              (gate_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (up_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (down_proj): Linear(in_features=1408, out_features=2048, bias=False)
+              (act_fn): SiLU()
+            )
+          )
+          (gate): MoEGate()
+          (shared_experts): DeepseekMLP(
+            (gate_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (up_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (down_proj): Linear(in_features=2816, out_features=2048, bias=False)
+            (act_fn): SiLU()
+          )
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+    )
+    (norm): DeepseekRMSNorm()
+  )
+  (lm_head): Linear(in_features=2048, out_features=102400, bias=False)
+)
+2024-12-21:15:02:35,566 INFO     [huggingface.py:774]  ** Max Memory (device: 0): 30.64 GB (64.64%)
+2024-12-21:15:02:35,566 INFO     [huggingface.py:776] Memory (VRAM): 30.64 GB (64.64%)
+2024-12-21:15:02:35,566 INFO     [huggingface.py:319] router_dir: . 
+Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+2024-12-21:15:02:37,003 WARNING  [evaluator.py:240] Overwriting default num_fewshot of openbookqa from None to 0
+2024-12-21:15:02:37,003 INFO     [evaluator.py:245] Setting fewshot random generator seed to 1234
+2024-12-21:15:02:37,003 INFO     [task.py:398] Building contexts for openbookqa on rank 0...
+  0%|          | 0/500 [00:00<?, ?it/s] 63%|██████▎   | 316/500 [00:00<00:00, 3150.27it/s]100%|██████████| 500/500 [00:00<00:00, 3163.60it/s]
+2024-12-21:15:02:37,181 INFO     [evaluator.py:395] Running loglikelihood requests
+Running loglikelihood requests:   0%|          | 0/2000 [00:00<?, ?it/s]2024-12-21:15:02:37,454 INFO     [huggingface.py:1091] Passed argument batch_size = auto:1. Detecting largest batch size
+2024-12-21:15:02:39,369 INFO     [huggingface.py:1095] Determined largest batch size: 64
+Running loglikelihood requests:   0%|          | 1/2000 [00:02<1:28:44,  2.66s/it]Running loglikelihood requests:   4%|▍         | 81/2000 [00:03<00:59, 32.12it/s] Running loglikelihood requests:   8%|▊         | 161/2000 [00:03<00:32, 57.23it/s]Running loglikelihood requests:  12%|█▏        | 235/2000 [00:04<00:23, 74.70it/s]Running loglikelihood requests:  16%|█▌        | 312/2000 [00:05<00:19, 88.64it/s]Running loglikelihood requests:  19%|█▉        | 384/2000 [00:05<00:16, 96.13it/s]Running loglikelihood requests:  24%|██▎       | 470/2000 [00:06<00:14, 109.02it/s]Running loglikelihood requests:  28%|██▊       | 560/2000 [00:07<00:11, 120.35it/s]Running loglikelihood requests:  32%|███▏      | 636/2000 [00:07<00:11, 120.90it/s]Running loglikelihood requests:  36%|███▌      | 720/2000 [00:08<00:10, 126.42it/s]Running loglikelihood requests:  40%|███▉      | 796/2000 [00:08<00:09, 126.08it/s]Running loglikelihood requests:  43%|████▎     | 869/2000 [00:09<00:09, 124.76it/s]Running loglikelihood requests:  48%|████▊     | 951/2000 [00:10<00:08, 128.10it/s]Running loglikelihood requests:  52%|█████▏    | 1035/2000 [00:10<00:07, 131.81it/s]Running loglikelihood requests:  56%|█████▌    | 1121/2000 [00:11<00:06, 135.13it/s]Running loglikelihood requests:  59%|█████▉    | 1189/2000 [00:11<00:06, 129.04it/s]Running loglikelihood requests:  63%|██████▎   | 1264/2000 [00:12<00:05, 127.41it/s]Running loglikelihood requests:  67%|██████▋   | 1340/2000 [00:13<00:05, 126.77it/s]Running loglikelihood requests:  72%|███████▏  | 1433/2000 [00:13<00:04, 135.18it/s]Running loglikelihood requests:  76%|███████▌  | 1523/2000 [00:14<00:03, 139.93it/s]Running loglikelihood requests:  80%|████████  | 1606/2000 [00:14<00:02, 140.69it/s]Running loglikelihood requests:  84%|████████▍ | 1690/2000 [00:15<00:02, 141.92it/s]Running loglikelihood requests:  89%|████████▉ | 1781/2000 [00:15<00:01, 145.02it/s]Running loglikelihood requests:  94%|█████████▍| 1875/2000 [00:16<00:00, 150.43it/s]Running loglikelihood requests:  98%|█████████▊| 1957/2000 [00:17<00:00, 149.75it/s]Running loglikelihood requests: 100%|██████████| 2000/2000 [00:17<00:00, 116.74it/s]
+2024-12-21:15:02:55,090 WARNING  [huggingface.py:1477] Failed to get model SHA for /workspace/models/deepseek-moe-16b-base-temp at revision main. Error: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/workspace/models/deepseek-moe-16b-base-temp'. Use `repo_type` argument if needed.
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+2024-12-21:15:02:58,532 INFO     [evaluation_tracker.py:133] Saving results aggregated
+hf (pretrained=/workspace/models/deepseek-moe-16b-base-temp,router_dir=,expert_capacity=9.0,strategy=last,parallelize=True,trust_remote_code=True,dtype=bfloat16,autoawq=False), gen_kwargs: (None), limit: None, num_fewshot: 0, batch_size: auto (64)
+|  Tasks   |Version|Filter|n-shot| Metric |Value|   |Stderr|
+|----------|------:|------|-----:|--------|----:|---|-----:|
+|openbookqa|      1|none  |     0|acc     |0.274|±  |0.0200|
+|          |       |none  |     0|acc_norm|0.370|±  |0.0216|
+
+rm: cannot remove '/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-9.0/first': No such file or directory
+/workspace/models/deepseek-moe-16b-base-temp
+2024-12-21:15:03:47,939 INFO     [__main__.py:254] Verbosity set to INFO
+2024-12-21:15:03:52,099 INFO     [__main__.py:341] Selected Tasks: ['openbookqa']
+2024-12-21:15:03:52,103 INFO     [evaluator.py:141] Setting random seed to 0 | Setting numpy seed to 1234 | Setting torch manual seed to 1234
+2024-12-21:15:03:52,103 INFO     [evaluator.py:178] Initializing hf model, with arguments: {'pretrained': '/workspace/models/deepseek-moe-16b-base-temp', 'router_dir': '', 'expert_capacity': 9.0, 'strategy': 'first', 'parallelize': True, 'trust_remote_code': True, 'dtype': 'bfloat16', 'autoawq': False}
+2024-12-21:15:03:52,275 WARNING  [other.py:349] Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+2024-12-21:15:03:52,279 INFO     [huggingface.py:293] router_dir: . 
+2024-12-21:15:03:53,578 INFO     [modeling.py:1086] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+<module 'transformers' from '/opt/conda/lib/python3.10/site-packages/transformers/__init__.py'>
+['output_path=/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-9.0/first/openbookqa.json', 'token=None']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=9.0', 'strategy=first', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=9.0', 'strategy=first', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+Loading checkpoint shards:   0%|          | 0/7 [00:00<?, ?it/s]Loading checkpoint shards:  14%|█▍        | 1/7 [00:01<00:09,  1.53s/it]Loading checkpoint shards:  29%|██▊       | 2/7 [00:02<00:06,  1.34s/it]Loading checkpoint shards:  43%|████▎     | 3/7 [00:04<00:05,  1.44s/it]Loading checkpoint shards:  57%|█████▋    | 4/7 [00:05<00:03,  1.30s/it]rm: cannot remove '/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-9.0/random': No such file or directory
+/workspace/models/deepseek-moe-16b-base-temp
+Loading checkpoint shards:  71%|███████▏  | 5/7 [00:06<00:02,  1.26s/it]Loading checkpoint shards:  86%|████████▌ | 6/7 [00:07<00:01,  1.24s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:08<00:00,  1.07s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:08<00:00,  1.21s/it]
+2024-12-21:15:04:07,574 INFO     [huggingface.py:767] self._model: DeepseekForCausalLM(
+  (model): DeepseekModel(
+    (embed_tokens): Embedding(102400, 2048)
+    (layers): ModuleList(
+      (0): DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMLP(
+          (gate_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (up_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (down_proj): Linear(in_features=10944, out_features=2048, bias=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+      (1-27): 27 x DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMoE(
+          (experts): ModuleList(
+            (0-63): 64 x DeepseekMLP(
+              (gate_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (up_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (down_proj): Linear(in_features=1408, out_features=2048, bias=False)
+              (act_fn): SiLU()
+            )
+          )
+          (gate): MoEGate()
+          (shared_experts): DeepseekMLP(
+            (gate_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (up_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (down_proj): Linear(in_features=2816, out_features=2048, bias=False)
+            (act_fn): SiLU()
+          )
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+    )
+    (norm): DeepseekRMSNorm()
+  )
+  (lm_head): Linear(in_features=2048, out_features=102400, bias=False)
+)
+2024-12-21:15:04:07,574 INFO     [huggingface.py:774]  ** Max Memory (device: 0): 30.64 GB (64.64%)
+2024-12-21:15:04:07,574 INFO     [huggingface.py:776] Memory (VRAM): 30.64 GB (64.64%)
+2024-12-21:15:04:07,574 INFO     [huggingface.py:319] router_dir: . 
+2024-12-21:15:04:07,580 INFO     [__main__.py:254] Verbosity set to INFO
+Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+2024-12-21:15:04:08,968 WARNING  [evaluator.py:240] Overwriting default num_fewshot of openbookqa from None to 0
+2024-12-21:15:04:08,968 INFO     [evaluator.py:245] Setting fewshot random generator seed to 1234
+2024-12-21:15:04:08,968 INFO     [task.py:398] Building contexts for openbookqa on rank 0...
+  0%|          | 0/500 [00:00<?, ?it/s] 63%|██████▎   | 313/500 [00:00<00:00, 3125.47it/s]100%|██████████| 500/500 [00:00<00:00, 3116.61it/s]
+2024-12-21:15:04:09,149 INFO     [evaluator.py:395] Running loglikelihood requests
+Running loglikelihood requests:   0%|          | 0/2000 [00:00<?, ?it/s]2024-12-21:15:04:09,430 INFO     [huggingface.py:1091] Passed argument batch_size = auto:1. Detecting largest batch size
+2024-12-21:15:04:11,353 INFO     [huggingface.py:1095] Determined largest batch size: 64
+2024-12-21:15:04:11,772 INFO     [__main__.py:341] Selected Tasks: ['openbookqa']
+2024-12-21:15:04:11,778 INFO     [evaluator.py:141] Setting random seed to 0 | Setting numpy seed to 1234 | Setting torch manual seed to 1234
+2024-12-21:15:04:11,778 INFO     [evaluator.py:178] Initializing hf model, with arguments: {'pretrained': '/workspace/models/deepseek-moe-16b-base-temp', 'router_dir': '', 'expert_capacity': 9.0, 'strategy': 'random', 'parallelize': True, 'trust_remote_code': True, 'dtype': 'bfloat16', 'autoawq': False}
+2024-12-21:15:04:11,932 WARNING  [other.py:349] Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+2024-12-21:15:04:11,936 INFO     [huggingface.py:293] router_dir: . 
+Running loglikelihood requests:   0%|          | 1/2000 [00:02<1:29:50,  2.70s/it]Running loglikelihood requests:   4%|▍         | 81/2000 [00:03<00:59, 32.11it/s] 2024-12-21:15:04:13,197 INFO     [modeling.py:1086] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+Running loglikelihood requests:   8%|▊         | 161/2000 [00:03<00:32, 57.19it/s]Running loglikelihood requests:  12%|█▏        | 235/2000 [00:04<00:23, 75.22it/s]Running loglikelihood requests:  16%|█▌        | 312/2000 [00:05<00:18, 90.45it/s]Running loglikelihood requests:  19%|█▉        | 384/2000 [00:05<00:16, 99.62it/s]Running loglikelihood requests:  24%|██▎       | 470/2000 [00:06<00:13, 112.88it/s]Running loglikelihood requests:  28%|██▊       | 560/2000 [00:06<00:11, 124.50it/s]Running loglikelihood requests:  32%|███▏      | 636/2000 [00:07<00:10, 125.96it/s]rm: cannot remove '/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-9.0/score': No such file or directory
+/workspace/models/deepseek-moe-16b-base-temp
+Running loglikelihood requests:  36%|███▌      | 720/2000 [00:08<00:09, 130.42it/s]Running loglikelihood requests:  40%|███▉      | 796/2000 [00:08<00:09, 130.33it/s]<module 'transformers' from '/opt/conda/lib/python3.10/site-packages/transformers/__init__.py'>
+['output_path=/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-9.0/random/openbookqa.json', 'token=None']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=9.0', 'strategy=random', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=9.0', 'strategy=random', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+Loading checkpoint shards:   0%|          | 0/7 [00:00<?, ?it/s]Running loglikelihood requests:  43%|████▎     | 869/2000 [00:09<00:08, 128.28it/s]Running loglikelihood requests:  48%|████▊     | 951/2000 [00:09<00:07, 132.34it/s]Loading checkpoint shards:  14%|█▍        | 1/7 [00:01<00:06,  1.12s/it]Running loglikelihood requests:  52%|█████▏    | 1035/2000 [00:10<00:07, 134.17it/s]2024-12-21:15:04:20,204 INFO     [__main__.py:254] Verbosity set to INFO
+Running loglikelihood requests:  56%|█████▌    | 1121/2000 [00:10<00:06, 138.80it/s]Running loglikelihood requests:  59%|█████▉    | 1189/2000 [00:11<00:06, 132.60it/s]Loading checkpoint shards:  29%|██▊       | 2/7 [00:02<00:07,  1.49s/it]Running loglikelihood requests:  63%|██████▎   | 1264/2000 [00:12<00:05, 130.49it/s]Running loglikelihood requests:  67%|██████▋   | 1340/2000 [00:12<00:05, 131.18it/s]Running loglikelihood requests:  72%|███████▏  | 1433/2000 [00:13<00:04, 140.49it/s]Loading checkpoint shards:  43%|████▎     | 3/7 [00:04<00:06,  1.53s/it]Running loglikelihood requests:  76%|███████▌  | 1523/2000 [00:13<00:03, 144.82it/s]Running loglikelihood requests:  80%|████████  | 1606/2000 [00:14<00:02, 146.32it/s]2024-12-21:15:04:24,409 INFO     [__main__.py:341] Selected Tasks: ['openbookqa']
+2024-12-21:15:04:24,414 INFO     [evaluator.py:141] Setting random seed to 0 | Setting numpy seed to 1234 | Setting torch manual seed to 1234
+2024-12-21:15:04:24,414 INFO     [evaluator.py:178] Initializing hf model, with arguments: {'pretrained': '/workspace/models/deepseek-moe-16b-base-temp', 'router_dir': '', 'expert_capacity': 9.0, 'strategy': 'score', 'parallelize': True, 'trust_remote_code': True, 'dtype': 'bfloat16', 'autoawq': False}
+Running loglikelihood requests:  84%|████████▍ | 1690/2000 [00:15<00:02, 147.70it/s]Loading checkpoint shards:  57%|█████▋    | 4/7 [00:05<00:04,  1.53s/it]2024-12-21:15:04:24,579 WARNING  [other.py:349] Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+2024-12-21:15:04:24,585 INFO     [huggingface.py:293] router_dir: . 
+Running loglikelihood requests:  89%|████████▉ | 1781/2000 [00:15<00:01, 149.62it/s]Running loglikelihood requests:  94%|█████████▍| 1875/2000 [00:16<00:00, 152.20it/s]2024-12-21:15:04:26,153 INFO     [modeling.py:1086] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+Running loglikelihood requests:  98%|█████████▊| 1957/2000 [00:16<00:00, 145.94it/s]Running loglikelihood requests: 100%|██████████| 2000/2000 [00:16<00:00, 118.92it/s]
+Loading checkpoint shards:  71%|███████▏  | 5/7 [00:07<00:03,  1.62s/it]2024-12-21:15:04:26,753 WARNING  [huggingface.py:1477] Failed to get model SHA for /workspace/models/deepseek-moe-16b-base-temp at revision main. Error: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/workspace/models/deepseek-moe-16b-base-temp'. Use `repo_type` argument if needed.
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+Loading checkpoint shards:  86%|████████▌ | 6/7 [00:10<00:02,  2.06s/it]2024-12-21:15:04:30,224 INFO     [evaluation_tracker.py:133] Saving results aggregated
+hf (pretrained=/workspace/models/deepseek-moe-16b-base-temp,router_dir=,expert_capacity=9.0,strategy=first,parallelize=True,trust_remote_code=True,dtype=bfloat16,autoawq=False), gen_kwargs: (None), limit: None, num_fewshot: 0, batch_size: auto (64)
+|  Tasks   |Version|Filter|n-shot| Metric |Value|   |Stderr|
+|----------|------:|------|-----:|--------|----:|---|-----:|
+|openbookqa|      1|none  |     0|acc     |0.284|±  |0.0202|
+|          |       |none  |     0|acc_norm|0.392|±  |0.0219|
+
+Loading checkpoint shards: 100%|██████████| 7/7 [00:11<00:00,  1.74s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:11<00:00,  1.68s/it]
+2024-12-21:15:04:30,481 INFO     [huggingface.py:767] self._model: DeepseekForCausalLM(
+  (model): DeepseekModel(
+    (embed_tokens): Embedding(102400, 2048)
+    (layers): ModuleList(
+      (0): DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMLP(
+          (gate_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (up_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (down_proj): Linear(in_features=10944, out_features=2048, bias=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+      (1-27): 27 x DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMoE(
+          (experts): ModuleList(
+            (0-63): 64 x DeepseekMLP(
+              (gate_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (up_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (down_proj): Linear(in_features=1408, out_features=2048, bias=False)
+              (act_fn): SiLU()
+            )
+          )
+          (gate): MoEGate()
+          (shared_experts): DeepseekMLP(
+            (gate_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (up_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (down_proj): Linear(in_features=2816, out_features=2048, bias=False)
+            (act_fn): SiLU()
+          )
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+    )
+    (norm): DeepseekRMSNorm()
+  )
+  (lm_head): Linear(in_features=2048, out_features=102400, bias=False)
+)
+2024-12-21:15:04:30,481 INFO     [huggingface.py:774]  ** Max Memory (device: 0): 30.64 GB (64.64%)
+2024-12-21:15:04:30,481 INFO     [huggingface.py:776] Memory (VRAM): 30.64 GB (64.64%)
+2024-12-21:15:04:30,481 INFO     [huggingface.py:319] router_dir: . 
+Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+<module 'transformers' from '/opt/conda/lib/python3.10/site-packages/transformers/__init__.py'>
+['output_path=/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-9.0/score/openbookqa.json', 'token=None']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=9.0', 'strategy=score', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=9.0', 'strategy=score', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+Loading checkpoint shards:   0%|          | 0/7 [00:00<?, ?it/s]2024-12-21:15:04:32,020 WARNING  [evaluator.py:240] Overwriting default num_fewshot of openbookqa from None to 0
+2024-12-21:15:04:32,020 INFO     [evaluator.py:245] Setting fewshot random generator seed to 1234
+2024-12-21:15:04:32,021 INFO     [task.py:398] Building contexts for openbookqa on rank 0...
+  0%|          | 0/500 [00:00<?, ?it/s] 60%|█████▉    | 299/500 [00:00<00:00, 2983.15it/s]100%|██████████| 500/500 [00:00<00:00, 2946.73it/s]
+2024-12-21:15:04:32,212 INFO     [evaluator.py:395] Running loglikelihood requests
+Running loglikelihood requests:   0%|          | 0/2000 [00:00<?, ?it/s]2024-12-21:15:04:32,502 INFO     [huggingface.py:1091] Passed argument batch_size = auto:1. Detecting largest batch size
+Loading checkpoint shards:  14%|█▍        | 1/7 [00:01<00:09,  1.64s/it]Loading checkpoint shards:  29%|██▊       | 2/7 [00:04<00:11,  2.30s/it]2024-12-21:15:04:36,902 INFO     [huggingface.py:1095] Determined largest batch size: 64
+Running loglikelihood requests:   0%|          | 1/2000 [00:05<2:54:48,  5.25s/it]Loading checkpoint shards:  43%|████▎     | 3/7 [00:06<00:08,  2.15s/it]Running loglikelihood requests:   4%|▍         | 81/2000 [00:05<01:45, 18.24it/s] Running loglikelihood requests:   8%|▊         | 161/2000 [00:06<00:51, 35.61it/s]Loading checkpoint shards:  57%|█████▋    | 4/7 [00:07<00:05,  1.85s/it]Running loglikelihood requests:  12%|█▏        | 235/2000 [00:07<00:35, 49.34it/s]Running loglikelihood requests:  16%|█▌        | 312/2000 [00:08<00:27, 61.61it/s]Loading checkpoint shards:  71%|███████▏  | 5/7 [00:09<00:03,  1.76s/it]Running loglikelihood requests:  19%|█▉        | 384/2000 [00:08<00:22, 70.81it/s]Running loglikelihood requests:  24%|██▎       | 470/2000 [00:09<00:18, 84.30it/s]Loading checkpoint shards:  86%|████████▌ | 6/7 [00:10<00:01,  1.65s/it]Running loglikelihood requests:  28%|██▊       | 560/2000 [00:10<00:15, 95.32it/s]Loading checkpoint shards: 100%|██████████| 7/7 [00:11<00:00,  1.37s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:11<00:00,  1.66s/it]
+Running loglikelihood requests:  32%|███▏      | 636/2000 [00:11<00:13, 98.51it/s]2024-12-21:15:04:43,610 INFO     [huggingface.py:767] self._model: DeepseekForCausalLM(
+  (model): DeepseekModel(
+    (embed_tokens): Embedding(102400, 2048)
+    (layers): ModuleList(
+      (0): DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMLP(
+          (gate_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (up_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (down_proj): Linear(in_features=10944, out_features=2048, bias=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+      (1-27): 27 x DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMoE(
+          (experts): ModuleList(
+            (0-63): 64 x DeepseekMLP(
+              (gate_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (up_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (down_proj): Linear(in_features=1408, out_features=2048, bias=False)
+              (act_fn): SiLU()
+            )
+          )
+          (gate): MoEGate()
+          (shared_experts): DeepseekMLP(
+            (gate_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (up_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (down_proj): Linear(in_features=2816, out_features=2048, bias=False)
+            (act_fn): SiLU()
+          )
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+    )
+    (norm): DeepseekRMSNorm()
+  )
+  (lm_head): Linear(in_features=2048, out_features=102400, bias=False)
+)
+2024-12-21:15:04:43,610 INFO     [huggingface.py:774]  ** Max Memory (device: 0): 30.64 GB (64.64%)
+2024-12-21:15:04:43,610 INFO     [huggingface.py:776] Memory (VRAM): 30.64 GB (64.64%)
+2024-12-21:15:04:43,610 INFO     [huggingface.py:319] router_dir: . 
+Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+Running loglikelihood requests:  36%|███▌      | 720/2000 [00:11<00:12, 103.43it/s]Running loglikelihood requests:  40%|███▉      | 796/2000 [00:12<00:11, 103.48it/s]2024-12-21:15:04:45,068 WARNING  [evaluator.py:240] Overwriting default num_fewshot of openbookqa from None to 0
+2024-12-21:15:04:45,069 INFO     [evaluator.py:245] Setting fewshot random generator seed to 1234
+2024-12-21:15:04:45,069 INFO     [task.py:398] Building contexts for openbookqa on rank 0...
+  0%|          | 0/500 [00:00<?, ?it/s] 59%|█████▉    | 294/500 [00:00<00:00, 2937.40it/s]100%|██████████| 500/500 [00:00<00:00, 3030.58it/s]
+2024-12-21:15:04:45,253 INFO     [evaluator.py:395] Running loglikelihood requests
+Running loglikelihood requests:   0%|          | 0/2000 [00:00<?, ?it/s]2024-12-21:15:04:45,549 INFO     [huggingface.py:1091] Passed argument batch_size = auto:1. Detecting largest batch size
+Running loglikelihood requests:  43%|████▎     | 869/2000 [00:13<00:11, 101.64it/s]Running loglikelihood requests:  48%|████▊     | 951/2000 [00:14<00:10, 102.49it/s]Running loglikelihood requests:  52%|█████▏    | 1035/2000 [00:14<00:09, 106.77it/s]2024-12-21:15:04:47,684 INFO     [huggingface.py:1095] Determined largest batch size: 64
+Running loglikelihood requests:  56%|█████▌    | 1121/2000 [00:15<00:07, 111.53it/s]Running loglikelihood requests:   0%|          | 1/2000 [00:03<1:41:30,  3.05s/it]Running loglikelihood requests:  59%|█████▉    | 1189/2000 [00:16<00:07, 108.31it/s]Running loglikelihood requests:   4%|▍         | 81/2000 [00:03<01:09, 27.77it/s] Running loglikelihood requests:  63%|██████▎   | 1264/2000 [00:16<00:06, 107.08it/s]Running loglikelihood requests:  67%|██████▋   | 1340/2000 [00:17<00:06, 106.99it/s]Running loglikelihood requests:   8%|▊         | 161/2000 [00:04<00:38, 48.18it/s]Running loglikelihood requests:  72%|███████▏  | 1433/2000 [00:18<00:04, 114.01it/s]Running loglikelihood requests:  12%|█▏        | 235/2000 [00:05<00:28, 61.55it/s]Running loglikelihood requests:  76%|███████▌  | 1523/2000 [00:19<00:04, 117.49it/s]Running loglikelihood requests:  16%|█▌        | 312/2000 [00:06<00:23, 72.23it/s]Running loglikelihood requests:  80%|████████  | 1606/2000 [00:19<00:03, 118.44it/s]Running loglikelihood requests:  19%|█▉        | 384/2000 [00:06<00:20, 79.39it/s]Running loglikelihood requests:  84%|████████▍ | 1690/2000 [00:20<00:02, 119.44it/s]Running loglikelihood requests:  24%|██▎       | 470/2000 [00:07<00:17, 89.57it/s]Running loglikelihood requests:  89%|████████▉ | 1781/2000 [00:21<00:01, 123.46it/s]Running loglikelihood requests:  28%|██▊       | 560/2000 [00:08<00:14, 98.48it/s]Running loglikelihood requests:  94%|█████████▍| 1875/2000 [00:21<00:00, 127.57it/s]Running loglikelihood requests:  32%|███▏      | 636/2000 [00:09<00:13, 98.91it/s]Running loglikelihood requests:  98%|█████████▊| 1957/2000 [00:22<00:00, 127.70it/s]Running loglikelihood requests: 100%|██████████| 2000/2000 [00:22<00:00, 89.10it/s] 
+Running loglikelihood requests:  36%|███▌      | 720/2000 [00:09<00:12, 102.82it/s]2024-12-21:15:04:55,480 WARNING  [huggingface.py:1477] Failed to get model SHA for /workspace/models/deepseek-moe-16b-base-temp at revision main. Error: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/workspace/models/deepseek-moe-16b-base-temp'. Use `repo_type` argument if needed.
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+Running loglikelihood requests:  40%|███▉      | 796/2000 [00:10<00:11, 103.08it/s]Running loglikelihood requests:  43%|████▎     | 869/2000 [00:11<00:11, 98.65it/s] Running loglikelihood requests:  48%|████▊     | 951/2000 [00:12<00:10, 101.45it/s]Running loglikelihood requests:  52%|█████▏    | 1035/2000 [00:12<00:09, 104.75it/s]2024-12-21:15:04:58,974 INFO     [evaluation_tracker.py:133] Saving results aggregated
+hf (pretrained=/workspace/models/deepseek-moe-16b-base-temp,router_dir=,expert_capacity=9.0,strategy=random,parallelize=True,trust_remote_code=True,dtype=bfloat16,autoawq=False), gen_kwargs: (None), limit: None, num_fewshot: 0, batch_size: auto (64)
+|  Tasks   |Version|Filter|n-shot| Metric |Value|   |Stderr|
+|----------|------:|------|-----:|--------|----:|---|-----:|
+|openbookqa|      1|none  |     0|acc     |0.270|±  |0.0199|
+|          |       |none  |     0|acc_norm|0.378|±  |0.0217|
+
+Running loglikelihood requests:  56%|█████▌    | 1121/2000 [00:13<00:08, 107.98it/s]Running loglikelihood requests:  59%|█████▉    | 1189/2000 [00:14<00:07, 102.06it/s]Running loglikelihood requests:  63%|██████▎   | 1264/2000 [00:15<00:07, 99.33it/s] Running loglikelihood requests:  67%|██████▋   | 1340/2000 [00:16<00:06, 99.18it/s]Running loglikelihood requests:  72%|███████▏  | 1433/2000 [00:16<00:05, 106.16it/s]Running loglikelihood requests:  76%|███████▌  | 1523/2000 [00:17<00:04, 110.85it/s]Running loglikelihood requests:  80%|████████  | 1606/2000 [00:18<00:03, 111.46it/s]Running loglikelihood requests:  84%|████████▍ | 1690/2000 [00:19<00:02, 112.02it/s]Running loglikelihood requests:  89%|████████▉ | 1781/2000 [00:19<00:01, 114.87it/s]Running loglikelihood requests:  94%|█████████▍| 1875/2000 [00:20<00:01, 118.25it/s]Running loglikelihood requests:  98%|█████████▊| 1957/2000 [00:21<00:00, 118.66it/s]Running loglikelihood requests: 100%|██████████| 2000/2000 [00:21<00:00, 94.28it/s] 
+2024-12-21:15:05:07,282 WARNING  [huggingface.py:1477] Failed to get model SHA for /workspace/models/deepseek-moe-16b-base-temp at revision main. Error: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/workspace/models/deepseek-moe-16b-base-temp'. Use `repo_type` argument if needed.
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+2024-12-21:15:05:10,860 INFO     [evaluation_tracker.py:133] Saving results aggregated
+hf (pretrained=/workspace/models/deepseek-moe-16b-base-temp,router_dir=,expert_capacity=9.0,strategy=score,parallelize=True,trust_remote_code=True,dtype=bfloat16,autoawq=False), gen_kwargs: (None), limit: None, num_fewshot: 0, batch_size: auto (64)
+|  Tasks   |Version|Filter|n-shot| Metric |Value|   |Stderr|
+|----------|------:|------|-----:|--------|----:|---|-----:|
+|openbookqa|      1|none  |     0|acc     |0.312|±  |0.0207|
+|          |       |none  |     0|acc_norm|0.408|±  |0.0220|
+
+rm: cannot remove '/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-15.0/random': No such file or directory
+/workspace/models/deepseek-moe-16b-base-temp
+2024-12-21:15:05:18,008 INFO     [__main__.py:254] Verbosity set to INFO
+2024-12-21:15:05:22,341 INFO     [__main__.py:341] Selected Tasks: ['openbookqa']
+2024-12-21:15:05:22,344 INFO     [evaluator.py:141] Setting random seed to 0 | Setting numpy seed to 1234 | Setting torch manual seed to 1234
+2024-12-21:15:05:22,344 INFO     [evaluator.py:178] Initializing hf model, with arguments: {'pretrained': '/workspace/models/deepseek-moe-16b-base-temp', 'router_dir': '', 'expert_capacity': 15.0, 'strategy': 'random', 'parallelize': True, 'trust_remote_code': True, 'dtype': 'bfloat16', 'autoawq': False}
+rm: cannot remove '/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-15.0/score': No such file or directory
+/workspace/models/deepseek-moe-16b-base-temp
+2024-12-21:15:05:22,493 WARNING  [other.py:349] Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+2024-12-21:15:05:22,496 INFO     [huggingface.py:293] router_dir: . 
+2024-12-21:15:05:23,557 INFO     [modeling.py:1086] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+2024-12-21:15:05:26,177 INFO     [__main__.py:254] Verbosity set to INFO
+<module 'transformers' from '/opt/conda/lib/python3.10/site-packages/transformers/__init__.py'>
+['output_path=/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-15.0/random/openbookqa.json', 'token=None']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=15.0', 'strategy=random', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=15.0', 'strategy=random', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+Loading checkpoint shards:   0%|          | 0/7 [00:00<?, ?it/s]2024-12-21:15:05:30,544 INFO     [__main__.py:341] Selected Tasks: ['openbookqa']
+2024-12-21:15:05:30,548 INFO     [evaluator.py:141] Setting random seed to 0 | Setting numpy seed to 1234 | Setting torch manual seed to 1234
+2024-12-21:15:05:30,548 INFO     [evaluator.py:178] Initializing hf model, with arguments: {'pretrained': '/workspace/models/deepseek-moe-16b-base-temp', 'router_dir': '', 'expert_capacity': 15.0, 'strategy': 'score', 'parallelize': True, 'trust_remote_code': True, 'dtype': 'bfloat16', 'autoawq': False}
+Loading checkpoint shards:  14%|█▍        | 1/7 [00:01<00:06,  1.16s/it]2024-12-21:15:05:30,699 WARNING  [other.py:349] Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+2024-12-21:15:05:30,703 INFO     [huggingface.py:293] router_dir: . 
+2024-12-21:15:05:32,326 INFO     [modeling.py:1086] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+Loading checkpoint shards:  29%|██▊       | 2/7 [00:02<00:07,  1.54s/it]Loading checkpoint shards:  43%|████▎     | 3/7 [00:04<00:05,  1.49s/it]Loading checkpoint shards:  57%|█████▋    | 4/7 [00:05<00:04,  1.50s/it]Loading checkpoint shards:  71%|███████▏  | 5/7 [00:07<00:03,  1.56s/it]<module 'transformers' from '/opt/conda/lib/python3.10/site-packages/transformers/__init__.py'>
+['output_path=/workspace/models/deepseek-moe-16b-base-temp/expert_capacity-15.0/score/openbookqa.json', 'token=None']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=15.0', 'strategy=score', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+['pretrained=/workspace/models/deepseek-moe-16b-base-temp', 'router_dir=', 'expert_capacity=15.0', 'strategy=score', 'parallelize=True', 'trust_remote_code=True', 'dtype=bfloat16', 'autoawq=False']
+Loading checkpoint shards:   0%|          | 0/7 [00:00<?, ?it/s]Loading checkpoint shards:  86%|████████▌ | 6/7 [00:09<00:01,  1.66s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:10<00:00,  1.41s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:10<00:00,  1.47s/it]
+Loading checkpoint shards:  14%|█▍        | 1/7 [00:01<00:10,  1.69s/it]2024-12-21:15:05:39,850 INFO     [huggingface.py:767] self._model: DeepseekForCausalLM(
+  (model): DeepseekModel(
+    (embed_tokens): Embedding(102400, 2048)
+    (layers): ModuleList(
+      (0): DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMLP(
+          (gate_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (up_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (down_proj): Linear(in_features=10944, out_features=2048, bias=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+      (1-27): 27 x DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMoE(
+          (experts): ModuleList(
+            (0-63): 64 x DeepseekMLP(
+              (gate_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (up_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (down_proj): Linear(in_features=1408, out_features=2048, bias=False)
+              (act_fn): SiLU()
+            )
+          )
+          (gate): MoEGate()
+          (shared_experts): DeepseekMLP(
+            (gate_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (up_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (down_proj): Linear(in_features=2816, out_features=2048, bias=False)
+            (act_fn): SiLU()
+          )
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+    )
+    (norm): DeepseekRMSNorm()
+  )
+  (lm_head): Linear(in_features=2048, out_features=102400, bias=False)
+)
+2024-12-21:15:05:39,850 INFO     [huggingface.py:774]  ** Max Memory (device: 0): 30.64 GB (64.64%)
+2024-12-21:15:05:39,850 INFO     [huggingface.py:776] Memory (VRAM): 30.64 GB (64.64%)
+2024-12-21:15:05:39,850 INFO     [huggingface.py:319] router_dir: . 
+Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+Loading checkpoint shards:  29%|██▊       | 2/7 [00:02<00:07,  1.44s/it]2024-12-21:15:05:41,160 WARNING  [evaluator.py:240] Overwriting default num_fewshot of openbookqa from None to 0
+2024-12-21:15:05:41,160 INFO     [evaluator.py:245] Setting fewshot random generator seed to 1234
+2024-12-21:15:05:41,161 INFO     [task.py:398] Building contexts for openbookqa on rank 0...
+  0%|          | 0/500 [00:00<?, ?it/s] 63%|██████▎   | 315/500 [00:00<00:00, 3149.08it/s]100%|██████████| 500/500 [00:00<00:00, 3112.23it/s]
+2024-12-21:15:05:41,340 INFO     [evaluator.py:395] Running loglikelihood requests
+Running loglikelihood requests:   0%|          | 0/2000 [00:00<?, ?it/s]2024-12-21:15:05:41,616 INFO     [huggingface.py:1091] Passed argument batch_size = auto:1. Detecting largest batch size
+Loading checkpoint shards:  43%|████▎     | 3/7 [00:04<00:06,  1.55s/it]Loading checkpoint shards:  57%|█████▋    | 4/7 [00:06<00:04,  1.48s/it]2024-12-21:15:05:45,136 INFO     [huggingface.py:1095] Determined largest batch size: 64
+Loading checkpoint shards:  71%|███████▏  | 5/7 [00:07<00:02,  1.41s/it]Running loglikelihood requests:   0%|          | 1/2000 [00:04<2:25:42,  4.37s/it]Running loglikelihood requests:   4%|▍         | 81/2000 [00:05<01:28, 21.58it/s] Running loglikelihood requests:   8%|▊         | 161/2000 [00:05<00:44, 41.41it/s]Loading checkpoint shards:  86%|████████▌ | 6/7 [00:09<00:01,  1.82s/it]Running loglikelihood requests:  12%|█▏        | 235/2000 [00:06<00:31, 56.80it/s]Running loglikelihood requests:  16%|█▌        | 312/2000 [00:07<00:23, 71.18it/s]Loading checkpoint shards: 100%|██████████| 7/7 [00:10<00:00,  1.46s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:10<00:00,  1.52s/it]
+2024-12-21:15:05:48,850 INFO     [huggingface.py:767] self._model: DeepseekForCausalLM(
+  (model): DeepseekModel(
+    (embed_tokens): Embedding(102400, 2048)
+    (layers): ModuleList(
+      (0): DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMLP(
+          (gate_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (up_proj): Linear(in_features=2048, out_features=10944, bias=False)
+          (down_proj): Linear(in_features=10944, out_features=2048, bias=False)
+          (act_fn): SiLU()
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+      (1-27): 27 x DeepseekDecoderLayer(
+        (self_attn): DeepseekSdpaAttention(
+          (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (k_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (v_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+          (rotary_emb): DeepseekRotaryEmbedding()
+        )
+        (mlp): DeepseekMoE(
+          (experts): ModuleList(
+            (0-63): 64 x DeepseekMLP(
+              (gate_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (up_proj): Linear(in_features=2048, out_features=1408, bias=False)
+              (down_proj): Linear(in_features=1408, out_features=2048, bias=False)
+              (act_fn): SiLU()
+            )
+          )
+          (gate): MoEGate()
+          (shared_experts): DeepseekMLP(
+            (gate_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (up_proj): Linear(in_features=2048, out_features=2816, bias=False)
+            (down_proj): Linear(in_features=2816, out_features=2048, bias=False)
+            (act_fn): SiLU()
+          )
+        )
+        (input_layernorm): DeepseekRMSNorm()
+        (post_attention_layernorm): DeepseekRMSNorm()
+      )
+    )
+    (norm): DeepseekRMSNorm()
+  )
+  (lm_head): Linear(in_features=2048, out_features=102400, bias=False)
+)
+2024-12-21:15:05:48,850 INFO     [huggingface.py:774]  ** Max Memory (device: 0): 30.64 GB (64.64%)
+2024-12-21:15:05:48,850 INFO     [huggingface.py:776] Memory (VRAM): 30.64 GB (64.64%)
+2024-12-21:15:05:48,850 INFO     [huggingface.py:319] router_dir: . 
+Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+Running loglikelihood requests:  19%|█▉        | 384/2000 [00:07<00:19, 80.88it/s]Running loglikelihood requests:  24%|██▎       | 470/2000 [00:08<00:16, 93.19it/s]2024-12-21:15:05:50,249 WARNING  [evaluator.py:240] Overwriting default num_fewshot of openbookqa from None to 0
+2024-12-21:15:05:50,249 INFO     [evaluator.py:245] Setting fewshot random generator seed to 1234
+2024-12-21:15:05:50,250 INFO     [task.py:398] Building contexts for openbookqa on rank 0...
+  0%|          | 0/500 [00:00<?, ?it/s] 60%|█████▉    | 299/500 [00:00<00:00, 2987.85it/s]100%|██████████| 500/500 [00:00<00:00, 3046.78it/s]
+2024-12-21:15:05:50,433 INFO     [evaluator.py:395] Running loglikelihood requests
+Running loglikelihood requests:  28%|██▊       | 560/2000 [00:09<00:13, 105.45it/s]Running loglikelihood requests:   0%|          | 0/2000 [00:00<?, ?it/s]2024-12-21:15:05:50,713 INFO     [huggingface.py:1091] Passed argument batch_size = auto:1. Detecting largest batch size
+Running loglikelihood requests:  32%|███▏      | 636/2000 [00:09<00:12, 108.76it/s]Running loglikelihood requests:  36%|███▌      | 720/2000 [00:10<00:11, 114.38it/s]Running loglikelihood requests:  40%|███▉      | 796/2000 [00:11<00:10, 114.97it/s]2024-12-21:15:05:52,742 INFO     [huggingface.py:1095] Determined largest batch size: 64
+Running loglikelihood requests:  43%|████▎     | 869/2000 [00:11<00:09, 113.40it/s]Running loglikelihood requests:   0%|          | 1/2000 [00:02<1:38:09,  2.95s/it]Running loglikelihood requests:  48%|████▊     | 951/2000 [00:12<00:08, 117.21it/s]Running loglikelihood requests:   4%|▍         | 81/2000 [00:03<01:05, 29.37it/s] Running loglikelihood requests:  52%|█████▏    | 1035/2000 [00:12<00:07, 121.39it/s]Running loglikelihood requests:   8%|▊         | 161/2000 [00:04<00:35, 51.87it/s]Running loglikelihood requests:  56%|█████▌    | 1121/2000 [00:13<00:07, 125.11it/s]Running loglikelihood requests:  12%|█▏        | 235/2000 [00:05<00:26, 66.51it/s]Running loglikelihood requests:  59%|█████▉    | 1189/2000 [00:14<00:06, 119.13it/s]Running loglikelihood requests:  16%|█▌        | 312/2000 [00:05<00:21, 78.53it/s]Running loglikelihood requests:  63%|██████▎   | 1264/2000 [00:14<00:06, 117.03it/s]Running loglikelihood requests:  19%|█▉        | 384/2000 [00:06<00:18, 85.91it/s]Running loglikelihood requests:  67%|██████▋   | 1340/2000 [00:15<00:05, 116.76it/s]Running loglikelihood requests:  72%|███████▏  | 1433/2000 [00:16<00:04, 124.99it/s]Running loglikelihood requests:  24%|██▎       | 470/2000 [00:07<00:15, 96.47it/s]Running loglikelihood requests:  76%|███████▌  | 1523/2000 [00:16<00:03, 127.30it/s]Running loglikelihood requests:  28%|██▊       | 560/2000 [00:07<00:13, 104.06it/s]Running loglikelihood requests:  80%|████████  | 1606/2000 [00:17<00:03, 125.98it/s]Running loglikelihood requests:  32%|███▏      | 636/2000 [00:08<00:13, 103.69it/s]Running loglikelihood requests:  84%|████████▍ | 1690/2000 [00:18<00:02, 126.66it/s]Running loglikelihood requests:  36%|███▌      | 720/2000 [00:09<00:11, 107.85it/s]Running loglikelihood requests:  89%|████████▉ | 1781/2000 [00:18<00:01, 130.14it/s]Running loglikelihood requests:  40%|███▉      | 796/2000 [00:10<00:11, 106.88it/s]Running loglikelihood requests:  94%|█████████▍| 1875/2000 [00:19<00:00, 134.34it/s]Running loglikelihood requests:  43%|████▎     | 869/2000 [00:10<00:10, 106.17it/s]Running loglikelihood requests:  98%|█████████▊| 1957/2000 [00:20<00:00, 131.76it/s]Running loglikelihood requests: 100%|██████████| 2000/2000 [00:20<00:00, 99.00it/s] 
+Running loglikelihood requests:  48%|████▊     | 951/2000 [00:11<00:09, 109.50it/s]2024-12-21:15:06:02,329 WARNING  [huggingface.py:1477] Failed to get model SHA for /workspace/models/deepseek-moe-16b-base-temp at revision main. Error: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/workspace/models/deepseek-moe-16b-base-temp'. Use `repo_type` argument if needed.
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+Running loglikelihood requests:  52%|█████▏    | 1035/2000 [00:12<00:08, 112.73it/s]Running loglikelihood requests:  56%|█████▌    | 1121/2000 [00:12<00:07, 115.69it/s]Running loglikelihood requests:  59%|█████▉    | 1189/2000 [00:13<00:07, 108.82it/s]Running loglikelihood requests:  63%|██████▎   | 1264/2000 [00:14<00:06, 107.05it/s]Running loglikelihood requests:  67%|██████▋   | 1340/2000 [00:14<00:06, 109.12it/s]2024-12-21:15:06:06,034 INFO     [evaluation_tracker.py:133] Saving results aggregated
+hf (pretrained=/workspace/models/deepseek-moe-16b-base-temp,router_dir=,expert_capacity=15.0,strategy=random,parallelize=True,trust_remote_code=True,dtype=bfloat16,autoawq=False), gen_kwargs: (None), limit: None, num_fewshot: 0, batch_size: auto (64)
+|  Tasks   |Version|Filter|n-shot| Metric |Value|   |Stderr|
+|----------|------:|------|-----:|--------|----:|---|-----:|
+|openbookqa|      1|none  |     0|acc     |0.304|±  |0.0206|
+|          |       |none  |     0|acc_norm|0.414|±  |0.0220|
+
+Running loglikelihood requests:  72%|███████▏  | 1433/2000 [00:15<00:04, 115.98it/s]Running loglikelihood requests:  76%|███████▌  | 1523/2000 [00:16<00:03, 120.29it/s]Running loglikelihood requests:  80%|████████  | 1606/2000 [00:17<00:03, 121.86it/s]Running loglikelihood requests:  84%|████████▍ | 1690/2000 [00:17<00:02, 120.47it/s]Running loglikelihood requests:  89%|████████▉ | 1781/2000 [00:18<00:01, 124.23it/s]Running loglikelihood requests:  94%|█████████▍| 1875/2000 [00:19<00:00, 128.11it/s]Running loglikelihood requests:  98%|█████████▊| 1957/2000 [00:19<00:00, 127.07it/s]Running loglikelihood requests: 100%|██████████| 2000/2000 [00:19<00:00, 101.06it/s]
+2024-12-21:15:06:11,045 WARNING  [huggingface.py:1477] Failed to get model SHA for /workspace/models/deepseek-moe-16b-base-temp at revision main. Error: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/workspace/models/deepseek-moe-16b-base-temp'. Use `repo_type` argument if needed.
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+2024-12-21:15:06:14,664 INFO     [evaluation_tracker.py:133] Saving results aggregated
+hf (pretrained=/workspace/models/deepseek-moe-16b-base-temp,router_dir=,expert_capacity=15.0,strategy=score,parallelize=True,trust_remote_code=True,dtype=bfloat16,autoawq=False), gen_kwargs: (None), limit: None, num_fewshot: 0, batch_size: auto (64)
+|  Tasks   |Version|Filter|n-shot| Metric |Value|   |Stderr|
+|----------|------:|------|-----:|--------|----:|---|-----:|
+|openbookqa|      1|none  |     0|acc     |0.310|±  |0.0207|
+|          |       |none  |     0|acc_norm|0.434|±  |0.0222|
+
+/workspace/models/OLMoE-1B-7B-0924
+/workspace/models/OLMoE-1B-7B-temp
+rm: cannot remove '/workspace/models/OLMoE-1B-7B-temp/expert_capacity-1.0/random': No such file or directory
+/workspace/models/OLMoE-1B-7B-temp
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 91: /workspace/models/OLMoE-1B-7B-temp/expert_capacity-1.0/random/openbookqa.out: No such file or directory
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 107: /workspace/models/OLMoE-1B-7B-temp/expert_capacity-1.0/random/piqa.out: No such file or directory
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 123: /workspace/models/OLMoE-1B-7B-temp/expert_capacity-1.0/random/rte.out: No such file or directory
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 139: /workspace/models/OLMoE-1B-7B-temp/expert_capacity-1.0/random/winogrande.out: No such file or directory
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 155: /workspace/models/OLMoE-1B-7B-temp/expert_capacity-1.0/random/boolq.out: No such file or directory
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 170: /workspace/models/OLMoE-1B-7B-temp/expert_capacity-1.0/random/arc_challenge.out: No such file or directory
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 186: /workspace/models/OLMoE-1B-7B-temp/expert_capacity-1.0/random/hellaswag.out: No such file or directory
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 201: /workspace/models/OLMoE-1B-7B-temp/expert_capacity-1.0/random/mmlu.out: No such file or directory
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 216: /workspace/models/OLMoE-1B-7B-temp/expert_capacity-1.0/random/gsm8k.out: No such file or directory
+/workspace/models/OLMoE-1B-7B-temp
+rm: cannot remove '/workspace/models/OLMoE-1B-7B-temp/expert_capacity-1.0/score': No such file or directory
+/workspace/models/OLMoE-1B-7B-temp
+/workspace/models/OLMoE-1B-7B-temp
+/workspace/models/OLMoE-1B-7B-temp
+rm: cannot remove '/workspace/models/OLMoE-1B-7B-temp/expert_capacity-1.5/random': No such file or directory
+/workspace/models/OLMoE-1B-7B-temp
+rm: cannot remove '/workspace/models/OLMoE-1B-7B-temp/expert_capacity-1.5/score': No such file or directory
+/workspace/models/OLMoE-1B-7B-temp
+rm: cannot remove '/workspace/models/OLMoE-1B-7B-temp/expert_capacity-3.0/score': No such file or directory
+/workspace/models/OLMoE-1B-7B-temp
+rm: cannot remove '/workspace/models/OLMoE-1B-7B-temp/expert_capacity-3.0/random': No such file or directory
+/workspace/models/OLMoE-1B-7B-temp
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 179: syntax error near unexpected token `&'
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 179: `&'
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 116: syntax error near unexpected token `&'
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 116: `&'
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 179: syntax error near unexpected token `&'
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 179: `&'
+/workspace/models/OLMoE-1B-7B-temp
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 195: syntax error near unexpected token `&'
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 195: `&'
+/workspace/models/OLMoE-1B-7B-temp
+/workspace/models/OLMoE-1B-7B-temp
+/workspace/models/OLMoE-1B-7B-temp
+/workspace/models/OLMoE-1B-7B-temp
+/workspace/models/OLMoE-1B-7B-temp
+/workspace/models/OLMoE-1B-7B-temp
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 195: syntax error near unexpected token `&'
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 195: `&'
+/workspace/models/OLMoE-1B-7B-temp
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 195: syntax error near unexpected token `&'
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 195: `&'
+/workspace/models/OLMoE-1B-7B-temp
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 210: syntax error near unexpected token `&'
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 210: `&'
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 210: syntax error near unexpected token `&'
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 210: `&'
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 210: syntax error near unexpected token `&'
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 210: `&'
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 210: syntax error near unexpected token `&'
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 210: `&'
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 132: syntax error near unexpected token `&'
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity.sh: line 132: `&'
+/workspace/models/OLMoE-1B-7B-temp
+/workspace/models/OLMoE-1B-7B-temp
+/workspace/lm-evaluation-harness-github/runs_prune/eval_capacity_reverse.sh: line 198: path/openbookqa.out: No such file or directory
+/workspace/models/OLMoE-1B-7B-temp
+/workspace/models/OLMoE-1B-7B-temp
+/workspace/models/OLMoE-1B-7B-temp
+/workspace/models/OLMoE-1B-7B-temp
+/workspace/models/OLMoE-1B-7B-temp
