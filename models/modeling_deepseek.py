@@ -293,6 +293,7 @@ class MoEGate(nn.Module):
         self.layer_idx = layer_idx  ### 🔍🔍🔍
         self.expert_capacity = config.expert_capacity
         self.strategy = config.strategy
+        self.rounds = config.rounds
 
         self.norm_topk_prob = config.norm_topk_prob
         self.gating_dim = config.hidden_size
@@ -321,7 +322,7 @@ class MoEGate(nn.Module):
         
         ### select top-k experts
         # topk_weight, topk_idx = torch.topk(scores, k=self.top_k, dim=-1, sorted=False)
-        topk_weight, topk_idx = self.adjust_tokens(expert_capacity, scores)
+        topk_weight, topk_idx = self.adjust_tokens(expert_capacity, scores, bsz, seq_len)
                 
         ### norm gate to sum 1
         if self.top_k > 1 and self.norm_topk_prob:
@@ -350,91 +351,139 @@ class MoEGate(nn.Module):
             aux_loss = None
         return topk_idx, topk_weight, aux_loss
 
-    def adjust_tokens(self, expert_capacity, scores): 
+    def overflow(self, utilized_mask, expert_capacity): 
+        token_priority = torch.cumsum(utilized_mask, dim=-2)
+        overflow = token_priority[-1, :] - expert_capacity
+        return overflow
+        
+    def adjust_tokens(self, expert_capacity, scores, bsz, seq_len): 
         
         # torch.manual_seed(9)
         if expert_capacity == None: 
             topk_weight, topk_idx = torch.topk(scores, k=self.top_k, dim=-1, sorted=False)
             return topk_weight, topk_idx
         
-        topk_weight, topk_idx = torch.topk(scores, k=self.top_k, dim=-1, sorted=False)
-
-        # if topk_idx.size()[0] != 1: ### 🔍🔍🔍 for prefill
-        mask = torch.zeros_like(scores, dtype=torch.bool)
-        mask.scatter_(dim=-1, index=topk_idx, value=True)        
+        if self.strategy != "score":
+            topk_weight, topk_idx = torch.topk(scores, k=self.top_k, dim=-1, sorted=False)
+            # if topk_idx.size()[0] != 1: ### 🔍🔍🔍 for prefill
+            mask = torch.zeros_like(scores, dtype=torch.bool)
+            mask.scatter_(dim=-1, index=topk_idx, value=True)
 
         # TODO Drop last tokens. 
         if self.strategy == "last":
+            # TODO foe the whole batch. 
             token_priority = torch.cumsum(mask, dim=-2)
-            dropped_mask = token_priority <= expert_capacity
-            dropped_mask = dropped_mask[mask].view(topk_idx.size())
-            topk_idx[~dropped_mask] = self.n_routed_experts 
-            topk_weight = topk_weight * dropped_mask
-
+            utilized_mask = token_priority <= expert_capacity
+            
+            # overflow = self.overflow(mask, expert_capacity)
+            # next_overflow = self.overflow(utilized_mask * mask, expert_capacity)
+            
+            utilized_mask = utilized_mask[mask].view(topk_idx.size())
+            topk_idx[~utilized_mask] = self.n_routed_experts 
+            topk_weight = topk_weight * utilized_mask
+            # pass 
+        
         # TODO Drop first tokens, 
         elif self.strategy == "first": 
-            reversed_mask = torch.flip(mask, dims=[-2])          
-            reversed_cumsum = torch.cumsum(reversed_mask, dim=-2) 
-            token_priority = torch.flip(reversed_cumsum, dims=[-2])  ####
-            dropped_mask = token_priority <= expert_capacity           
-            dropped_mask = dropped_mask[mask].view(topk_idx.size())
-            topk_idx[~dropped_mask] = self.n_routed_experts 
-            topk_weight = topk_weight * dropped_mask
-
-        elif self.strategy == "random": 
+            # TODO foe the whole batch. 
+            # reversed_mask = torch.flip(mask, dims=[-2])          
+            # reversed_cumsum = torch.cumsum(reversed_mask, dim=-2) 
+            # token_priority = torch.flip(reversed_cumsum, dims=[-2])  ####
+            # utilized_mask = token_priority <= expert_capacity           
+            
+            # overflow = self.overflow(mask, expert_capacity)
+            # print(f"overflow: {overflow}")
+            # next_overflow = self.overflow(utilized_mask * mask, expert_capacity)
+            # print(f"next_overflow: {next_overflow}")
+            
+            # utilized_mask = utilized_mask[mask].view(topk_idx.size())
+            # topk_idx[~utilized_mask] = self.n_routed_experts 
+            # topk_weight = topk_weight * utilized_mask
+            
+            ########################################
+            
             token_priority = torch.cumsum(mask, dim=-2)
-            dropped_mask = token_priority <= expert_capacity        
-            overflow = torch.relu(token_priority[-1, :] - expert_capacity)
-            dropped_mask = mask.clone()
-            for i in range(dropped_mask.size()[-1]):
+            overflow = token_priority[-1, :] - expert_capacity
+            utilized_mask = mask.clone()
+            seq_scores = torch.arange(seq_len, device=mask.device).unsqueeze(0)
+            batch_scores = torch.arange(bsz, device=mask.device).unsqueeze(1) / max(seq_len, bsz)
+            importance_scores = (seq_scores + batch_scores).flatten()
+
+            #### check duplicate values
+            # unique_values, counts = torch.unique(importance_scores, return_counts=True)
+            # duplicates = unique_values[counts > 1]
+            # exit()
+            
+            for i in range(utilized_mask.size()[-1]):
+                k = overflow[i].item()
+                sub_mask = utilized_mask[:, i]
 
                 if overflow[i] > 0: 
+                    sub_scores = importance_scores[sub_mask]
+                    threshold, _ = torch.kthvalue(sub_scores, k)
+                    utilized_mask[sub_mask, i] = (sub_scores > threshold)
+    
+            token_priority = torch.cumsum(utilized_mask, dim=-2)
+            next_overflow = token_priority[-1, :] - expert_capacity
 
+            utilized_mask = utilized_mask[mask].view(topk_idx.size())
+            topk_idx[~utilized_mask] = self.n_routed_experts
+            topk_weight = topk_weight * utilized_mask
+
+        elif self.strategy == "random": 
+            # token_priority = torch.cumsum(mask, dim=-2)
+            # utilized_mask = token_priority <= expert_capacity        
+            # overflow = torch.relu(token_priority[-1, :] - expert_capacity)
+            overflow = self.overflow(mask, expert_capacity)
+
+            utilized_mask = mask.clone()
+            for i in range(utilized_mask.size()[-1]):
+                if overflow[i] > 0: 
                     k = overflow[i].item()
-                    sub_mask = dropped_mask[:, i]
+                    sub_mask = utilized_mask[:, i]
                     sliced = sub_mask[sub_mask]
                     importance_scores = torch.randn_like(sliced.float())
                     threshold, _ = torch.kthvalue(importance_scores, k)
-                    dropped_mask[sub_mask, i] = (importance_scores > threshold)
+                    utilized_mask[sub_mask, i] = (importance_scores > threshold)
             
-            dropped_mask = dropped_mask[mask].view(topk_idx.size())
-            topk_idx[~dropped_mask] = self.n_routed_experts 
-            topk_weight = topk_weight * dropped_mask
+            utilized_mask = utilized_mask[mask].view(topk_idx.size())
+            topk_idx[~utilized_mask] = self.n_routed_experts 
+            topk_weight = topk_weight * utilized_mask
                     
         elif self.strategy == "score": 
-            token_priority = torch.cumsum(mask, dim=-2)
-            overflow = token_priority[-1, :] - expert_capacity
-            dropped_mask = mask.clone()
-            for i in range(dropped_mask.size()[-1]):
-                k = overflow[i].item()
-                sub_mask = dropped_mask[:, i]
-
-                if overflow[i] > 0: 
-                    sliced = sub_mask[sub_mask]
-                    importance_scores = scores[sub_mask, i].float()
-                    threshold, _ = torch.kthvalue(importance_scores, k)
-                    dropped_mask[sub_mask, i] = (importance_scores > threshold)
-
-            token_priority = torch.cumsum(dropped_mask, dim=-2)
-            overflow = token_priority[-1, :] - expert_capacity
-    
-            dropped_mask = dropped_mask[mask].view(topk_idx.size())
+            topk_weight, topk_idx = torch.topk(scores, k=self.top_k, dim=-1, sorted=False)
+            rounds = self.rounds
+            scores_org = scores.clone()
             
-            topk_idx[~dropped_mask] = self.n_routed_experts
-            topk_weight = topk_weight * dropped_mask
+            for r in range(rounds):
+                topk_weight, topk_idx = torch.topk(scores, k=self.top_k, dim=-1, sorted=False)
+                mask = torch.zeros_like(scores, dtype=torch.bool)
+                mask.scatter_(dim=-1, index=topk_idx, value=True)
+                overflow = self.overflow(mask, expert_capacity)
+                # print(f"{self.layer_idx} expert_capacity: {expert_capacity}")
+                # print(f"{self.layer_idx} overflow: {overflow.tolist()}")
+                # if r == 0:
+                    # print(f"overflow: {overflow}")
+                utilized_mask = mask.clone()
+                
+                for i in range(utilized_mask.size()[-1]):
+                    if overflow[i] > 0: 
+                        k = overflow[i].item()  
+                        sub_mask = utilized_mask[:, i]
+                        importance_scores = scores[sub_mask, i].float()
+                        threshold, _ = torch.kthvalue(importance_scores, k)
+                        utilized_mask[sub_mask, i] = (importance_scores > threshold) & (importance_scores > 0) # higher than threhold, and has been selected by topk.
                         
-            token_mask = dropped_mask.float().mean(-1) != 0. # a small proportion of tokens have no experts. 
-            expert_mask = overflow < 0
-            
-            # reassign experts. 
-            #  🔍🔍🔍 remaining_scores = scores * token_mask.unsqueeze(1) * expert_mask.unsqueeze(0)
-            remaining_scores = remaining_scores[:, expert_mask]
-            
-            if remaining_scores.size()[0] > 0 and remaining_scores.size()[0] < scores.size()[0]: 
-                topk_remaining_weight, topk_remaining_idx = torch.topk(remaining_scores, k=self.top_k, dim=-1, sorted=False)
-                topk_idx[token_mask] = topk_remaining_idx
-                topk_weight[token_mask] = topk_remaining_weight
-            
+                score_mask = mask ^ utilized_mask
+                scores[score_mask] = -1
+
+                new_overflow = self.overflow(utilized_mask, expert_capacity)
+                
+                utilized_mask = utilized_mask[mask].view(topk_idx.size())
+                topk_idx[~utilized_mask] = self.n_routed_experts
+                topk_weight = topk_weight * utilized_mask
+
+        print(f"{self.layer_idx} new_overflow: {new_overflow.tolist()}")
         return topk_weight, topk_idx 
 
 
