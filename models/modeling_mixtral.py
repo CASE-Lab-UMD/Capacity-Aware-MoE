@@ -1,3 +1,11 @@
+# coding=utf-8
+# Copyright 2023 Mistral AI and the HuggingFace Inc. team. All rights reserved.
+#
+# This code is based on EleutherAI's GPT-NeoX library and the GPT-NeoX
+# and OPT implementations in this library. It has been modified from its
+# original forms to accommodate minor architectural differences compared
+# to GPT-NeoX and OPT used by the Meta AI team that trained the model.
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -9,10 +17,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""PyTorch OLMoE model."""
+"""PyTorch Mixtral model."""
 
 import math
-from dataclasses import dataclass
 from typing import List, Optional, Tuple, Union
 
 import torch
@@ -21,130 +28,48 @@ import torch.utils.checkpoint
 from torch import nn
 
 from transformers.activations import ACT2FN
-from transformers.cache_utils import Cache, DynamicCache, StaticCache
+from transformers.cache_utils import Cache, DynamicCache, SlidingWindowCache, StaticCache
 from transformers.generation import GenerationMixin
-from transformers.modeling_attn_mask_utils import AttentionMaskConverter
+from transformers.modeling_attn_mask_utils import AttentionMaskConverter, _prepare_4d_causal_attention_mask
 from transformers.modeling_outputs import (
     MoeCausalLMOutputWithPast,
     MoeModelOutputWithPast,
+    QuestionAnsweringModelOutput,
+    SequenceClassifierOutputWithPast,
+    TokenClassifierOutput,
 )
-from transformers.modeling_rope_utils import ROPE_INIT_FUNCTIONS
 from transformers.modeling_utils import PreTrainedModel
-from transformers.pytorch_utils import ALL_LAYERNORM_LAYERS
+from transformers.pytorch_utils import is_torch_greater_or_equal_than_1_13
 from transformers.utils import (
-    ModelOutput, 
+    add_code_sample_docstrings,
     add_start_docstrings,
     add_start_docstrings_to_model_forward,
     is_flash_attn_2_available,
-    is_flash_attn_greater_or_equal_2_10,
     logging,
     replace_return_docstrings,
 )
-from .configuration_olmoe import OlmoeConfig
+from transformers.utils.import_utils import is_torch_fx_available
+from .configuration_mixtral import MixtralConfig
 
 
 if is_flash_attn_2_available():
     from transformers.modeling_flash_attention_utils import _flash_attention_forward
 
+# This makes `_prepare_4d_causal_attention_mask` a leaf function in the FX graph.
+# It means that the function will not be traced through and simply appear as a node in the graph.
+if is_torch_fx_available():
+    if not is_torch_greater_or_equal_than_1_13:
+        import torch.fx
+
+    _prepare_4d_causal_attention_mask = torch.fx.wrap(_prepare_4d_causal_attention_mask)
+
 
 logger = logging.get_logger(__name__)
 
-_CONFIG_FOR_DOC = "OlmoeConfig"
+_CHECKPOINT_FOR_DOC = "mistralai/Mixtral-8x7B-v0.1"
+_CONFIG_FOR_DOC = "MixtralConfig"
 
 
-@dataclass
-class MoeCausalLMOutputWithPast(ModelOutput):
-    """
-    Base class for causal language model (or autoregressive) with mixture of experts outputs.
-
-    Args:
-        loss (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided):
-            Language modeling loss (for next-token prediction).
-
-        logits (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`):
-            Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
-
-        aux_loss (`torch.FloatTensor`, *optional*, returned when `labels` is provided):
-            aux_loss for the sparse modules.
-
-        router_logits (`tuple(torch.FloatTensor)`, *optional*, returned when `output_router_probs=True` and `config.add_router_probs=True` is passed or when `config.output_router_probs=True`):
-            Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, sequence_length, num_experts)`.
-
-            Raw router logtis (post-softmax) that are computed by MoE routers, these terms are used to compute the auxiliary
-            loss for Mixture of Experts models.
-
-        past_key_values (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`):
-            Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors of shape
-            `(batch_size, num_heads, sequence_length, embed_size_per_head)`)
-
-            Contains pre-computed hidden-states (key and values in the self-attention blocks) that can be used (see
-            `past_key_values` input) to speed up sequential decoding.
-        hidden_states (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`):
-            Tuple of `torch.FloatTensor` (one for the output of the embeddings, if the model has an embedding layer, +
-            one for the output of each layer) of shape `(batch_size, sequence_length, hidden_size)`.
-
-            Hidden-states of the model at the output of each layer plus the optional initial embedding outputs.
-        attentions (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`):
-            Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
-            sequence_length)`.
-
-            Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-            heads.
-    """
-
-
-    loss: Optional[torch.FloatTensor] = None
-    aux_loss: Optional[torch.FloatTensor] = None
-    logits: torch.FloatTensor = None
-    past_key_values: Optional[Tuple[Tuple[torch.FloatTensor]]] = None
-    hidden_states: Optional[Tuple[torch.FloatTensor, ...]] = None
-    attentions: Optional[Tuple[torch.FloatTensor, ...]] = None
-    router_logits: Optional[Tuple[torch.FloatTensor]] = None
-
-
-@dataclass
-class MoeModelOutputWithPast(ModelOutput):
-    """
-    Base class for model's outputs, with potential hidden states and attentions.
-
-    Args:
-        last_hidden_state (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`):
-            Sequence of hidden-states at the output of the last layer of the model.
-        past_key_values (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`):
-            Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors of shape
-            `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and optionally if
-            `config.is_encoder_decoder=True` 2 additional tensors of shape `(batch_size, num_heads,
-            encoder_sequence_length, embed_size_per_head)`.
-
-            Contains pre-computed hidden-states (key and values in the self-attention blocks and optionally if
-            `config.is_encoder_decoder=True` in the cross-attention blocks) that can be used (see `past_key_values`
-            input) to speed up sequential decoding.
-        hidden_states (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`):
-            Tuple of `torch.FloatTensor` (one for the output of the embeddings, if the model has an embedding layer, +
-            one for the output of each layer) of shape `(batch_size, sequence_length, hidden_size)`.
-
-            Hidden-states of the model at the output of each layer plus the optional initial embedding outputs.
-        attentions (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`):
-            Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
-            sequence_length)`.
-
-            Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-            heads.
-        router_logits (`tuple(torch.FloatTensor)`, *optional*, returned when `output_router_probs=True` and `config.add_router_probs=True` is passed or when `config.output_router_probs=True`):
-            Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, sequence_length, num_experts)`.
-
-            Raw router logtis (post-softmax) that are computed by MoE routers, these terms are used to compute the auxiliary
-            loss for Mixture of Experts models.
-    """
-    
-    last_hidden_state: torch.FloatTensor = None
-    past_key_values: Optional[Tuple[Tuple[torch.FloatTensor]]] = None
-    hidden_states: Optional[Tuple[torch.FloatTensor, ...]] = None
-    attentions: Optional[Tuple[torch.FloatTensor, ...]] = None
-    router_logits: Optional[Tuple[torch.FloatTensor]] = None
-
-
-# Copied from transformers.models.mixtral.modeling_mixtral.load_balancing_loss_func
 def load_balancing_loss_func(
     gate_logits: Union[torch.Tensor, Tuple[torch.Tensor], None],
     num_experts: Optional[int] = None,
@@ -227,10 +152,11 @@ def load_balancing_loss_func(
     return overall_loss * num_experts
 
 
-class OlmoeRMSNorm(nn.Module):
-    def __init__(self, hidden_size, eps=1e-5):
+# Copied from transformers.models.llama.modeling_llama.LlamaRMSNorm with Llama->Mixtral
+class MixtralRMSNorm(nn.Module):
+    def __init__(self, hidden_size, eps=1e-6):
         """
-        OlmoeRMSNorm is equivalent to T5LayerNorm
+        MixtralRMSNorm is equivalent to T5LayerNorm
         """
         super().__init__()
         self.weight = nn.Parameter(torch.ones(hidden_size))
@@ -247,95 +173,42 @@ class OlmoeRMSNorm(nn.Module):
         return f"{tuple(self.weight.shape)}, eps={self.variance_epsilon}"
 
 
-ALL_LAYERNORM_LAYERS.append(OlmoeRMSNorm)
-
-
-# Copied from transformers.models.llama.modeling_llama.LlamaRotaryEmbedding with Llama->Olmoe
-class OlmoeRotaryEmbedding(nn.Module):
-    def __init__(
-        self,
-        dim=None,
-        max_position_embeddings=2048,
-        base=10000,
-        device=None,
-        scaling_factor=1.0,
-        rope_type="default",
-        config: Optional[OlmoeConfig] = None,
-    ):
+# copied from transformers.models.mistral.modeling_mistral.MistralRotaryEmbedding with Mistral->Mixtral
+# TODO @longjie no longer copied from Mistral after static cache
+class MixtralRotaryEmbedding(nn.Module):
+    def __init__(self, dim, max_position_embeddings=2048, base=10000, device=None):
         super().__init__()
-        # TODO (joao): remove the `if` below, only used for BC
-        self.rope_kwargs = {}
-        if config is None:
-            logger.warning_once(
-                "`OlmoeRotaryEmbedding` can now be fully parameterized by passing the model config through the "
-                "`config` argument. All other arguments will be removed in v4.46"
-            )
-            self.rope_kwargs = {
-                "rope_type": rope_type,
-                "factor": scaling_factor,
-                "dim": dim,
-                "base": base,
-                "max_position_embeddings": max_position_embeddings,
-            }
-            self.rope_type = rope_type
-            self.max_seq_len_cached = max_position_embeddings
-            self.original_max_seq_len = max_position_embeddings
-        else:
-            # BC: "rope_type" was originally "type"
-            if config.rope_scaling is not None:
-                self.rope_type = config.rope_scaling.get("rope_type", config.rope_scaling.get("type"))
-            else:
-                self.rope_type = "default"
-            self.max_seq_len_cached = config.max_position_embeddings
-            self.original_max_seq_len = config.max_position_embeddings
 
-        self.config = config
-        self.rope_init_fn = ROPE_INIT_FUNCTIONS[self.rope_type]
-
-        inv_freq, self.attention_scaling = self.rope_init_fn(self.config, device, **self.rope_kwargs)
+        self.dim = dim
+        self.max_position_embeddings = max_position_embeddings
+        self.base = base
+        inv_freq = 1.0 / (self.base ** (torch.arange(0, self.dim, 2, dtype=torch.int64).float().to(device) / self.dim))
         self.register_buffer("inv_freq", inv_freq, persistent=False)
-        self.original_inv_freq = self.inv_freq
 
-    def _dynamic_frequency_update(self, position_ids, device):
-        """
-        dynamic RoPE layers should recompute `inv_freq` in the following situations:
-        1 - growing beyond the cached sequence length (allow scaling)
-        2 - the current sequence length is in the original scale (avoid losing precision with small sequences)
-        """
-        seq_len = torch.max(position_ids) + 1
-        if seq_len > self.max_seq_len_cached:  # growth
-            inv_freq, self.attention_scaling = self.rope_init_fn(
-                self.config, device, seq_len=seq_len, **self.rope_kwargs
-            )
-            self.register_buffer("inv_freq", inv_freq, persistent=False)  # TODO joao: may break with compilation
-            self.max_seq_len_cached = seq_len
+        # Build here to make `torch.jit.trace` work.
+        self._set_cos_sin_cache(
+            seq_len=max_position_embeddings, device=self.inv_freq.device, dtype=torch.get_default_dtype()
+        )
 
-        if seq_len < self.original_max_seq_len and self.max_seq_len_cached > self.original_max_seq_len:  # reset
-            self.register_buffer("inv_freq", self.original_inv_freq, persistent=False)
-            self.max_seq_len_cached = self.original_max_seq_len
+    def _set_cos_sin_cache(self, seq_len, device, dtype):
+        self.max_seq_len_cached = seq_len
+        t = torch.arange(self.max_seq_len_cached, device=device, dtype=torch.int64).type_as(self.inv_freq)
 
-    @torch.no_grad()
-    def forward(self, x, position_ids):
-        if "dynamic" in self.rope_type:
-            self._dynamic_frequency_update(position_ids, device=x.device)
+        freqs = torch.outer(t, self.inv_freq)
+        # Different from paper, but it uses a different permutation in order to obtain the same calculation
+        emb = torch.cat((freqs, freqs), dim=-1)
+        self.register_buffer("cos_cached", emb.cos().to(dtype), persistent=False)
+        self.register_buffer("sin_cached", emb.sin().to(dtype), persistent=False)
 
-        # Core RoPE block
-        inv_freq_expanded = self.inv_freq[None, :, None].float().expand(position_ids.shape[0], -1, 1)
-        position_ids_expanded = position_ids[:, None, :].float()
-        # Force float32 (see https://github.com/huggingface/transformers/pull/29285)
-        device_type = x.device.type
-        device_type = device_type if isinstance(device_type, str) and device_type != "mps" else "cpu"
-        with torch.autocast(device_type=device_type, enabled=False):
-            freqs = (inv_freq_expanded.float() @ position_ids_expanded.float()).transpose(1, 2)
-            emb = torch.cat((freqs, freqs), dim=-1)
-            cos = emb.cos()
-            sin = emb.sin()
+    def forward(self, x, seq_len=None):
+        # x: [bs, num_attention_heads, seq_len, head_size]
+        if seq_len > self.max_seq_len_cached:
+            self._set_cos_sin_cache(seq_len=seq_len, device=x.device, dtype=x.dtype)
 
-        # Advanced RoPE types (e.g. yarn) apply a post-processing scaling factor, equivalent to scaling attention
-        cos = cos * self.attention_scaling
-        sin = sin * self.attention_scaling
-
-        return cos.to(dtype=x.dtype), sin.to(dtype=x.dtype)
+        return (
+            self.cos_cached[:seq_len].to(dtype=x.dtype),
+            self.sin_cached[:seq_len].to(dtype=x.dtype),
+        )
 
 
 # Copied from transformers.models.llama.modeling_llama.rotate_half
@@ -346,8 +219,9 @@ def rotate_half(x):
     return torch.cat((-x2, x1), dim=-1)
 
 
-# Copied from transformers.models.llama.modeling_llama.apply_rotary_pos_emb
-def apply_rotary_pos_emb(q, k, cos, sin, position_ids=None, unsqueeze_dim=1):
+# copied from transformers.models.mistral.modeling_mistral.apply_rotary_pos_emb
+# TODO @longjie no longer copied from Mistral after static cache
+def apply_rotary_pos_emb(q, k, cos, sin, position_ids, unsqueeze_dim=1):
     """Applies Rotary Position Embedding to the query and key tensors.
 
     Args:
@@ -355,8 +229,9 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids=None, unsqueeze_dim=1):
         k (`torch.Tensor`): The key tensor.
         cos (`torch.Tensor`): The cosine part of the rotary embedding.
         sin (`torch.Tensor`): The sine part of the rotary embedding.
-        position_ids (`torch.Tensor`, *optional*):
-            Deprecated and unused.
+        position_ids (`torch.Tensor`):
+            The position indices of the tokens corresponding to the query and key tensors. For example, this can be
+            used to pass offsetted position ids when working with a KV-cache.
         unsqueeze_dim (`int`, *optional*, defaults to 1):
             The 'unsqueeze_dim' argument specifies the dimension along which to unsqueeze cos[position_ids] and
             sin[position_ids] so that they can be properly broadcasted to the dimensions of q and k. For example, note
@@ -367,28 +242,11 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids=None, unsqueeze_dim=1):
     Returns:
         `tuple(torch.Tensor)` comprising of the query and key tensors rotated using the Rotary Position Embedding.
     """
-    cos = cos.unsqueeze(unsqueeze_dim)
-    sin = sin.unsqueeze(unsqueeze_dim)
+    cos = cos[position_ids].unsqueeze(unsqueeze_dim)
+    sin = sin[position_ids].unsqueeze(unsqueeze_dim)
     q_embed = (q * cos) + (rotate_half(q) * sin)
     k_embed = (k * cos) + (rotate_half(k) * sin)
     return q_embed, k_embed
-
-
-# Copied from transformers.models.olmo.modeling_olmo.OlmoMLP with Olmo->Olmoe
-class OlmoeMLP(nn.Module):
-    def __init__(self, config):
-        super().__init__()
-        self.config = config
-        self.hidden_size = config.hidden_size
-        self.intermediate_size = config.intermediate_size
-        self.gate_proj = nn.Linear(self.hidden_size, self.intermediate_size, bias=False)
-        self.up_proj = nn.Linear(self.hidden_size, self.intermediate_size, bias=False)
-        self.down_proj = nn.Linear(self.intermediate_size, self.hidden_size, bias=False)
-        self.act_fn = ACT2FN[config.hidden_act]
-
-    def forward(self, x):
-        return self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
-        # return self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x)), None
 
 
 # Copied from transformers.models.llama.modeling_llama.repeat_kv
@@ -404,10 +262,15 @@ def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
     return hidden_states.reshape(batch, num_key_value_heads * n_rep, slen, head_dim)
 
 
-class OlmoeAttention(nn.Module):
-    """Multi-headed attention from 'Attention Is All You Need' paper"""
+# copied from transformers.models.mistral.modeling_mistral.MistralAttention with Mistral->Mixtral
+# TODO @longjie no longer copied from Mistral after static cache
+class MixtralAttention(nn.Module):
+    """
+    Multi-headed attention from 'Attention Is All You Need' paper. Modified to use sliding window attention: Longformer
+    and "Generating Long Sequences with Sparse Transformers".
+    """
 
-    def __init__(self, config: OlmoeConfig, layer_idx: Optional[int] = None):
+    def __init__(self, config: MixtralConfig, layer_idx: Optional[int] = None):
         super().__init__()
         self.config = config
         self.layer_idx = layer_idx
@@ -418,30 +281,29 @@ class OlmoeAttention(nn.Module):
                 "when creating this class."
             )
 
-        self.attention_dropout = config.attention_dropout
         self.hidden_size = config.hidden_size
         self.num_heads = config.num_attention_heads
-        self.head_dim = self.hidden_size // self.num_heads
+        self.head_dim = config.head_dim
         self.num_key_value_heads = config.num_key_value_heads
         self.num_key_value_groups = self.num_heads // self.num_key_value_heads
         self.max_position_embeddings = config.max_position_embeddings
         self.rope_theta = config.rope_theta
         self.is_causal = True
+        self.attention_dropout = config.attention_dropout
 
-        if (self.head_dim * self.num_heads) != self.hidden_size:
-            raise ValueError(
-                f"hidden_size must be divisible by num_heads (got `hidden_size`: {self.hidden_size}"
-                f" and `num_heads`: {self.num_heads})."
-            )
+        self.q_proj = nn.Linear(self.hidden_size, self.num_heads * self.head_dim, bias=False)
+        self.k_proj = nn.Linear(self.hidden_size, self.num_key_value_heads * self.head_dim, bias=False)
+        self.v_proj = nn.Linear(self.hidden_size, self.num_key_value_heads * self.head_dim, bias=False)
+        self.o_proj = nn.Linear(self.num_heads * self.head_dim, self.hidden_size, bias=False)
 
-        self.q_proj = nn.Linear(self.hidden_size, self.num_heads * self.head_dim, bias=config.attention_bias)
-        self.k_proj = nn.Linear(self.hidden_size, self.num_key_value_heads * self.head_dim, bias=config.attention_bias)
-        self.v_proj = nn.Linear(self.hidden_size, self.num_key_value_heads * self.head_dim, bias=config.attention_bias)
-        self.o_proj = nn.Linear(self.hidden_size, self.hidden_size, bias=config.attention_bias)
-        self.q_norm = OlmoeRMSNorm(self.hidden_size, eps=config.rms_norm_eps)
-        self.k_norm = OlmoeRMSNorm(
-            (self.hidden_size // self.num_heads) * self.num_key_value_heads, eps=config.rms_norm_eps
+        self.rotary_emb = MixtralRotaryEmbedding(
+            self.head_dim,
+            max_position_embeddings=self.max_position_embeddings,
+            base=self.rope_theta,
         )
+
+    def _shape(self, tensor: torch.Tensor, seq_len: int, bsz: int):
+        return tensor.view(bsz, seq_len, self.num_heads, self.head_dim).transpose(1, 2).contiguous()
 
     def forward(
         self,
@@ -452,36 +314,44 @@ class OlmoeAttention(nn.Module):
         output_attentions: bool = False,
         use_cache: bool = False,
         cache_position: Optional[torch.LongTensor] = None,
-        position_embeddings: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,
-        **kwargs,
     ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
         bsz, q_len, _ = hidden_states.size()
 
-        query_states = self.q_norm(self.q_proj(hidden_states))
-        key_states = self.k_norm(self.k_proj(hidden_states))
+        query_states = self.q_proj(hidden_states)
+        key_states = self.k_proj(hidden_states)
         value_states = self.v_proj(hidden_states)
-
-        if self.config.clip_qkv is not None:
-            query_states.clamp_(min=-self.config.clip_qkv, max=self.config.clip_qkv)
-            key_states.clamp_(min=-self.config.clip_qkv, max=self.config.clip_qkv)
-            value_states.clamp_(min=-self.config.clip_qkv, max=self.config.clip_qkv)
 
         query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
         key_states = key_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
         value_states = value_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
 
-        cos, sin = position_embeddings
-        query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin)
+        kv_seq_len = key_states.shape[-2]
+        if past_key_value is not None:
+            if self.layer_idx is None:
+                raise ValueError(
+                    f"The cache structure has changed since version v4.36. If you are using {self.__class__.__name__} "
+                    "for auto-regressive decoding with k/v caching, please make sure to initialize the attention class "
+                    "with a layer index."
+                )
+            kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
+        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+        query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
 
         if past_key_value is not None:
-            # sin and cos are specific to RoPE models; cache_position needed for the static cache
-            cache_kwargs = {"sin": sin, "cos": cos, "cache_position": cache_position}
+            cache_kwargs = {"sin": sin, "cos": cos, "cache_position": cache_position}  # Specific to RoPE models
             key_states, value_states = past_key_value.update(key_states, value_states, self.layer_idx, cache_kwargs)
 
+        # repeat k/v heads if n_kv_heads < n_heads
         key_states = repeat_kv(key_states, self.num_key_value_groups)
         value_states = repeat_kv(value_states, self.num_key_value_groups)
 
         attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+
+        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
+            raise ValueError(
+                f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
+                f" {attn_weights.size()}"
+            )
 
         if attention_mask is not None:  # no matter the length, we just slice it
             causal_mask = attention_mask[:, :, :, : key_states.shape[-2]]
@@ -499,8 +369,7 @@ class OlmoeAttention(nn.Module):
             )
 
         attn_output = attn_output.transpose(1, 2).contiguous()
-
-        attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
+        attn_output = attn_output.reshape(bsz, q_len, -1)
 
         attn_output = self.o_proj(attn_output)
 
@@ -510,75 +379,66 @@ class OlmoeAttention(nn.Module):
         return attn_output, attn_weights, past_key_value
 
 
-class OlmoeFlashAttention2(OlmoeAttention):
+# copied from transformers.models.mistral.modeling_mistral.MistralFlashAttention2 with Mistral->Mixtral
+# TODO @longjie no longer copied from Mistral after static cache
+class MixtralFlashAttention2(MixtralAttention):
     """
-    OLMoE flash attention module. This module inherits from `OlmoeAttention` as the weights of the module stays
+    Mixtral flash attention module. This module inherits from `MixtralAttention` as the weights of the module stays
     untouched. The only required change would be on the forward pass where it needs to correctly call the public API of
     flash attention and deal with padding tokens in case the input contains any of them.
     """
 
-    # Copied from transformers.models.llama.modeling_llama.LlamaFlashAttention2.__init__
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # TODO: Should be removed once Flash Attention for RoCm is bumped to 2.1.
-        # flash_attn<2.1 generates top-left aligned causal mask, while what is needed here is bottom-right alignement, that was made default for flash_attn>=2.1. This attribute is used to handle this difference. Reference: https://github.com/Dao-AILab/flash-attention/releases/tag/v2.1.0.
-        # Beware that with flash_attn<2.1, using q_seqlen != k_seqlen (except for the case q_seqlen == 1) produces a wrong mask (top-left).
-        self._flash_attn_uses_top_left_mask = not is_flash_attn_greater_or_equal_2_10()
-
     def forward(
         self,
         hidden_states: torch.Tensor,
-        attention_mask: Optional[torch.LongTensor] = None,
+        attention_mask: Optional[torch.Tensor] = None,
         position_ids: Optional[torch.LongTensor] = None,
         past_key_value: Optional[Cache] = None,
         output_attentions: bool = False,
         use_cache: bool = False,
         cache_position: Optional[torch.LongTensor] = None,
-        position_embeddings: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,
-        **kwargs,
-    ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-        output_attentions = False
-
+    ):
         bsz, q_len, _ = hidden_states.size()
 
-        query_states = self.q_norm(self.q_proj(hidden_states))
-        key_states = self.k_norm(self.k_proj(hidden_states))
+        query_states = self.q_proj(hidden_states)
+        key_states = self.k_proj(hidden_states)
         value_states = self.v_proj(hidden_states)
-        if self.config.clip_qkv is not None:
-            query_states.clamp_(min=-self.config.clip_qkv, max=self.config.clip_qkv)
-            key_states.clamp_(min=-self.config.clip_qkv, max=self.config.clip_qkv)
-            value_states.clamp_(min=-self.config.clip_qkv, max=self.config.clip_qkv)
 
-        # Flash attention requires the input to have the shape
-        # batch_size x seq_length x head_dim x hidden_dim
-        # therefore we just need to keep the original shape
         query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
         key_states = key_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
         value_states = value_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
 
-        cos, sin = position_embeddings
-        query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin)
+        kv_seq_len = key_states.shape[-2]
+        if past_key_value is not None:
+            if self.layer_idx is None:
+                raise ValueError(
+                    f"The cache structure has changed since version v4.36. If you are using {self.__class__.__name__} "
+                    "for auto-regressive decoding with k/v caching, please make sure to initialize the attention class "
+                    "with a layer index."
+                )
+            kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
+
+        # Because the input can be padded, the absolute sequence length depends on the max position id.
+        rotary_seq_len = (
+            max(kv_seq_len, position_ids[:, -1].max().item() + 1) if position_ids is not None else kv_seq_len
+        )
+
+        cos, sin = self.rotary_emb(value_states, seq_len=rotary_seq_len)
+
+        query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
 
         if past_key_value is not None:
-            # sin and cos are specific to RoPE models; cache_position needed for the static cache
-            cache_kwargs = {"sin": sin, "cos": cos, "cache_position": cache_position}
+            cache_kwargs = {"sin": sin, "cos": cos, "cache_position": cache_position}  # Specific to RoPE models
             key_states, value_states = past_key_value.update(key_states, value_states, self.layer_idx, cache_kwargs)
 
-        # TODO: These transpose are quite inefficient but Flash Attention requires the layout [batch_size, sequence_length, num_heads, head_dim]. We would need to refactor the KV cache
-        # to be able to avoid many of these transpose/reshape/view.
-        query_states = query_states.transpose(1, 2)
-        key_states = key_states.transpose(1, 2)
-        value_states = value_states.transpose(1, 2)
-
-        dropout_rate = self.attention_dropout if self.training else 0.0
+        # repeat k/v heads if n_kv_heads < n_heads
+        key_states = repeat_kv(key_states, self.num_key_value_groups)
+        value_states = repeat_kv(value_states, self.num_key_value_groups)
+        dropout_rate = 0.0 if not self.training else self.attention_dropout
 
         # In PEFT, usually we cast the layer norms in float32 for training stability reasons
         # therefore the input hidden states gets silently casted in float32. Hence, we need
-        # cast them back in the correct dtype just to be sure everything works as expected.
-        # This might slowdown training & inference so it is recommended to not cast the LayerNorms
-        # in fp32. (OlmoeRMSNorm handles it correctly)
-
+        # cast them back in float16 just to be sure everything works as expected.
         input_dtype = query_states.dtype
         if input_dtype == torch.float32:
             if torch.is_autocast_enabled():
@@ -599,18 +459,24 @@ class OlmoeFlashAttention2(OlmoeAttention):
             key_states = key_states.to(target_dtype)
             value_states = value_states.to(target_dtype)
 
+        # Reashape to the expected shape for Flash Attention
+        query_states = query_states.transpose(1, 2)
+        key_states = key_states.transpose(1, 2)
+        value_states = value_states.transpose(1, 2)
+
         attn_output = _flash_attention_forward(
             query_states,
             key_states,
             value_states,
             attention_mask,
             q_len,
+            position_ids=position_ids,
             dropout=dropout_rate,
-            use_top_left_mask=self._flash_attn_uses_top_left_mask,
+            sliding_window=getattr(self.config, "sliding_window", None),
             is_causal=self.is_causal,
         )
 
-        attn_output = attn_output.reshape(bsz, q_len, self.hidden_size).contiguous()
+        attn_output = attn_output.reshape(bsz, q_len, -1).contiguous()
         attn_output = self.o_proj(attn_output)
 
         if not output_attentions:
@@ -619,14 +485,16 @@ class OlmoeFlashAttention2(OlmoeAttention):
         return attn_output, attn_weights, past_key_value
 
 
-class OlmoeSdpaAttention(OlmoeAttention):
+# copied from transformers.models.mistral.modeling_mistral.MistralSdpaAttention with Mistral->Mixtral
+# TODO @longjie no longer copied from Mistral after static cache
+class MixtralSdpaAttention(MixtralAttention):
     """
-    OLMoE attention module using torch.nn.functional.scaled_dot_product_attention. This module inherits from
-    `OlmoeAttention` as the weights of the module stays untouched. The only changes are on the forward pass to adapt to
+    Mixtral attention module using torch.nn.functional.scaled_dot_product_attention. This module inherits from
+    `MixtralAttention` as the weights of the module stays untouched. The only changes are on the forward pass to adapt to
     SDPA API.
     """
 
-    # Adapted from OlmoeAttention.forward
+    # Adapted from MixtralAttention.forward
     def forward(
         self,
         hidden_states: torch.Tensor,
@@ -636,12 +504,11 @@ class OlmoeSdpaAttention(OlmoeAttention):
         output_attentions: bool = False,
         use_cache: bool = False,
         cache_position: Optional[torch.LongTensor] = None,
-        position_embeddings: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,
     ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
         if output_attentions:
             # TODO: Improve this warning with e.g. `model.config.attn_implementation = "manual"` once this is implemented.
             logger.warning_once(
-                "OlmoeModel is using OlmoeSdpaAttention, but `torch.nn.functional.scaled_dot_product_attention` does not support `output_attentions=True`. Falling back to the manual attention implementation, "
+                "MixtralModel is using MixtralSdpaAttention, but `torch.nn.functional.scaled_dot_product_attention` does not support `output_attentions=True`. Falling back to the manual attention implementation, "
                 'but specifying the manual implementation will be required from Transformers version v5.0.0 onwards. This warning can be removed using the argument `attn_implementation="eager"` when loading the model.'
             )
             return super().forward(
@@ -651,50 +518,46 @@ class OlmoeSdpaAttention(OlmoeAttention):
                 past_key_value=past_key_value,
                 output_attentions=output_attentions,
                 use_cache=use_cache,
-                cache_position=cache_position,
-                position_embeddings=position_embeddings,
             )
 
         bsz, q_len, _ = hidden_states.size()
 
-        query_states = self.q_norm(self.q_proj(hidden_states))
-        key_states = self.k_norm(self.k_proj(hidden_states))
+        query_states = self.q_proj(hidden_states)
+        key_states = self.k_proj(hidden_states)
         value_states = self.v_proj(hidden_states)
-
-        if self.config.clip_qkv is not None:
-            query_states.clamp_(min=-self.config.clip_qkv, max=self.config.clip_qkv)
-            key_states.clamp_(min=-self.config.clip_qkv, max=self.config.clip_qkv)
-            value_states.clamp_(min=-self.config.clip_qkv, max=self.config.clip_qkv)
 
         query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
         key_states = key_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
         value_states = value_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
 
-        cos, sin = position_embeddings
-        query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin)
+        kv_seq_len = key_states.shape[-2]
+        if past_key_value is not None:
+            kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
+        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+
+        query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
 
         if past_key_value is not None:
-            # sin and cos are specific to RoPE models; cache_position needed for the static cache
-            cache_kwargs = {"sin": sin, "cos": cos, "cache_position": cache_position}
+            cache_kwargs = {"sin": sin, "cos": cos, "cache_position": cache_position}  # Specific to RoPE models
             key_states, value_states = past_key_value.update(key_states, value_states, self.layer_idx, cache_kwargs)
 
         key_states = repeat_kv(key_states, self.num_key_value_groups)
         value_states = repeat_kv(value_states, self.num_key_value_groups)
 
         causal_mask = attention_mask
-        # if attention_mask is not None and cache_position is not None:
-        if attention_mask is not None:
-            causal_mask = causal_mask[:, :, :, : key_states.shape[-2]]
+        if attention_mask is not None:  # no matter the length, we just slice it
+            causal_mask = attention_mask[:, :, :, : key_states.shape[-2]]
 
         # SDPA with memory-efficient backend is currently (torch==2.1.2) bugged with non-contiguous inputs with custom attn_mask,
         # Reference: https://github.com/pytorch/pytorch/issues/112577.
-        if query_states.device.type == "cuda" and causal_mask is not None:
+        if query_states.device.type == "cuda" and attention_mask is not None:
             query_states = query_states.contiguous()
             key_states = key_states.contiguous()
             value_states = value_states.contiguous()
 
         # We dispatch to SDPA's Flash Attention or Efficient kernels via this `is_causal` if statement instead of an inline conditional assignment
         # in SDPA to support both torch.compile's dynamic shapes and full graph options. An inline conditional prevents dynamic shapes from compiling.
+        # The q_len > 1 is necessary to match with AttentionMaskConverter.to_causal_4d that does not create a causal mask in case q_len == 1.
         is_causal = True if causal_mask is None and q_len > 1 else False
 
         attn_output = torch.nn.functional.scaled_dot_product_attention(
@@ -707,60 +570,96 @@ class OlmoeSdpaAttention(OlmoeAttention):
         )
 
         attn_output = attn_output.transpose(1, 2).contiguous()
-        attn_output = attn_output.view(bsz, q_len, self.hidden_size)
+        attn_output = attn_output.view(bsz, q_len, -1)
 
         attn_output = self.o_proj(attn_output)
 
         return attn_output, None, past_key_value
 
 
-OLMOE_ATTENTION_CLASSES = {
-    "eager": OlmoeAttention,
-    "flash_attention_2": OlmoeFlashAttention2,
-    "sdpa": OlmoeSdpaAttention,
+MIXTRAL_ATTENTION_CLASSES = {
+    "eager": MixtralAttention,
+    "flash_attention_2": MixtralFlashAttention2,
+    "sdpa": MixtralSdpaAttention,
 }
 
 
-class OlmoeSparseMoeBlock(nn.Module):
+class MixtralBlockSparseTop2MLP(nn.Module):
+    def __init__(self, config: MixtralConfig):
+        super().__init__()
+        self.ffn_dim = config.intermediate_size
+        self.hidden_dim = config.hidden_size
+
+        self.w1 = nn.Linear(self.hidden_dim, self.ffn_dim, bias=False)
+        self.w2 = nn.Linear(self.ffn_dim, self.hidden_dim, bias=False)
+        self.w3 = nn.Linear(self.hidden_dim, self.ffn_dim, bias=False)
+
+        self.act_fn = ACT2FN[config.hidden_act]
+
+    def forward(self, hidden_states):
+        current_hidden_states = self.act_fn(self.w1(hidden_states)) * self.w3(hidden_states)
+        current_hidden_states = self.w2(current_hidden_states)
+        return current_hidden_states
+
+
+class MixtralSparseMoeBlock(nn.Module):
+    """
+    This implementation is
+    strictly equivalent to standard MoE with full capacity (no
+    dropped tokens). It's faster since it formulates MoE operations
+    in terms of block-sparse operations to accommodate imbalanced
+    assignments of tokens to experts, whereas standard MoE either
+    (1) drop tokens at the cost of reduced performance or (2) set
+    capacity factor to number of experts and thus waste computation
+    and memory on padding.
+    """
+
     def __init__(self, config, layer_idx):
         super().__init__()
-        # ✨✨✨
+        self.layer_idx = layer_idx
         
-        self.num_experts = config.num_experts
+        self.hidden_dim = config.hidden_size
+        self.ffn_dim = config.intermediate_size
+        self.num_experts = config.num_local_experts
         self.top_k = config.num_experts_per_tok
-        self.norm_topk_prob = config.norm_topk_prob
-        self.gate = nn.Linear(config.hidden_size, self.num_experts, bias=False)
-        # ✨✨✨
-        self.experts = nn.ModuleList([OlmoeMLP(config) for _ in range(self.num_experts)])
+
+        # gating
+        self.gate = nn.Linear(self.hidden_dim, self.num_experts, bias=False)
+
+        self.experts = nn.ModuleList([MixtralBlockSparseTop2MLP(config) for _ in range(self.num_experts)])
+
+        # Jitter parameters
+        self.jitter_noise = config.router_jitter_noise
 
         # topk selection algorithm
         ### 🔍🔍🔍
-        self.layer_idx = layer_idx  ### 🔍🔍🔍
         self.expert_capacity = config.expert_capacity \
             if hasattr(config, "expert_capacity") and isinstance(config.expert_capacity, float) else None
         self.strategy = config.strategy if hasattr(config, "strategy") else None
         self.rounds = config.rounds if hasattr(config, "rounds") else None
+        self.drop_n = config.strategy if hasattr(config, "drop_n") else 1
+        ###
         
-        self.drop_n = config.strategy if hasattr(config, "drop_n") else int(0.1 * config.num_experts * self.expert_capacity)
-
-            
-    def forward(self, hidden_states: torch.Tensor, attention_mask: Optional[torch.Tensor] = None,) -> torch.Tensor:
+    def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+        """ """
         batch_size, sequence_length, hidden_dim = hidden_states.shape
-        
-        ### 
+        ### 🔍🔍🔍
         total_tokens = batch_size * sequence_length
-
-        if self.expert_capacity is None: 
+        if sequence_length == 1 or self.expert_capacity is None: 
             expert_capacity = None
         elif self.expert_capacity is not None:
             expert_capacity = math.ceil(self.expert_capacity * self.top_k * (total_tokens / self.num_experts))
-        
+        ### 
+
+        if self.training and self.jitter_noise > 0:
+            hidden_states *= torch.empty_like(hidden_states).uniform_(1.0 - self.jitter_noise, 1.0 + self.jitter_noise)
         hidden_states = hidden_states.view(-1, hidden_dim)
+        # router_logits: (batch * sequence_length, n_experts)
         router_logits = self.gate(hidden_states)
+
         routing_weights = F.softmax(router_logits, dim=1, dtype=torch.float)
-
-        ### select top-k experts
-
+        # routing_weights, selected_experts = torch.topk(routing_weights, self.top_k, dim=-1)
+        ### 🔍🔍🔍
         if self.strategy == "skip_experts" and sequence_length != 1:
             masked_weights = torch.zeros_like(routing_weights, dtype=routing_weights.dtype)
             routing_weights, selected_experts = torch.topk(routing_weights, k=self.top_k, dim=-1, sorted=False)
@@ -771,27 +670,22 @@ class OlmoeSparseMoeBlock(nn.Module):
             routing_weights, selected_experts = self.adjust_tokens(expert_capacity, routing_weights)
             expert_idxes = range(self.num_experts)
         ######
-        
-        if self.norm_topk_prob:
-            routing_weights /= routing_weights.sum(dim=-1, keepdim=True)
+
+        routing_weights /= routing_weights.sum(dim=-1, keepdim=True)
         # we cast back to the input dtype
         routing_weights = routing_weights.to(hidden_states.dtype)
 
-        # if self.update_tokens  == "after":
-            # routing_weights, selected_experts = self.adjust_tokens(expert_capacity, routing_weights)
-            
         final_hidden_states = torch.zeros(
             (batch_size * sequence_length, hidden_dim), dtype=hidden_states.dtype, device=hidden_states.device
         )
 
         # One hot encode the selected experts to create an expert mask
-        # this will be used to easily index which expert is going to be selected
+        # this will be used to easily index which expert is going to be sollicitated
+        expert_mask = torch.nn.functional.one_hot(selected_experts, num_classes=self.num_experts).permute(2, 1, 0)
 
-        ### select top-k experts
-        expert_mask = torch.nn.functional.one_hot(selected_experts, num_classes=self.num_experts + 1).permute(2, 1, 0)
-        
         # Loop over all available experts in the model and perform the computation on each expert
         # for expert_idx in range(self.num_experts):
+        # print(f"expert_idxes: {expert_idxes}")
         for expert_idx in expert_idxes:
             expert_layer = self.experts[expert_idx]
             idx, top_x = torch.where(expert_mask[expert_idx])
@@ -799,25 +693,23 @@ class OlmoeSparseMoeBlock(nn.Module):
             # Index the correct hidden states and compute the expert hidden state for
             # the current expert. We need to make sure to multiply the output hidden
             # states by `routing_weights` on the corresponding tokens (top-1 and top-2)
-            
             current_state = hidden_states[None, top_x].reshape(-1, hidden_dim)
-
             current_hidden_states = expert_layer(current_state) * routing_weights[top_x, idx, None]
 
             # However `index_add_` only support torch tensors for indexing so we'll use
             # the `top_x` tensor here.
             final_hidden_states.index_add_(0, top_x, current_hidden_states.to(hidden_states.dtype))
-            
         final_hidden_states = final_hidden_states.reshape(batch_size, sequence_length, hidden_dim)
-        # return final_hidden_states, router_logits, mod_losses
         return final_hidden_states, router_logits
+
 
     def overflow(self, utilized_mask, expert_capacity): 
         token_priority = torch.cumsum(utilized_mask, dim=-2)
+        # print(f"{self.layer_idx} expert_capacity: {expert_capacity}") ### these two rows are important for checking capacity. 
+        # print(f"{self.layer_idx} flow: {token_priority[-1, :].tolist()}")
         overflow = token_priority[-1, :] - expert_capacity
-        overflow = torch.relu(overflow)
         return overflow
-
+    
     def adjust_tokens(self, expert_capacity, scores): 
 
         strategy_list = ["score", "last", "first", "random",]
@@ -835,7 +727,7 @@ class OlmoeSparseMoeBlock(nn.Module):
             token_priority = torch.cumsum(mask, dim=-2)
             utilized_mask = token_priority <= expert_capacity
             utilized_mask = utilized_mask[mask].view(topk_idx.size())
-            topk_idx[~utilized_mask] = self.num_experts 
+            # topk_idx[~utilized_mask] = self.num_experts 
             topk_weight = topk_weight * utilized_mask
 
         # TODO Drop first tokens, 
@@ -845,7 +737,7 @@ class OlmoeSparseMoeBlock(nn.Module):
             token_priority = torch.flip(reversed_cumsum, dims=[-2])  #### 
             utilized_mask = token_priority <= expert_capacity           
             utilized_mask = utilized_mask[mask].view(topk_idx.size())
-            topk_idx[~utilized_mask] = self.num_experts 
+            # topk_idx[~utilized_mask] = self.num_experts 
             topk_weight = topk_weight * utilized_mask
 
         elif self.strategy == "random": 
@@ -863,28 +755,20 @@ class OlmoeSparseMoeBlock(nn.Module):
                     utilized_mask[sub_mask, i] = (importance_scores > threshold)
             
             utilized_mask = utilized_mask[mask].view(topk_idx.size())
-            topk_idx[~utilized_mask] = self.num_experts 
+            # topk_idx[~utilized_mask] = self.num_experts 
             topk_weight = topk_weight * utilized_mask
                     
         elif self.strategy == "score": 
 
-            under_selected_indices = None
-            
-            for r in range(self.rounds):
-                if under_selected_indices is None:
-                    topk_weight, topk_idx = torch.topk(scores, k=self.top_k, dim=-1, sorted=False)
-                else: 
-                    # Only recompute top-k for under-selected tokens
-                    if under_selected_indices.size()[0] == 0:
-                        break
-                    topk_weight[under_selected_indices], topk_idx[under_selected_indices] = torch.topk(
-                        scores[under_selected_indices], k=self.top_k, dim=-1, sorted=False)
-                
+            rounds = self.rounds 
+            for r in range(rounds):
+                # TODO ignore the computation in the the overflowed experts
+                topk_weight, topk_idx = torch.topk(scores, k=self.top_k, dim=-1, sorted=False)
                 mask = torch.zeros_like(scores, dtype=torch.bool)
                 mask.scatter_(dim=-1, index=topk_idx, value=True)
                 overflow = self.overflow(mask, expert_capacity)
                 utilized_mask = mask.clone()
-                                
+                
                 for i in range(utilized_mask.size()[-1]):
                     if overflow[i] > 0: 
                         k = overflow[i].item()  
@@ -892,69 +776,63 @@ class OlmoeSparseMoeBlock(nn.Module):
                         importance_scores = scores[sub_mask, i]
                         threshold, _ = torch.kthvalue(importance_scores, k)
                         utilized_mask[sub_mask, i] = (importance_scores > threshold) & (importance_scores > 0) # higher than threhold, and has been selected by topk.
-                        
+
                 score_mask = mask ^ utilized_mask
                 scores[score_mask] = -1
+                new_overflow = self.overflow(utilized_mask, expert_capacity)
 
-                under_selected_indices = ((utilized_mask).bool().float().sum(-1) < self.top_k)
-                new_overflow = self.overflow(utilized_mask, expert_capacity)                
                 utilized_mask = utilized_mask[mask].view(topk_idx.size())
-                print(f"expert_capacity: {expert_capacity} - {new_overflow}")
+                # topk_idx[~utilized_mask] = self.num_experts
                 topk_weight = topk_weight * utilized_mask
-            topk_idx[~utilized_mask] = self.num_experts
 
         return topk_weight, topk_idx 
     
-class OlmoeDecoderLayer(nn.Module):
-    def __init__(self, config: OlmoeConfig, layer_idx: int):
+
+class MixtralDecoderLayer(nn.Module):
+    def __init__(self, config: MixtralConfig, layer_idx: int):
         super().__init__()
         self.hidden_size = config.hidden_size
 
-        self.self_attn = OLMOE_ATTENTION_CLASSES[config._attn_implementation](config=config, layer_idx=layer_idx)
+        self.self_attn = MIXTRAL_ATTENTION_CLASSES[config._attn_implementation](config, layer_idx)
 
-        self.mlp = OlmoeSparseMoeBlock(config, layer_idx)
-        
-        self.input_layernorm = OlmoeRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
-        self.post_attention_layernorm = OlmoeRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
+        self.block_sparse_moe = MixtralSparseMoeBlock(config, layer_idx)
+        self.input_layernorm = MixtralRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
+        self.post_attention_layernorm = MixtralRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
 
     def forward(
         self,
         hidden_states: torch.Tensor,
         attention_mask: Optional[torch.Tensor] = None,
         position_ids: Optional[torch.LongTensor] = None,
-        past_key_value: Optional[Cache] = None,
+        past_key_value: Optional[Tuple[torch.Tensor]] = None,
         output_attentions: Optional[bool] = False,
         output_router_logits: Optional[bool] = False,
         use_cache: Optional[bool] = False,
         cache_position: Optional[torch.LongTensor] = None,
-        position_embeddings: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,
         **kwargs,
     ) -> Tuple[torch.FloatTensor, Optional[Tuple[torch.FloatTensor, torch.FloatTensor]]]:
         """
         Args:
             hidden_states (`torch.FloatTensor`): input to the layer of shape `(batch, seq_len, embed_dim)`
-            attention_mask (`torch.FloatTensor`, *optional*):
-                attention mask of size `(batch_size, sequence_length)` if flash attention is used or `(batch_size, 1,
-                query_sequence_length, key_sequence_length)` if default attention is used.
+            attention_mask (`torch.FloatTensor`, *optional*): attention mask of size
+                `(batch, sequence_length)` where padding elements are indicated by 0.
+            past_key_value (`Tuple(torch.FloatTensor)`, *optional*): cached past key and value projection states
             output_attentions (`bool`, *optional*):
                 Whether or not to return the attentions tensors of all attention layers. See `attentions` under
                 returned tensors for more detail.
             output_router_logits (`bool`, *optional*):
-                Whether or not to return the logits of all the routers. They are useful for computing the router loss,
-                and should not be returned during inference.
+                Whether or not to return the logits of all the routers. They are useful for computing the router loss, and
+                should not be returned during inference.
             use_cache (`bool`, *optional*):
                 If set to `True`, `past_key_values` key value states are returned and can be used to speed up decoding
                 (see `past_key_values`).
-            past_key_value (`Tuple(torch.FloatTensor)`, *optional*): cached past key and value projection states
             cache_position (`torch.LongTensor` of shape `(sequence_length)`, *optional*):
-                Indices depicting the position of the input sequence tokens in the sequence
-            position_embeddings (`Tuple[torch.FloatTensor, torch.FloatTensor]`, *optional*):
-                Tuple containing the cosine and sine positional embeddings of shape `(batch_size, seq_len, head_dim)`,
-                with `head_dim` being the embedding dimension of each attention head.
+                Indices depicting the position of the input sequence tokens in the sequence.
             kwargs (`dict`, *optional*):
                 Arbitrary kwargs to be ignored, used for FSDP and other methods that injects code
                 into the model
         """
+
         residual = hidden_states
 
         hidden_states = self.input_layernorm(hidden_states)
@@ -968,18 +846,13 @@ class OlmoeDecoderLayer(nn.Module):
             output_attentions=output_attentions,
             use_cache=use_cache,
             cache_position=cache_position,
-            position_embeddings=position_embeddings,
-            **kwargs,
         )
         hidden_states = residual + hidden_states
 
         # Fully Connected
         residual = hidden_states
         hidden_states = self.post_attention_layernorm(hidden_states)
-
-        # ✨✨✨ 
-        hidden_states, router_logits = self.mlp(hidden_states, attention_mask) # ✨✨✨
-
+        hidden_states, router_logits = self.block_sparse_moe(hidden_states)
         hidden_states = residual + hidden_states
 
         outputs = (hidden_states,)
@@ -992,12 +865,11 @@ class OlmoeDecoderLayer(nn.Module):
 
         if output_router_logits:
             outputs += (router_logits,)
-        # ✨✨✨ 
-        # outputs += (mod_loss,)
+
         return outputs
 
 
-OLMOE_START_DOCSTRING = r"""
+MIXTRAL_START_DOCSTRING = r"""
     This model inherits from [`PreTrainedModel`]. Check the superclass documentation for the generic methods the
     library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
     etc.)
@@ -1007,7 +879,7 @@ OLMOE_START_DOCSTRING = r"""
     and behavior.
 
     Parameters:
-        config ([`OlmoeConfig`]):
+        config ([`MixtralConfig`]):
             Model configuration class with all the parameters of the model. Initializing with a config file does not
             load the weights associated with the model, only the configuration. Check out the
             [`~PreTrainedModel.from_pretrained`] method to load the model weights.
@@ -1015,21 +887,20 @@ OLMOE_START_DOCSTRING = r"""
 
 
 @add_start_docstrings(
-    "The bare Olmoe Model outputting raw hidden-states without any specific head on top.",
-    OLMOE_START_DOCSTRING,
+    "The bare Mixtral Model outputting raw hidden-states without any specific head on top.",
+    MIXTRAL_START_DOCSTRING,
 )
-# Copied from transformers.models.llama.modeling_llama.LlamaPreTrainedModel with Llama->Olmoe
-class OlmoePreTrainedModel(PreTrainedModel):
-    config_class = OlmoeConfig
+# copied from transformers.models.qwen2.modeling_qwen2.Qwen2PreTrainedModel with Qwen2->Mixtral
+# TODO (Raushan): bring back copied after compile compatibility
+class MixtralPreTrainedModel(PreTrainedModel):
+    config_class = MixtralConfig
     base_model_prefix = "model"
     supports_gradient_checkpointing = True
-    _no_split_modules = ["OlmoeDecoderLayer"]
-    _skip_keys_device_placement = ["past_key_values"]
+    _no_split_modules = ["MixtralDecoderLayer"]
+    _skip_keys_device_placement = "past_key_values"
     _supports_flash_attn_2 = True
     _supports_sdpa = True
     _supports_cache_class = True
-    _supports_quantized_cache = True
-    _supports_static_cache = True
 
     def _init_weights(self, module):
         std = self.config.initializer_range
@@ -1043,7 +914,7 @@ class OlmoePreTrainedModel(PreTrainedModel):
                 module.weight.data[module.padding_idx].zero_()
 
 
-OLMOE_INPUTS_DOCSTRING = r"""
+MIXTRAL_INPUTS_DOCSTRING = r"""
     Args:
         input_ids (`torch.LongTensor` of shape `(batch_size, sequence_length)`):
             Indices of input sequence tokens in the vocabulary. Padding will be ignored by default should you provide
@@ -1064,7 +935,7 @@ OLMOE_INPUTS_DOCSTRING = r"""
             Indices can be obtained using [`AutoTokenizer`]. See [`PreTrainedTokenizer.encode`] and
             [`PreTrainedTokenizer.__call__`] for details.
 
-            If `past_key_values` is used, optionally only the last `input_ids` have to be input (see
+            If `past_key_values` is used, optionally only the last `decoder_input_ids` have to be input (see
             `past_key_values`).
 
             If you want to change padding behavior, you should read [`modeling_opt._prepare_decoder_attention_mask`]
@@ -1078,23 +949,17 @@ OLMOE_INPUTS_DOCSTRING = r"""
             config.n_positions - 1]`.
 
             [What are position IDs?](../glossary#position-ids)
-        past_key_values (`Cache` or `tuple(tuple(torch.FloatTensor))`, *optional*):
-            Pre-computed hidden-states (key and values in the self-attention blocks and in the cross-attention
-            blocks) that can be used to speed up sequential decoding. This typically consists in the `past_key_values`
-            returned by the model at a previous stage of decoding, when `use_cache=True` or `config.use_cache=True`.
+        past_key_values (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`):
+            Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors of shape
+            `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and 2 additional tensors of shape
+            `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
 
-            Two formats are allowed:
-            - a [`~cache_utils.Cache`] instance;
-            - Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors of
-            shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`). This is also known as the legacy
-            cache format.
+            Contains pre-computed hidden-states (key and values in the self-attention blocks and in the cross-attention
+            blocks) that can be used (see `past_key_values` input) to speed up sequential decoding.
 
-            The model will output the same cache format that is fed as input. If no `past_key_values` are passed, the
-            legacy cache format will be returned.
-
-            If `past_key_values` are used, the user can optionally input only the last `input_ids` (those that don't
-            have their past key value states given to this model) of shape `(batch_size, 1)` instead of all `input_ids`
-            of shape `(batch_size, sequence_length)`.
+            If `past_key_values` are used, the user can optionally input only the last `decoder_input_ids` (those that
+            don't have their past key value states given to this model) of shape `(batch_size, 1)` instead of all
+            `decoder_input_ids` of shape `(batch_size, sequence_length)`.
         inputs_embeds (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*):
             Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
             is useful if you want more control over how to convert `input_ids` indices into associated vectors than the
@@ -1121,31 +986,32 @@ OLMOE_INPUTS_DOCSTRING = r"""
 
 
 @add_start_docstrings(
-    "The bare Olmoe Model outputting raw hidden-states without any specific head on top.",
-    OLMOE_START_DOCSTRING,
+    "The bare Mixtral Model outputting raw hidden-states without any specific head on top.",
+    MIXTRAL_START_DOCSTRING,
 )
-# TODO: re-enable check: Copied from transformers.models.llama.modeling_llama.LlamaModel with Llama->Olmoe
-class OlmoeModel(OlmoePreTrainedModel):
+# copied from transformers.models.mistral.modeling_mistral.MistralModel with MISTRAL->MIXTRAL,Mistral->Mixtral
+# TODO @longjie no longer copied from Mistral after static cache
+class MixtralModel(MixtralPreTrainedModel):
     """
-    Transformer decoder consisting of *config.num_hidden_layers* layers. Each layer is a [`OlmoeDecoderLayer`]
+    Transformer decoder consisting of *config.num_hidden_layers* layers. Each layer is a [`MixtralDecoderLayer`]
 
     Args:
-        config: OlmoeConfig
+        config: MixtralConfig
     """
 
-    def __init__(self, config: OlmoeConfig):
+    def __init__(self, config: MixtralConfig):
         super().__init__(config)
         self.padding_idx = config.pad_token_id
         self.vocab_size = config.vocab_size
 
         self.embed_tokens = nn.Embedding(config.vocab_size, config.hidden_size, self.padding_idx)
         self.layers = nn.ModuleList(
-            [OlmoeDecoderLayer(config, layer_idx) for layer_idx in range(config.num_hidden_layers)]
+            [MixtralDecoderLayer(config, layer_idx) for layer_idx in range(config.num_hidden_layers)]
         )
-        self.norm = OlmoeRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
-        self.rotary_emb = OlmoeRotaryEmbedding(config=config)
-        self.gradient_checkpointing = False
+        self._attn_implementation = config._attn_implementation
+        self.norm = MixtralRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
 
+        self.gradient_checkpointing = False
         # Initialize weights and apply final processing
         self.post_init()
 
@@ -1155,14 +1021,14 @@ class OlmoeModel(OlmoePreTrainedModel):
     def set_input_embeddings(self, value):
         self.embed_tokens = value
 
-    @add_start_docstrings_to_model_forward(OLMOE_INPUTS_DOCSTRING)
     # Ignore copy
+    @add_start_docstrings_to_model_forward(MIXTRAL_INPUTS_DOCSTRING)
     def forward(
         self,
         input_ids: torch.LongTensor = None,
         attention_mask: Optional[torch.Tensor] = None,
         position_ids: Optional[torch.LongTensor] = None,
-        past_key_values: Optional[Union[Cache, List[torch.FloatTensor]]] = None,
+        past_key_values: Optional[List[torch.FloatTensor]] = None,
         inputs_embeds: Optional[torch.FloatTensor] = None,
         use_cache: Optional[bool] = None,
         output_attentions: Optional[bool] = None,
@@ -1179,20 +1045,18 @@ class OlmoeModel(OlmoePreTrainedModel):
             output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
         )
         use_cache = use_cache if use_cache is not None else self.config.use_cache
+
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
-        # ✨✨✨
         if (input_ids is None) ^ (inputs_embeds is not None):
             raise ValueError("You must specify exactly one of input_ids or inputs_embeds")
 
-        if self.gradient_checkpointing and self.training and use_cache:
-            logger.warning_once(
-                "`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`."
-            )
-            use_cache = False
-
-        if inputs_embeds is None:
-            inputs_embeds = self.embed_tokens(input_ids)
+        if self.gradient_checkpointing and self.training:
+            if use_cache:
+                logger.warning_once(
+                    "`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`..."
+                )
+                use_cache = False
 
         # kept for BC (non `Cache` `past_key_values` inputs)
         return_legacy_cache = False
@@ -1208,6 +1072,9 @@ class OlmoeModel(OlmoePreTrainedModel):
                     "(https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)"
                 )
 
+        if inputs_embeds is None:
+            inputs_embeds = self.embed_tokens(input_ids)
+
         if cache_position is None:
             past_seen_tokens = past_key_values.get_seq_length() if past_key_values is not None else 0
             cache_position = torch.arange(
@@ -1220,11 +1087,7 @@ class OlmoeModel(OlmoePreTrainedModel):
             attention_mask, inputs_embeds, cache_position, past_key_values, output_attentions
         )
 
-        # embed positions
         hidden_states = inputs_embeds
-
-        # create position embeddings to be shared across the decoder layers
-        position_embeddings = self.rotary_emb(hidden_states, position_ids)
 
         # decoder layers
         all_hidden_states = () if output_hidden_states else None
@@ -1232,7 +1095,7 @@ class OlmoeModel(OlmoePreTrainedModel):
         all_router_logits = () if output_router_logits else None
         next_decoder_cache = None
 
-        for decoder_layer in self.layers[: self.config.num_hidden_layers]:
+        for decoder_layer in self.layers:
             if output_hidden_states:
                 all_hidden_states += (hidden_states,)
 
@@ -1247,7 +1110,6 @@ class OlmoeModel(OlmoePreTrainedModel):
                     output_router_logits,
                     use_cache,
                     cache_position,
-                    position_embeddings,
                 )
             else:
                 layer_outputs = decoder_layer(
@@ -1259,18 +1121,17 @@ class OlmoeModel(OlmoePreTrainedModel):
                     output_router_logits=output_router_logits,
                     use_cache=use_cache,
                     cache_position=cache_position,
-                    position_embeddings=position_embeddings,
                 )
 
             hidden_states = layer_outputs[0]
-                
+
             if use_cache:
                 next_decoder_cache = layer_outputs[2 if output_attentions else 1]
 
             if output_attentions:
                 all_self_attns += (layer_outputs[1],)
 
-            if output_router_logits and layer_outputs[-1] is not None:
+            if output_router_logits:
                 all_router_logits += (layer_outputs[-1],)
 
         hidden_states = self.norm(hidden_states)
@@ -1284,7 +1145,11 @@ class OlmoeModel(OlmoePreTrainedModel):
             next_cache = next_cache.to_legacy_cache()
 
         if not return_dict:
-            return tuple(v for v in [hidden_states, next_cache, all_hidden_states, all_self_attns] if v is not None)
+            return tuple(
+                v
+                for v in [hidden_states, next_cache, all_hidden_states, all_self_attns, all_router_logits]
+                if v is not None
+            )
         return MoeModelOutputWithPast(
             last_hidden_state=hidden_states,
             past_key_values=next_cache,
@@ -1293,6 +1158,7 @@ class OlmoeModel(OlmoePreTrainedModel):
             router_logits=all_router_logits,
         )
 
+    # Copied from transformers.models.phi3.modeling_phi3.Phi3Model._update_causal_mask
     def _update_causal_mask(
         self,
         attention_mask: torch.Tensor,
@@ -1311,21 +1177,30 @@ class OlmoeModel(OlmoePreTrainedModel):
         # to infer the attention mask.
         past_seen_tokens = past_key_values.get_seq_length() if past_key_values is not None else 0
         using_static_cache = isinstance(past_key_values, StaticCache)
+        using_sliding_window_cache = isinstance(past_key_values, SlidingWindowCache)
 
         # When output attentions is True, sdpa implementation's forward method calls the eager implementation's forward
-        if self.config._attn_implementation == "sdpa" and not using_static_cache and not output_attentions:
+        if (
+            self.config._attn_implementation == "sdpa"
+            and not (using_static_cache or using_sliding_window_cache)
+            and not output_attentions
+        ):
             if AttentionMaskConverter._ignore_causal_mask_sdpa(
                 attention_mask,
                 inputs_embeds=input_tensor,
                 past_key_values_length=past_seen_tokens,
+                sliding_window=self.config.sliding_window,
                 is_training=self.training,
             ):
                 return None
 
         dtype, device = input_tensor.dtype, input_tensor.device
+        min_dtype = torch.finfo(dtype).min
         sequence_length = input_tensor.shape[1]
-        if using_static_cache:
+        # SlidingWindowCache or StaticCache
+        if using_sliding_window_cache or using_static_cache:
             target_length = past_key_values.get_max_cache_shape()
+        # DynamicCache or no cache
         else:
             target_length = (
                 attention_mask.shape[-1]
@@ -1342,6 +1217,8 @@ class OlmoeModel(OlmoePreTrainedModel):
             device=device,
             cache_position=cache_position,
             batch_size=input_tensor.shape[0],
+            config=self.config,
+            past_key_values=past_key_values,
         )
 
         if (
@@ -1353,12 +1230,12 @@ class OlmoeModel(OlmoePreTrainedModel):
             # Attend to all tokens in fully masked rows in the causal_mask, for example the relevant first rows when
             # using left padding. This is required by F.scaled_dot_product_attention memory-efficient attention path.
             # Details: https://github.com/pytorch/pytorch/issues/110213
-            min_dtype = torch.finfo(dtype).min
             causal_mask = AttentionMaskConverter._unmask_unattended(causal_mask, min_dtype)
 
         return causal_mask
 
     @staticmethod
+    # Copied from transformers.models.mistral.modeling_mistral.MistralModel._prepare_4d_causal_attention_mask_with_cache_position with Mistral->Mixtral
     def _prepare_4d_causal_attention_mask_with_cache_position(
         attention_mask: torch.Tensor,
         sequence_length: int,
@@ -1367,7 +1244,8 @@ class OlmoeModel(OlmoePreTrainedModel):
         device: torch.device,
         cache_position: torch.Tensor,
         batch_size: int,
-        **kwargs,
+        config: MixtralConfig,
+        past_key_values: Cache,
     ):
         """
         Creates a causal 4D mask of shape `(batch_size, 1, query_length, key_value_length)` from a 2D mask of shape
@@ -1375,13 +1253,11 @@ class OlmoeModel(OlmoePreTrainedModel):
 
         Args:
             attention_mask (`torch.Tensor`):
-                A 2D attention mask of shape `(batch_size, key_value_length)` or a 4D attention mask of shape
-                `(batch_size, 1, query_length, key_value_length)`.
+                A 2D attention mask of shape `(batch_size, key_value_length)` or a 4D attention mask of shape `(batch_size, 1, query_length, key_value_length)`.
             sequence_length (`int`):
                 The sequence length being processed.
             target_length (`int`):
-                The target length: when generating with static cache, the mask should be as long as the static cache,
-                to account for the 0 padding, the part of the cache that is not filled yet.
+                The target length: when generating with static cache, the mask should be as long as the static cache, to account for the 0 padding, the part of the cache that is not filled yet.
             dtype (`torch.dtype`):
                 The dtype to use for the 4D attention mask.
             device (`torch.device`):
@@ -1390,6 +1266,10 @@ class OlmoeModel(OlmoePreTrainedModel):
                 Indices depicting the position of the input sequence tokens in the sequence.
             batch_size (`torch.Tensor`):
                 Batch size.
+            config (`MixtralConfig`):
+                The model's configuration class
+            past_key_values (`Cache`):
+                The cache class that is being used currently to generate
         """
         if attention_mask is not None and attention_mask.dim() == 4:
             # In this case we assume that the mask comes already in inverted form and requires no inversion or slicing.
@@ -1399,34 +1279,40 @@ class OlmoeModel(OlmoePreTrainedModel):
             causal_mask = torch.full(
                 (sequence_length, target_length), fill_value=min_dtype, dtype=dtype, device=device
             )
-            if sequence_length != 1:
-                causal_mask = torch.triu(causal_mask, diagonal=1)
-            causal_mask *= torch.arange(target_length, device=device) > cache_position.reshape(-1, 1)
+            diagonal_attend_mask = torch.arange(target_length, device=device) > cache_position.reshape(-1, 1)
+            if config.sliding_window is not None:
+                # if we have sliding window, we should not attend to tokens beyond sliding window length, so we mask them out also
+                # the check is needed to verify is current checkpoint was trained with sliding window or not
+                if not isinstance(past_key_values, SlidingWindowCache) or sequence_length > target_length:
+                    sliding_attend_mask = torch.arange(target_length, device=device) <= (
+                        cache_position.reshape(-1, 1) - config.sliding_window
+                    )
+                    diagonal_attend_mask.bitwise_or_(sliding_attend_mask)
+            causal_mask *= diagonal_attend_mask
             causal_mask = causal_mask[None, None, :, :].expand(batch_size, 1, -1, -1)
             if attention_mask is not None:
                 causal_mask = causal_mask.clone()  # copy to contiguous memory for in-place edit
+                if attention_mask.shape[-1] > target_length:
+                    attention_mask = attention_mask[:, :target_length]
                 mask_length = attention_mask.shape[-1]
                 padding_mask = causal_mask[:, :, :, :mask_length] + attention_mask[:, None, None, :]
                 padding_mask = padding_mask == 0
                 causal_mask[:, :, :, :mask_length] = causal_mask[:, :, :, :mask_length].masked_fill(
                     padding_mask, min_dtype
                 )
-
         return causal_mask
 
 
-class OlmoeForCausalLM(OlmoePreTrainedModel, GenerationMixin):
+class MixtralForCausalLM(MixtralPreTrainedModel, GenerationMixin):
     _tied_weights_keys = ["lm_head.weight"]
 
     def __init__(self, config):
         super().__init__(config)
-        self.model = OlmoeModel(config)
+        self.model = MixtralModel(config)
         self.vocab_size = config.vocab_size
         self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
-
-        # 🔍🔍🔍        
         self.router_aux_loss_coef = config.router_aux_loss_coef
-        self.num_experts = config.num_experts
+        self.num_experts = config.num_local_experts
         self.num_experts_per_tok = config.num_experts_per_tok
         # Initialize weights and apply final processing
         self.post_init()
@@ -1449,8 +1335,9 @@ class OlmoeForCausalLM(OlmoePreTrainedModel, GenerationMixin):
     def get_decoder(self):
         return self.model
 
-    @add_start_docstrings_to_model_forward(OLMOE_INPUTS_DOCSTRING)
+    @add_start_docstrings_to_model_forward(MIXTRAL_INPUTS_DOCSTRING)
     @replace_return_docstrings(output_type=MoeCausalLMOutputWithPast, config_class=_CONFIG_FOR_DOC)
+    # Ignore copy
     def forward(
         self,
         input_ids: torch.LongTensor = None,
@@ -1485,10 +1372,10 @@ class OlmoeForCausalLM(OlmoePreTrainedModel, GenerationMixin):
         Example:
 
         ```python
-        >>> from transformers import AutoTokenizer, OlmoeForCausalLM
+        >>> from transformers import AutoTokenizer, MixtralForCausalLM
 
-        >>> model = OlmoeForCausalLM.from_pretrained("allenai/OLMoE-1B-7B-0924")
-        >>> tokenizer = AutoTokenizer.from_pretrained("allenai/OLMoE-1B-7B-0924")
+        >>> model = MixtralForCausalLM.from_pretrained("mistralai/Mixtral-8x7B-v0.1")
+        >>> tokenizer = AutoTokenizer.from_pretrained("mistralai/Mixtral-8x7B-v0.1")
 
         >>> prompt = "Hey, are you conscious? Can you talk to me?"
         >>> inputs = tokenizer(prompt, return_tensors="pt")
@@ -1496,13 +1383,14 @@ class OlmoeForCausalLM(OlmoePreTrainedModel, GenerationMixin):
         >>> # Generate
         >>> generate_ids = model.generate(inputs.input_ids, max_length=30)
         >>> tokenizer.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
-        'Hey, are you conscious? Can you talk to me?\nI’m not sure if you’re conscious of this, but I’m'
-        ```
-        """
+        "Hey, are you conscious? Can you talk to me?\nI'm not conscious, but I can talk to you."
+        ```"""
+
         output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
         output_router_logits = (
             output_router_logits if output_router_logits is not None else self.config.output_router_logits
         )
+
         output_hidden_states = (
             output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
         )
@@ -1547,7 +1435,7 @@ class OlmoeForCausalLM(OlmoePreTrainedModel, GenerationMixin):
             if output_router_logits:
                 output = (aux_loss,) + output
             return (loss,) + output if loss is not None else output
-             
+
         return MoeCausalLMOutputWithPast(
             loss=loss,
             aux_loss=aux_loss,
@@ -1556,4 +1444,286 @@ class OlmoeForCausalLM(OlmoePreTrainedModel, GenerationMixin):
             hidden_states=outputs.hidden_states,
             attentions=outputs.attentions,
             router_logits=outputs.router_logits,
+        )
+
+
+@add_start_docstrings(
+    """
+    The Mixtral Model transformer with a sequence classification head on top (linear layer).
+
+    [`MixtralForSequenceClassification`] uses the last token in order to do the classification, as other causal models
+    (e.g. GPT-2) do.
+
+    Since it does classification on the last token, it requires to know the position of the last token. If a
+    `pad_token_id` is defined in the configuration, it finds the last token that is not a padding token in each row. If
+    no `pad_token_id` is defined, it simply takes the last value in each row of the batch. Since it cannot guess the
+    padding tokens when `inputs_embeds` are passed instead of `input_ids`, it does the same (take the last value in
+    each row of the batch).
+    """,
+    MIXTRAL_START_DOCSTRING,
+)
+# Copied from transformers.models.llama.modeling_llama.LlamaForSequenceClassification with Llama->Mixtral, LLAMA->MIXTRAL
+class MixtralForSequenceClassification(MixtralPreTrainedModel):
+    def __init__(self, config):
+        super().__init__(config)
+        self.num_labels = config.num_labels
+        self.model = MixtralModel(config)
+        self.score = nn.Linear(config.hidden_size, self.num_labels, bias=False)
+
+        # Initialize weights and apply final processing
+        self.post_init()
+
+    def get_input_embeddings(self):
+        return self.model.embed_tokens
+
+    def set_input_embeddings(self, value):
+        self.model.embed_tokens = value
+
+    @add_start_docstrings_to_model_forward(MIXTRAL_INPUTS_DOCSTRING)
+    def forward(
+        self,
+        input_ids: Optional[torch.LongTensor] = None,
+        attention_mask: Optional[torch.Tensor] = None,
+        position_ids: Optional[torch.LongTensor] = None,
+        past_key_values: Optional[Union[Cache, List[torch.FloatTensor]]] = None,
+        inputs_embeds: Optional[torch.FloatTensor] = None,
+        labels: Optional[torch.LongTensor] = None,
+        use_cache: Optional[bool] = None,
+        output_attentions: Optional[bool] = None,
+        output_hidden_states: Optional[bool] = None,
+        return_dict: Optional[bool] = None,
+    ) -> Union[Tuple, SequenceClassifierOutputWithPast]:
+        r"""
+        labels (`torch.LongTensor` of shape `(batch_size,)`, *optional*):
+            Labels for computing the sequence classification/regression loss. Indices should be in `[0, ...,
+            config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss), If
+            `config.num_labels > 1` a classification loss is computed (Cross-Entropy).
+        """
+        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+        transformer_outputs = self.model(
+            input_ids,
+            attention_mask=attention_mask,
+            position_ids=position_ids,
+            past_key_values=past_key_values,
+            inputs_embeds=inputs_embeds,
+            use_cache=use_cache,
+            output_attentions=output_attentions,
+            output_hidden_states=output_hidden_states,
+            return_dict=return_dict,
+        )
+        hidden_states = transformer_outputs[0]
+        logits = self.score(hidden_states)
+
+        if input_ids is not None:
+            batch_size = input_ids.shape[0]
+        else:
+            batch_size = inputs_embeds.shape[0]
+
+        if self.config.pad_token_id is None and batch_size != 1:
+            raise ValueError("Cannot handle batch sizes > 1 if no padding token is defined.")
+        if self.config.pad_token_id is None:
+            sequence_lengths = -1
+        else:
+            if input_ids is not None:
+                # if no pad token found, use modulo instead of reverse indexing for ONNX compatibility
+                sequence_lengths = torch.eq(input_ids, self.config.pad_token_id).int().argmax(-1) - 1
+                sequence_lengths = sequence_lengths % input_ids.shape[-1]
+                sequence_lengths = sequence_lengths.to(logits.device)
+            else:
+                sequence_lengths = -1
+
+        pooled_logits = logits[torch.arange(batch_size, device=logits.device), sequence_lengths]
+
+        loss = None
+        if labels is not None:
+            loss = self.loss_function(logits=logits, labels=labels, pooled_logits=pooled_logits, config=self.config)
+
+        if not return_dict:
+            output = (pooled_logits,) + transformer_outputs[1:]
+            return ((loss,) + output) if loss is not None else output
+
+        return SequenceClassifierOutputWithPast(
+            loss=loss,
+            logits=pooled_logits,
+            past_key_values=transformer_outputs.past_key_values,
+            hidden_states=transformer_outputs.hidden_states,
+            attentions=transformer_outputs.attentions,
+        )
+
+
+@add_start_docstrings(
+    """
+    The Mixtral Model transformer with a token classification head on top (a linear layer on top of the hidden-states
+    output) e.g. for Named-Entity-Recognition (NER) tasks.
+    """,
+    MIXTRAL_START_DOCSTRING,
+)
+# Copied from transformers.models.llama.modeling_llama.LlamaForTokenClassification with Llama->Mixtral, LLAMA->MIXTRAL
+class MixtralForTokenClassification(MixtralPreTrainedModel):
+    def __init__(self, config):
+        super().__init__(config)
+        self.num_labels = config.num_labels
+        self.model = MixtralModel(config)
+        if getattr(config, "classifier_dropout", None) is not None:
+            classifier_dropout = config.classifier_dropout
+        elif getattr(config, "hidden_dropout", None) is not None:
+            classifier_dropout = config.hidden_dropout
+        else:
+            classifier_dropout = 0.1
+        self.dropout = nn.Dropout(classifier_dropout)
+        self.score = nn.Linear(config.hidden_size, config.num_labels)
+
+        # Initialize weights and apply final processing
+        self.post_init()
+
+    def get_input_embeddings(self):
+        return self.model.embed_tokens
+
+    def set_input_embeddings(self, value):
+        self.model.embed_tokens = value
+
+    @add_start_docstrings_to_model_forward(MIXTRAL_INPUTS_DOCSTRING)
+    @add_code_sample_docstrings(
+        checkpoint=_CHECKPOINT_FOR_DOC,
+        output_type=TokenClassifierOutput,
+        config_class=_CONFIG_FOR_DOC,
+    )
+    def forward(
+        self,
+        input_ids: Optional[torch.LongTensor] = None,
+        attention_mask: Optional[torch.Tensor] = None,
+        position_ids: Optional[torch.LongTensor] = None,
+        past_key_values: Optional[List[torch.FloatTensor]] = None,
+        inputs_embeds: Optional[torch.FloatTensor] = None,
+        labels: Optional[torch.LongTensor] = None,
+        use_cache: Optional[bool] = None,
+        output_attentions: Optional[bool] = None,
+        output_hidden_states: Optional[bool] = None,
+        return_dict: Optional[bool] = None,
+    ) -> Union[Tuple, TokenClassifierOutput]:
+        r"""
+        labels (`torch.LongTensor` of shape `(batch_size,)`, *optional*):
+            Labels for computing the sequence classification/regression loss. Indices should be in `[0, ...,
+            config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss), If
+            `config.num_labels > 1` a classification loss is computed (Cross-Entropy).
+        """
+        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+        outputs = self.model(
+            input_ids,
+            attention_mask=attention_mask,
+            position_ids=position_ids,
+            past_key_values=past_key_values,
+            inputs_embeds=inputs_embeds,
+            use_cache=use_cache,
+            output_attentions=output_attentions,
+            output_hidden_states=output_hidden_states,
+            return_dict=return_dict,
+        )
+        sequence_output = outputs[0]
+        sequence_output = self.dropout(sequence_output)
+        logits = self.score(sequence_output)
+
+        loss = None
+        if labels is not None:
+            loss = self.loss_function(logits, labels, self.config)
+
+        if not return_dict:
+            output = (logits,) + outputs[2:]
+            return ((loss,) + output) if loss is not None else output
+
+        return TokenClassifierOutput(
+            loss=loss,
+            logits=logits,
+            hidden_states=outputs.hidden_states,
+            attentions=outputs.attentions,
+        )
+
+
+@add_start_docstrings(
+    """
+The Mixtral Model transformer with a span classification head on top for extractive question-answering tasks like
+SQuAD (a linear layer on top of the hidden-states output to compute `span start logits` and `span end logits`).
+    """,
+    MIXTRAL_START_DOCSTRING,
+)
+# Copied from transformers.models.mistral.modeling_mistral.MistralForQuestionAnswering with Mistral->Mixtral, MISTRAL->MIXTRAL
+class MixtralForQuestionAnswering(MixtralPreTrainedModel):
+    base_model_prefix = "model"
+
+    # Copied from models.models.bloom.modeling_bloom.BloomForQuestionAnswering.__init__ with Bloom->Mixtral
+    def __init__(self, config):
+        super().__init__(config)
+        self.model = MixtralModel(config)
+        self.qa_outputs = nn.Linear(config.hidden_size, 2)
+
+        # Initialize weights and apply final processing
+        self.post_init()
+
+    def get_input_embeddings(self):
+        return self.model.embed_tokens
+
+    def set_input_embeddings(self, value):
+        self.model.embed_tokens = value
+
+    @add_start_docstrings_to_model_forward(MIXTRAL_INPUTS_DOCSTRING)
+    def forward(
+        self,
+        input_ids: Optional[torch.LongTensor] = None,
+        attention_mask: Optional[torch.FloatTensor] = None,
+        position_ids: Optional[torch.LongTensor] = None,
+        past_key_values: Optional[Union[Cache, List[torch.FloatTensor]]] = None,
+        inputs_embeds: Optional[torch.FloatTensor] = None,
+        start_positions: Optional[torch.LongTensor] = None,
+        end_positions: Optional[torch.LongTensor] = None,
+        output_attentions: Optional[bool] = None,
+        output_hidden_states: Optional[bool] = None,
+        return_dict: Optional[bool] = None,
+        **kwargs,
+    ) -> Union[Tuple, QuestionAnsweringModelOutput]:
+        r"""
+        start_positions (`torch.LongTensor` of shape `(batch_size,)`, *optional*):
+            Labels for position (index) of the start of the labelled span for computing the token classification loss.
+            Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the sequence
+            are not taken into account for computing the loss.
+        end_positions (`torch.LongTensor` of shape `(batch_size,)`, *optional*):
+            Labels for position (index) of the end of the labelled span for computing the token classification loss.
+            Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the sequence
+            are not taken into account for computing the loss.
+        """
+        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+        outputs = self.model(
+            input_ids,
+            attention_mask=attention_mask,
+            position_ids=position_ids,
+            past_key_values=past_key_values,
+            inputs_embeds=inputs_embeds,
+            output_attentions=output_attentions,
+            output_hidden_states=output_hidden_states,
+            return_dict=return_dict,
+        )
+
+        sequence_output = outputs[0]
+
+        logits = self.qa_outputs(sequence_output)
+        start_logits, end_logits = logits.split(1, dim=-1)
+        start_logits = start_logits.squeeze(-1).contiguous()
+        end_logits = end_logits.squeeze(-1).contiguous()
+
+        loss = None
+        if start_positions is not None and end_positions is not None:
+            loss = self.loss_function(start_logits, end_logits, start_positions, end_positions, **kwargs)
+
+        if not return_dict:
+            output = (start_logits, end_logits) + outputs[2:]
+            return ((loss,) + output) if loss is not None else output
+
+        return QuestionAnsweringModelOutput(
+            loss=loss,
+            start_logits=start_logits,
+            end_logits=end_logits,
+            hidden_states=outputs.hidden_states,
+            attentions=outputs.attentions,
         )
