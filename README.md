@@ -3,7 +3,7 @@
 This repository contains the official implementation of our work **“Capacity-Aware Inference”**, which investigates test-time load balancing in **Mixture of Experts (MoE)** and proposes efficient inference algorithms to alleviate the *straggler effect*.
 
 <p align="center">
-  <img src="Figures/expert_capacity.svg" alt="Diagram of Efficient UG" width="70%">
+  <img src="Figures/straggler_effect.svg" alt="Diagram of Efficient UG" width="70%">
 </p>
 
 ---
@@ -21,12 +21,18 @@ To address this issue, we introduce two complementary inference strategies:
 Extensive experiments on both **language** and **multimodal** MoE models validate our approach, showing substantial improvements in expert utilization, throughput, and model performance.  
 For example, applying Expanded Drop to **Mixtral-8×7B-Instruct** achieves a *1.85× inference speedup* with a *0.2% average performance gain*.
 
-<p align="center">
-  <img src="Figures/token_drop.svg" alt="Token Drop" width="70%">
-</p>
-<p align="center">
-  <img src="Figures/expanded_drop.svg" alt="Expanded Drop" width="70%">
-</p>
+<table align="center">
+  <tr>
+    <td align="center" width="50%">
+      <img src="Figures/token_drop.svg" alt="Token Drop" width="90%"><br>
+      <em><b>Token Drop:</b> Tokens exceeding expert capacity are dropped to mitigate overload and reduce straggler effects.</em>
+    </td>
+    <td align="center" width="50%">
+      <img src="Figures/expanded_drop.svg" alt="Expanded Drop" width="90%"><br>
+      <em><b>Expanded Drop:</b> Tokens are allowed to expand to additional low-load experts before enforcing capacity limits.</em>
+    </td>
+  </tr>
+</table>
 
 ---
 
