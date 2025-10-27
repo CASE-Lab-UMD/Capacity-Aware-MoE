@@ -22,8 +22,8 @@ Extensive experiments on both **language** and **multimodal** MoE models validat
 For example, applying Expanded Drop to **Mixtral-8×7B-Instruct** achieves a *1.85× inference speedup* with a *0.2% average performance gain*.
 
 <p align="center">
-  <img src="Figures/token_drop.svg" alt="Overview" width="45%">
-  <img src="Figures/expanded_drop.svg" alt="Results" width="45%">
+  <img src="Figures/token_drop.svg" alt="token_drop" width="45%", style="vertical-align:middle;">
+  <img src="Figures/expanded_drop.svg" alt="expanded_drop" width="45%", style="vertical-align:middle;">
 </p>
 
 ---
