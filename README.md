@@ -25,11 +25,11 @@ For example, applying Expanded Drop to **Mixtral-8×7B-Instruct** achieves a *1.
   <tr>
     <td align="center" width="50%">
       <img src="Figures/token_drop.svg" alt="Token Drop" width="90%"><br>
-      <em><b>Token Drop:</b> Tokens exceeding expert capacity are dropped to mitigate overload and reduce straggler effects.</em>
+      <em><b>Token Drop:</b> Tokens exceeding expert capacity are dropped to mitigate straggler effects.</em>
     </td>
     <td align="center" width="50%">
       <img src="Figures/expanded_drop.svg" alt="Expanded Drop" width="90%"><br>
-      <em><b>Expanded Drop:</b> Tokens are allowed to expand to additional low-load experts before enforcing capacity limits.</em>
+      <em><b>Expanded Drop:</b> Tokens are allowed to expand to additional low-load experts before dropping.</em>
     </td>
   </tr>
 </table>
