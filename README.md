@@ -3,7 +3,7 @@
 This repository contains the official implementation of our work **“Capacity-Aware Inference”**, which investigates test-time load balancing in **Mixture of Experts (MoE)** and proposes efficient inference algorithms to alleviate the *straggler effect*.
 
 <p align="center">
-  <img src="Figures/straggler_effect.svg" alt="Diagram of Efficient UG" width="70%">
+  <img src="Figures/straggler_effect.svg" alt="Diagram of Efficient UG" width="50%">
 </p>
 
 ---
