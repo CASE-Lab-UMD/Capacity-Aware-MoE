@@ -106,12 +106,15 @@ Expected outputs are written under:
 - This repo focuses on **inference-time** routing/control under fixed checkpoints.
 
 ## 📈 Reported Effect
-### 1) Inference Speedup
+### 1) Main Results
 
-| Model / Setting | Method | Efficiency Impact | Quality Impact |
-|---|---|---|---|
-| OLMoE | Capacity-Aware Token Drop | ~30% speedup | ~0.9% degradation |
-| Mixtral-8x7B-Instruct | Capacity-Aware Expanded Drop | ~1.85x speedup | ~0.2% gain |
+<p align="center">
+  <img src="Figures/main_results.png" alt="Main results overview" width="88%">
+</p>
+
+- Main comparison across baseline, Token Drop, and Expanded Drop under different capacity settings.
+
+### 2) Inference Speedup
 
 Expanded Drop is often stronger than direct drop because it first uses low-load local experts, then applies local capacity constraints.
 This behavior generally improves utilization and reduces synchronization bottlenecks.
@@ -120,9 +123,9 @@ This behavior generally improves utilization and reduces synchronization bottlen
   <img src="Figures/speedup_layer.png" alt="Layer-level speedup across models" width="88%">
 </p>
 
-- Layer-level speedup under different capacity-aware settings across multiple MoE models.
+- Layer-level speedup under different capacity-aware settings across multiple MoE models (e.g., up to ~30% on OLMoE and ~1.85x on Mixtral-8x7B-Instruct).
 
-### 2) Multimodal Applicability
+### 3) Multimodal Applicability
 
 Our capacity-aware inference methods are also effective for multimodal MoE models.
 
