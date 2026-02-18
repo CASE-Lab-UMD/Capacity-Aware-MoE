@@ -36,10 +36,26 @@ We implement two complementary strategies:
    - Improves expert utilization and smooths load distribution.
    - Target: better throughput-efficiency tradeoff than direct dropping.
 
+### Capacity Control
+We regulate expert load using a capacity factor `γ`:
+
+`C = γ * N̄`
+
+- `C`: max tokens assigned to each expert (expert capacity)
+- `N̄`: mean token load per expert
+- `γ`: capacity factor used at inference time (`EXPERT_CAPACITY` in scripts)
+
+Lower `γ` reduces overload and latency more aggressively, while higher `γ` retains more routed tokens.
+
 <p align="center">
   <img src="Figures/token_drop.svg" alt="Token Drop" width="45%">&nbsp;&nbsp;
   <img src="Figures/expanded_drop.svg" alt="Expanded Drop" width="45%">
 </p>
+
+## 🧠 Contributions
+1. We identify and formalize the **Straggler Effect** in MoE inference under expert parallelism, where overloaded experts dominate end-to-end latency.
+2. We propose **Capacity-Aware Token Drop**, a simple inference-time strategy that bounds expert overload with minimal quality impact.
+3. We propose **Capacity-Aware Expanded Drop**, which leverages underused local experts before dropping, improving both balance and efficiency.
 
 ## 📦 Repository Structure
 - `modeling_hf/`: modified Hugging Face MoE modeling files.
@@ -95,7 +111,11 @@ Expected outputs are written under:
 | OLMoE | Capacity-Aware Token Drop | ~30% speedup | ~0.9% degradation |
 | Mixtral-8x7B-Instruct | Capacity-Aware Expanded Drop | ~1.85x speedup | ~0.2% gain |
 
-For exact experimental setup and numbers, refer to the paper and evaluation scripts in this repo.
+Expanded Drop is often stronger than direct drop because it first uses low-load local experts, then applies local capacity constraints.
+This behavior generally improves utilization and reduces synchronization bottlenecks.
+
+The methods are validated on both **language** and **multimodal** MoE models.
+For exact setup and complete numbers, refer to the paper and evaluation scripts in this repo.
 
 ## ✅ Repro Checklist
 - Environment: Python 3.10, dependency install via `pip install -r requirements.txt`.
