@@ -74,7 +74,7 @@ pip install -r requirements.txt
 ```
 
 ## 🚀 Quick Start
-### 1) Baseline Evaluation (Language)
+### 1) Baseline Evaluation
 ```bash
 cd lm-evaluation-harness
 bash runs_prune/eval_baseline.sh
@@ -106,6 +106,8 @@ Expected outputs are written under:
 - This repo focuses on **inference-time** routing/control under fixed checkpoints.
 
 ## 📈 Reported Effect
+### 1) Inference Speedup
+
 | Model / Setting | Method | Efficiency Impact | Quality Impact |
 |---|---|---|---|
 | OLMoE | Capacity-Aware Token Drop | ~30% speedup | ~0.9% degradation |
@@ -114,7 +116,23 @@ Expected outputs are written under:
 Expanded Drop is often stronger than direct drop because it first uses low-load local experts, then applies local capacity constraints.
 This behavior generally improves utilization and reduces synchronization bottlenecks.
 
-The methods are validated on both **language** and **multimodal** MoE models.
+<p align="center">
+  <img src="Figures/speedup_layer.png" alt="Layer-level speedup across models" width="65%">
+</p>
+
+- Layer-level speedup under different capacity-aware settings across multiple MoE models.
+
+### 2) Multimodal Applicability
+
+Our capacity-aware inference methods are also effective for multimodal MoE models.
+
+<p align="center">
+  <img src="Figures/multimodal.png" alt="Multimodal performance on MMBench" width="65%">
+</p>
+
+- Multimodal result on **MMBench performance**, comparing Baseline, Token Drop, and Expanded Drop.
+
+The methods are validated on both language and multimodal MoE models.
 For exact setup and complete numbers, refer to the paper and evaluation scripts in this repo.
 
 ## ✅ Repro Checklist
