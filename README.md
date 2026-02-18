@@ -4,10 +4,7 @@
 ![Conference](https://img.shields.io/badge/ICLR-2026-blue)
 ![Python](https://img.shields.io/badge/Python-3.10+-green)
 
-Official implementation of [**Capacity-Aware Inference**](https://arxiv.org/abs/2503.05066) (**ICLR 2026**).
-
-This repository studies test-time load balancing for **Mixture of Experts (MoE)** inference and introduces practical routing strategies to reduce the straggler effect in expert-parallel execution.
-It is an **inference-time** method and does not require retraining.
+This is the official implementation of the paper [**Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture of Experts**](https://arxiv.org/abs/2503.05066), published at *ICLR 2026*. We provide a practical inference-time framework for balancing expert load in MoE models and reducing straggler-driven latency without retraining.
 
 <p align="center">
   <img src="Figures/straggler_effect.svg" alt="Straggler effect in MoE inference" width="52%">
