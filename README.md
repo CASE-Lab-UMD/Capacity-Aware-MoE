@@ -1,7 +1,6 @@
 # Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture of Experts
 
-Official implementation of **Capacity-Aware Inference** (arXiv: [2503.05066](https://arxiv.org/abs/2503.05066)).
-Accepted at **ICLR 2026**.
+Official implementation of [**Capacity-Aware Inference**](https://arxiv.org/abs/2503.05066) (**ICLR 2026**).
 
 This repository studies test-time load balancing for **Mixture of Experts (MoE)** inference and introduces practical routing strategies to reduce the straggler effect in expert-parallel execution.
 
