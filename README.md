@@ -117,7 +117,7 @@ Expanded Drop is often stronger than direct drop because it first uses low-load 
 This behavior generally improves utilization and reduces synchronization bottlenecks.
 
 <p align="center">
-  <img src="Figures/speedup_layer.png" alt="Layer-level speedup across models" width="65%">
+  <img src="Figures/speedup_layer.png" alt="Layer-level speedup across models" width="88%">
 </p>
 
 - Layer-level speedup under different capacity-aware settings across multiple MoE models.
@@ -127,7 +127,7 @@ This behavior generally improves utilization and reduces synchronization bottlen
 Our capacity-aware inference methods are also effective for multimodal MoE models.
 
 <p align="center">
-  <img src="Figures/multimodal.png" alt="Multimodal performance on MMBench" width="65%">
+  <img src="Figures/multimodal.png" alt="Multimodal performance on MMBench" width="88%">
 </p>
 
 - Multimodal result on **MMBench performance**, comparing Baseline, Token Drop, and Expanded Drop.
