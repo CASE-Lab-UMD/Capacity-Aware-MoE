@@ -826,7 +826,7 @@ class MolmoeSparseMoeBlock(nn.Module):
             if hasattr(config, "expert_capacity") and isinstance(config.expert_capacity, float) else None
         
         # print(self.expert_capacity)
-        self.strategy = config.strategy if hasattr(config, "strategy") else ""
+        self.strategy = (config.strategy if hasattr(config, "strategy") else "") or ""
         self.rounds = config.rounds if hasattr(config, "rounds") else None
         default_drop_n = int(0.1 * config.moe_num_experts)
         self.drop_n = config.drop_n if hasattr(config, "drop_n") else default_drop_n
@@ -895,6 +895,7 @@ class MolmoeSparseMoeBlock(nn.Module):
         return overflow
     
     def adjust_tokens(self, expert_capacity, scores, image_token_mask=None):
+        strategy = self.strategy or ""
 
         if expert_capacity is None: 
             topk_weight, topk_idx = torch.topk(scores, k=self.top_k, dim=-1, sorted=False)
@@ -929,12 +930,12 @@ class MolmoeSparseMoeBlock(nn.Module):
         def compute_indices(scores_sub, mask_sub, expert_capacity, image_token_mask=None):
             
             masked_scores = scores_sub.masked_fill(~mask_sub, float('-inf'))  # ascending 排序，mask无效
-            if image_token_mask is not None and "image" in self.strategy:
+            if image_token_mask is not None and "image" in strategy:
                 # Expand to match [T, C] shape
                 row_penalty = image_token_mask.view(-1, 1).float()
                 masked_scores = masked_scores - row_penalty  # subtract 1 from image token rows
 
-            elif image_token_mask is not None and "text" in self.strategy: 
+            elif image_token_mask is not None and "text" in strategy: 
                 row_penalty = 1 - image_token_mask.view(-1, 1).float()
                 masked_scores = masked_scores - row_penalty  # subtract 1 from image token rows
 
@@ -988,7 +989,6 @@ class MolmoeSparseMoeBlock(nn.Module):
             topk_weight = topk_weight * utilized_mask
             return topk_weight, topk_idx
         
-        strategy = self.strategy or ""
         strategy_list = ["score", "last", "first", "random", "overselect"]
         if expert_capacity is None or not any(s in strategy for s in strategy_list):
             return torch.topk(scores, self.top_k, dim=-1, sorted=False)

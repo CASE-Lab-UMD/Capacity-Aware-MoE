@@ -635,7 +635,7 @@ class MixtralSparseMoeBlock(nn.Module):
         ### 🔍🔍🔍
         self.expert_capacity = config.expert_capacity \
             if hasattr(config, "expert_capacity") and isinstance(config.expert_capacity, float) else None
-        self.strategy = config.strategy if hasattr(config, "strategy") else ""
+        self.strategy = (config.strategy if hasattr(config, "strategy") else "") or ""
         self.rounds = config.rounds if hasattr(config, "rounds") else None
         self.drop_n = config.drop_n if hasattr(config, "drop_n") else 1
         ###

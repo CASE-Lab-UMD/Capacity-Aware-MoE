@@ -417,7 +417,7 @@ class MoEGate(nn.Module):
         self.expert_capacity = config.expert_capacity \
             if hasattr(config, "expert_capacity") and isinstance(config.expert_capacity, float) else None
         
-        self.strategy = config.strategy if hasattr(config, "strategy") else ""
+        self.strategy = (config.strategy if hasattr(config, "strategy") else "") or ""
         self.rounds = config.rounds if hasattr(config, "rounds") else None
         default_drop_n = 1 if self.expert_capacity is None else int(0.1 * config.n_routed_experts * self.expert_capacity)
         self.drop_n = config.drop_n if hasattr(config, "drop_n") else default_drop_n
