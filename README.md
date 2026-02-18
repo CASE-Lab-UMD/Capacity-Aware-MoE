@@ -7,6 +7,7 @@
 Official implementation of [**Capacity-Aware Inference**](https://arxiv.org/abs/2503.05066) (**ICLR 2026**).
 
 This repository studies test-time load balancing for **Mixture of Experts (MoE)** inference and introduces practical routing strategies to reduce the straggler effect in expert-parallel execution.
+It is an **inference-time** method and does not require retraining.
 
 <p align="center">
   <img src="Figures/straggler_effect.svg" alt="Straggler effect in MoE inference" width="52%">
@@ -101,6 +102,11 @@ Expected outputs are written under:
 `$PRETRAINED/expert_capacity-$EXPERT_CAPACITY/$STRATEGY/`
 
 ## 🧪 Evaluation Notes
+- Install evaluation dependencies first:
+  ```bash
+  cd lm-evaluation-harness
+  pip install -e .
+  ```
 - **Language benchmarks** are run through `lm_eval` in `lm-evaluation-harness`.
 - **Multimodal benchmarks** are supported via `VLMEvalKit`.
 - This repo focuses on **inference-time** routing/control under fixed checkpoints.
@@ -113,6 +119,7 @@ Expected outputs are written under:
 </p>
 
 - Main comparison across baseline, Token Drop, and Expanded Drop under different capacity settings.
+- **Takeaway**: Expanded Drop generally improves or preserves quality while delivering strong speedup.
 
 ### 2) Inference Speedup
 
@@ -123,7 +130,7 @@ This behavior generally improves utilization and reduces synchronization bottlen
   <img src="Figures/speedup_layer.png" alt="Layer-level speedup across models" width="88%">
 </p>
 
-- Layer-level speedup under different capacity-aware settings across multiple MoE models (e.g., up to ~30% on OLMoE and ~1.85x on Mixtral-8x7B-Instruct).
+- Layer-level speedup under different capacity-aware settings across multiple MoE models (e.g., up to ~30% on OLMoE-Instruct and ~1.85x on Mixtral-8x7B-Instruct).
 
 ### 3) Multimodal Applicability
 
