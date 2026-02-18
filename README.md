@@ -1,80 +1,92 @@
-# **Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture of Experts**
+# Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture of Experts
 
-This repository contains the official implementation of our work **“Capacity-Aware Inference”**, which investigates test-time load balancing in **Mixture of Experts (MoE)** and proposes efficient inference algorithms to alleviate the *straggler effect*.
+Official implementation of **Capacity-Aware Inference** (arXiv: [2503.05066](https://arxiv.org/abs/2503.05066)).
+Accepted at **ICLR 2026**.
+
+This repository studies test-time load balancing for **Mixture of Experts (MoE)** inference and introduces practical routing strategies to reduce the straggler effect in expert-parallel execution.
 
 <p align="center">
-  <img src="Figures/straggler_effect.svg" alt="Diagram of Efficient UG" width="50%">
+  <img src="Figures/straggler_effect.svg" alt="Straggler effect in MoE inference" width="52%">
 </p>
 
----
+## ✨ Why This Repo
+In sparse MoE models, only a subset of experts is activated per token. This improves parameter efficiency, but under expert parallelism, token routing can become highly imbalanced.
 
-## 🔍 Overview
+When a few experts are overloaded, all other devices wait for the slowest experts to finish, causing global latency inflation (the **straggler effect**).
 
-The **Mixture of Experts (MoE)** architecture scales large language models by activating only a sparse subset of experts per input, effectively improving efficiency without sacrificing capacity.  
-However, during inference under **expert parallelism**, MoE models suffer from **load imbalance** — some experts process far more tokens than others. As a result, the faster, underloaded experts must wait for the slowest, overloaded ones to finish, leading to a **global delay**, which we term the **Straggler Effect**.
+This repo provides inference-time solutions that improve balance and throughput with minimal quality impact.
 
-To address this issue, we introduce two complementary inference strategies:
+## 🔍 Core Methods
+We implement two complementary strategies:
 
-1. **Capacity-Aware Token Drop** — Enforces expert capacity limits by dropping excess tokens from overloaded experts, effectively reducing load imbalance with negligible performance loss (e.g., *30% speedup with only 0.9% degradation on OLMoE*).  
-2. **Capacity-Aware Expanded Drop** — Further enhances utilization by expanding token routing to nearby low-load experts before applying local capacity constraints, leading to more balanced expert workloads and improved inference efficiency.
+1. **Capacity-Aware Token Drop**
+   - Enforces per-expert capacity constraints.
+   - Drops overflow tokens routed to overloaded experts.
+   - Target: lower tail latency with small performance loss.
 
-Extensive experiments on both **language** and **multimodal** MoE models validate our approach, showing substantial improvements in expert utilization, throughput, and model performance.  
-For example, applying Expanded Drop to **Mixtral-8×7B-Instruct** achieves a *1.85× inference speedup* with a *0.2% average performance gain*.
+2. **Capacity-Aware Expanded Drop**
+   - Expands candidate routing to nearby lower-load experts before dropping.
+   - Improves expert utilization and smooths load distribution.
+   - Target: better throughput-efficiency tradeoff than direct dropping.
 
-<table align="center">
-  <tr>
-    <td align="center" width="50%">
-      <img src="Figures/token_drop.svg" alt="Token Drop" width="90%"><br>
-      <em><b>Token Drop:</b> Tokens exceeding expert capacity are dropped to mitigate straggler effects.</em>
-    </td>
-    <td align="center" width="50%">
-      <img src="Figures/expanded_drop.svg" alt="Expanded Drop" width="90%"><br>
-      <em><b>Expanded Drop:</b> Tokens are allowed to expand to additional low-load experts before dropping.</em>
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <img src="Figures/token_drop.svg" alt="Token Drop" width="45%">&nbsp;&nbsp;
+  <img src="Figures/expanded_drop.svg" alt="Expanded Drop" width="45%">
+</p>
 
----
+## 📦 Repository Structure
+- `modeling_hf/`: modified Hugging Face MoE modeling files.
+- `lm-evaluation-harness/`: language evaluation pipeline and scripts.
+- `VLMEvalKit/`: multimodal evaluation pipeline.
+- `Figures/`: method and effect visualizations.
+- `requirement.txt`: pinned root dependencies.
+- `requirements.txt`: compatibility wrapper (`-r requirement.txt`).
 
-## ⚙️ Requirements
-
-To install dependencies:
-
+## ⚙️ Installation
 ```bash
+conda create -n capacity-moe python=3.10 -y
+conda activate capacity-moe
+
 pip install -r requirements.txt
 ```
 
----
+## 🚀 Quick Start
+### 1) Baseline Evaluation (Language)
+```bash
+cd lm-evaluation-harness
+bash runs_prune/eval_baseline.sh
+```
 
-## 🚀 Usage
+### 2) Capacity-Aware Evaluation (Language)
+```bash
+cd lm-evaluation-harness
+bash runs_prune/eval_capacity.sh
+```
 
-We provide minimal working examples based on **Hugging Face Transformers** modeling files.  
-For system-level integration and large-scale deployment, please refer to the [**Megatron-LM**](https://github.com/NVIDIA/Megatron-LM) framework.
+Both scripts support environment variable overrides such as `CUDA_VISIBLE_DEVICES`, `PRETRAINED`, `OUTPUT_PATH`, `BATCH_SIZE`, `EXPERT_CAPACITY`, and `STRATEGY`.
 
----
+## 🧪 Evaluation Notes
+- **Language benchmarks** are run through `lm_eval` in `lm-evaluation-harness`.
+- **Multimodal benchmarks** are supported via `VLMEvalKit`.
+- This repo focuses on **inference-time** routing/control under fixed checkpoints.
 
-## 📊 Evaluation
+## 📈 Reported Effect (from paper)
+- Significant throughput gains in multiple MoE settings.
+- Example outcomes include strong speedup with minor quality degradation, and in some settings quality-neutral or quality-positive behavior with improved efficiency.
 
-Evaluation can be conducted using:
-- **[lm-evaluation-harness](https://github.com/EleutherAI/lm-evaluation-harness)** for language benchmarks  
-- **[VLMEvalKit](https://github.com/open-compass/VLMEvalKit)** for multimodal benchmarks  
-
-We modify their inference logic to incorporate **capacity-aware routing** under varying capacity factors.
-
----
+For exact experimental setup and numbers, refer to the paper and evaluation scripts in this repo.
 
 ## 📄 Citation
-
-If you find this work useful, please cite:
+If this repository is useful for your work, please cite:
 
 ```bibtex
 @misc{he2025capacityawareinferencemitigatingstraggler,
-      title={Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture of Experts},
-      author={Shwai He and Weilin Cai and Jiayi Huang and Ang Li},
-      year={2025},
-      eprint={2503.05066},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2503.05066},
+  title={Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture of Experts},
+  author={Shwai He and Weilin Cai and Jiayi Huang and Ang Li},
+  year={2025},
+  eprint={2503.05066},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/2503.05066}
 }
 ```

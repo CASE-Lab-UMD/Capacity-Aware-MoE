@@ -1,158 +1,38 @@
-#!/usr/bin/bash
-##############################################################################
+#!/usr/bin/env bash
+set -euo pipefail
 
-export CUDA_VISIBLE_DEVICES=1
+export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0}"
 
-expert_capacity=1.0
-  
-# strategy=last
-# strategy=first
-# strategy=random
-strategy=score
-
-##############################################################################
-
-autoawq=False
-# autoawq=True
-
-############################# pretrained #############################
-pretrained=./models/deepseek-moe-16b-base-temp
-# pretrained=./models/OLMoE-1B-7B-temp
-
-output_path=$pretrained/expert_capacity-$expert_capacity/$strategy
-
-mkdir -p $output_path
-
-echo $pretrained
-
+expert_capacity="${EXPERT_CAPACITY:-1.0}"
+strategy="${STRATEGY:-score}"
+autoawq="${AUTOAWQ:-False}"
+pretrained="${PRETRAINED:-./models/deepseek-moe-16b-base-temp}"
+batch_size="${BATCH_SIZE:-auto}"
 
 if [ ! -d "$pretrained" ]; then
-  exit 0
+  echo "Model path does not exist: $pretrained"
+  exit 1
 fi
 
+output_path="${OUTPUT_PATH:-$pretrained/expert_capacity-$expert_capacity/$strategy}"
+mkdir -p "$output_path"
 
-task=openbookqa
+echo "pretrained=$pretrained"
 
-nohup lm_eval \
-  --model hf \
-  --model_args pretrained=$pretrained,router_dir=$router_dir,expert_capacity=$expert_capacity,strategy=$strategy,parallelize=True,trust_remote_code=True,dtype="bfloat16",autoawq=$autoawq \
-  --tasks $task \
-  --num_fewshot 0 \
-  --batch_size auto \
-  --output_path $output_path/$task.json \
-  > $output_path/${task}.out 2>&1 &
+tasks=(openbookqa piqa rte winogrande boolq arc_challenge hellaswag mmlu gsm8k)
+fewshots=(0 0 0 5 0 25 10 5 5)
 
-exit 0
-wait
+for i in "${!tasks[@]}"; do
+  task="${tasks[$i]}"
+  num_fewshot="${fewshots[$i]}"
 
+  nohup lm_eval \
+    --model hf \
+    --model_args pretrained=$pretrained,expert_capacity=$expert_capacity,strategy=$strategy,parallelize=True,trust_remote_code=True,dtype=bfloat16,autoawq=$autoawq \
+    --tasks "$task" \
+    --num_fewshot "$num_fewshot" \
+    --batch_size "$batch_size" \
+    --output_path "$output_path/$task.json" \
+    > "$output_path/${task}.out" 2>&1
 
-task=piqa
-
-nohup lm_eval \
-  --model hf \
-  --model_args pretrained=$pretrained,router_dir=$router_dir,expert_capacity=$expert_capacity,strategy=$strategy,parallelize=True,trust_remote_code=True,dtype="bfloat16",autoawq=$autoawq \
-  --tasks $task \
-  --num_fewshot 0 \
-  --batch_size auto \
-  --output_path $output_path/$task.json \
-  > $output_path/${task}.out 2>&1 &
-
-wait
-
-
-task=rte
-
-nohup lm_eval \
-  --model hf \
-  --model_args pretrained=$pretrained,router_dir=$router_dir,expert_capacity=$expert_capacity,strategy=$strategy,parallelize=True,trust_remote_code=True,dtype="bfloat16",autoawq=$autoawq \
-  --tasks $task \
-  --num_fewshot 0 \
-  --batch_size auto \
-  --output_path $output_path/$task.json \
-  > $output_path/${task}.out 2>&1 &
-
-wait
-
-
-task=winogrande
-
-nohup lm_eval \
-  --model hf \
-  --model_args pretrained=$pretrained,router_dir=$router_dir,expert_capacity=$expert_capacity,strategy=$strategy,parallelize=True,trust_remote_code=True,dtype="bfloat16",autoawq=$autoawq \
-  --tasks $task \
-  --num_fewshot 5 \
-  --batch_size auto \
-  --output_path $output_path/$task.json \
-  > $output_path/${task}.out 2>&1 &
-
-wait
-
-
-task=boolq
-
-nohup lm_eval \
-  --model hf \
-  --model_args pretrained=$pretrained,router_dir=$router_dir,expert_capacity=$expert_capacity,strategy=$strategy,parallelize=True,trust_remote_code=True,dtype="bfloat16",autoawq=$autoawq \
-  --tasks $task \
-  --num_fewshot 0 \
-  --batch_size auto \
-  --output_path $output_path/$task.json \
-  > $output_path/${task}.out 2>&1 &
-
-wait
-
-
-task=arc_challenge
-
-nohup lm_eval \
-  --model hf \
-  --model_args pretrained=$pretrained,router_dir=$router_dir,expert_capacity=$expert_capacity,strategy=$strategy,parallelize=True,trust_remote_code=True,dtype="bfloat16",autoawq=$autoawq \
-  --tasks $task \
-  --num_fewshot 25 \
-  --batch_size auto \
-  --output_path $output_path/$task.json \
-  > $output_path/${task}.out 2>&1 &
-
-wait
-
-
-task=hellaswag
-
-nohup lm_eval \
-  --model hf \
-  --model_args pretrained=$pretrained,router_dir=$router_dir,expert_capacity=$expert_capacity,strategy=$strategy,parallelize=True,trust_remote_code=True,dtype="bfloat16",autoawq=$autoawq \
-  --tasks $task \
-  --num_fewshot 10 \
-  --batch_size auto \
-  --output_path $output_path/$task.json \
-  > $output_path/${task}.out 2>&1 &
-
-wait
-
-
-task=mmlu
-
-nohup lm_eval \
-  --model hf \
-  --model_args pretrained=$pretrained,router_dir=$router_dir,expert_capacity=$expert_capacity,strategy=$strategy,parallelize=True,trust_remote_code=True,dtype="bfloat16",autoawq=$autoawq \
-  --tasks $task \
-  --num_fewshot 5 \
-  --batch_size auto \
-  --output_path $output_path/$task.json \
-  > $output_path/${task}.out 2>&1 &
-
-wait
-
-
-task=gsm8k
-
-nohup lm_eval \
-  --model hf \
-  --model_args pretrained=$pretrained,router_dir=$router_dir,expert_capacity=$expert_capacity,strategy=$strategy,parallelize=True,trust_remote_code=True,dtype="bfloat16",autoawq=$autoawq \
-  --tasks $task \
-  --num_fewshot 5 \
-  --batch_size auto \
-  --output_path $output_path/$task.json \
-  > $output_path/${task}.out 2>&1 &
-
-wait
+done
