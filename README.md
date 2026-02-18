@@ -4,7 +4,7 @@
 ![Conference](https://img.shields.io/badge/ICLR-2026-blue)
 ![Python](https://img.shields.io/badge/Python-3.10+-green)
 
-[Shwai He](https://shwai-he.github.io/), Weilin Cai, Jiayi Huang, [Ang Li](https://www.ang-li.com/)
+[Shwai He](https://shwai-he.github.io/), [Weilin Cai](https://withinmiaov.github.io/), [Jiayi Huang](https://jyhuang91.github.io/), [Ang Li](https://www.ang-li.com/)
 
 > This is the official implementation of the paper [**Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture of Experts**](https://arxiv.org/abs/2503.05066), published in *International Conference on Learning Representations (ICLR) 2026*. We provide a practical inference-time framework for balancing expert load in Mixture-of-Experts models and reducing straggler-driven latency without retraining.
 
