@@ -896,20 +896,21 @@ class OlmoeSparseMoeBlock(nn.Module):
 
             return topk_weight, topk_idx
         
+        strategy = self.strategy or ""
         strategy_list = ["score", "last", "first", "random", "overselect"]
-        if expert_capacity is None or not any(s in self.strategy for s in strategy_list):
+        if expert_capacity is None or not any(s in strategy for s in strategy_list):
             return torch.topk(scores, self.top_k, dim=-1, sorted=False)
 
-        if "random" in self.strategy:
+        if "random" in strategy:
             return reroute_random(scores, expert_capacity, self.top_k)
-        elif "score" in self.strategy:
+        elif "score" in strategy:
             topk_weight, topk_idx = _reroute_common(scores, expert_capacity, self.top_k)
         else:
             topk_weight, topk_idx = torch.topk(scores, self.top_k, dim=-1, sorted=False)
 
-        if "first" in self.strategy:
+        if "first" in strategy:
             return reroute_sequential_order(scores, expert_capacity, self.top_k, mode="first")
-        elif "last" in self.strategy:
+        elif "last" in strategy:
             return reroute_sequential_order(scores, expert_capacity, self.top_k, mode="last")
         else:
             return topk_weight, topk_idx

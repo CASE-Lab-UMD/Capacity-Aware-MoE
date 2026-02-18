@@ -635,9 +635,9 @@ class MixtralSparseMoeBlock(nn.Module):
         ### 🔍🔍🔍
         self.expert_capacity = config.expert_capacity \
             if hasattr(config, "expert_capacity") and isinstance(config.expert_capacity, float) else None
-        self.strategy = config.strategy if hasattr(config, "strategy") else None
+        self.strategy = config.strategy if hasattr(config, "strategy") else ""
         self.rounds = config.rounds if hasattr(config, "rounds") else None
-        self.drop_n = config.strategy if hasattr(config, "drop_n") else 1
+        self.drop_n = config.drop_n if hasattr(config, "drop_n") else 1
         ###
         
     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
@@ -801,20 +801,21 @@ class MixtralSparseMoeBlock(nn.Module):
 
             return topk_weight, topk_idx
         
+        strategy = self.strategy or ""
         strategy_list = ["score", "last", "first", "random", "overselect"]
-        if expert_capacity is None or not any(s in self.strategy for s in strategy_list):
+        if expert_capacity is None or not any(s in strategy for s in strategy_list):
             return torch.topk(scores, self.top_k, dim=-1, sorted=False)
 
-        if "random" in self.strategy:
+        if "random" in strategy:
             return reroute_random(scores, expert_capacity, self.top_k)
-        elif "score" in self.strategy:
+        elif "score" in strategy:
             topk_weight, topk_idx = _reroute_common(scores, expert_capacity, self.top_k)
         else:
             topk_weight, topk_idx = torch.topk(scores, self.top_k, dim=-1, sorted=False)
 
-        if "first" in self.strategy:
+        if "first" in strategy:
             return reroute_sequential_order(scores, expert_capacity, self.top_k, mode="first")
-        elif "last" in self.strategy:
+        elif "last" in strategy:
             return reroute_sequential_order(scores, expert_capacity, self.top_k, mode="last")
         else:
             return topk_weight, topk_idx

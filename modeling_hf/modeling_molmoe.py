@@ -826,9 +826,10 @@ class MolmoeSparseMoeBlock(nn.Module):
             if hasattr(config, "expert_capacity") and isinstance(config.expert_capacity, float) else None
         
         # print(self.expert_capacity)
-        self.strategy = config.strategy if hasattr(config, "strategy") else None
+        self.strategy = config.strategy if hasattr(config, "strategy") else ""
         self.rounds = config.rounds if hasattr(config, "rounds") else None
-        self.drop_n = config.strategy if hasattr(config, "drop_n") else int(0.1 * config.moe_num_experts)
+        default_drop_n = int(0.1 * config.moe_num_experts)
+        self.drop_n = config.drop_n if hasattr(config, "drop_n") else default_drop_n
         ###
         
     def forward(self, hidden_states: torch.Tensor, image_token_mask: Optional[torch.Tensor] = None) -> torch.Tensor: # ✨✨✨
@@ -987,24 +988,23 @@ class MolmoeSparseMoeBlock(nn.Module):
             topk_weight = topk_weight * utilized_mask
             return topk_weight, topk_idx
         
+        strategy = self.strategy or ""
         strategy_list = ["score", "last", "first", "random", "overselect"]
-        if expert_capacity is None or not any(s in self.strategy for s in strategy_list):
+        if expert_capacity is None or not any(s in strategy for s in strategy_list):
             return torch.topk(scores, self.top_k, dim=-1, sorted=False)
 
-        if "random" in self.strategy:
+        if "random" in strategy:
             return reroute_random(scores, expert_capacity)
-        elif "score" in self.strategy:
+        elif "score" in strategy:
             topk_weight, topk_idx = _reroute_common(scores, expert_capacity, self.top_k, self.rounds, image_token_mask)
-        elif "overselect" in self.strategy:
-            overselect_k = int(self.top_k * 1.5)
-            top2k_scores, top2k_idx = torch.topk(scores, overselect_k, dim=-1, sorted=False)
-            topk_weight, topk_idx = _reroute_common(scores, expert_capacity, self.top_k, self.rounds, image_token_mask, top2k_scores, top2k_idx)
+        elif "overselect" in strategy:
+            topk_weight, topk_idx = _reroute_common(scores, expert_capacity, self.top_k, self.rounds, image_token_mask)
         else:
             topk_weight, topk_idx = torch.topk(scores, self.top_k, dim=-1, sorted=False)
 
-        if "first" in self.strategy:
+        if "first" in strategy:
             return reroute_sequential_order(scores, expert_capacity, topk_weight, topk_idx, mode="first")
-        elif "last" in self.strategy:
+        elif "last" in strategy:
             return reroute_sequential_order(scores, expert_capacity, topk_weight, topk_idx, mode="last")
         else:
             return topk_weight, topk_idx
