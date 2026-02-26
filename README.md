@@ -7,7 +7,6 @@
 </p>
 
 <p align="center">
-  <a href="#-introduction">📖 Introduction</a> •
   <a href="#-why-this-repo">✨ Why</a> •
   <a href="#-core-methods">🔍 Methods</a> •
   <a href="#-quick-start">🚀 Quick Start</a> •
@@ -18,8 +17,6 @@
 <p align="center">
   <a href="https://shwai-he.github.io/">Shwai He</a>, <a href="https://withinmiaov.github.io/">Weilin Cai</a>, <a href="https://jyhuang91.github.io/">Jiayi Huang</a>, <a href="https://www.ang-li.com/">Ang Li</a>
 </p>
-
-## 📖 Introduction
 
 > This is the official implementation of the paper [**Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture of Experts**](https://arxiv.org/abs/2503.05066), published in *International Conference on Learning Representations (ICLR) 2026*. We provide a practical inference-time framework for balancing expert load in Mixture-of-Experts models and reducing straggler-driven latency without retraining.
 
