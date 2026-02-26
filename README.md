@@ -21,7 +21,7 @@
 
 ## 📖 Introduction
 
-> This is the official implementation of the paper [**Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture of Experts**](https://arxiv.org/abs/2503.05066), published in *International Conference on Learning Representations (ICLR) 2026*. We provide a practical inference-time framework for balancing expert load in Mixture-of-Experts models and reducing straggler-driven latency without retraining.
+This is the official implementation of the paper [**Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture of Experts**](https://arxiv.org/abs/2503.05066), published in *International Conference on Learning Representations (ICLR) 2026*. We provide a practical inference-time framework for balancing expert load in Mixture-of-Experts models and reducing straggler-driven latency without retraining.
 
 <p align="center">
   <img src="Figures/straggler_effect.svg" alt="Straggler effect in MoE inference" width="52%">
