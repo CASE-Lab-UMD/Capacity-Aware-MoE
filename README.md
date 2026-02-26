@@ -1,4 +1,4 @@
-# Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture of Experts
+<h1 align="center">[ICLR2026] Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture of Experts</h1>
 
 [![Paper](https://img.shields.io/badge/Paper-arXiv-red)](https://arxiv.org/abs/2503.05066)
 ![Conference](https://img.shields.io/badge/ICLR-2026-blue)
