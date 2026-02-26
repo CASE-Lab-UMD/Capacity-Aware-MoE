@@ -1,12 +1,27 @@
 <h1 align="center">[ICLR2026] Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture of Experts</h1>
 
-[![Paper](https://img.shields.io/badge/Paper-arXiv-red)](https://arxiv.org/abs/2503.05066)
-![Conference](https://img.shields.io/badge/ICLR-2026-blue)
-![Python](https://img.shields.io/badge/Python-3.10+-green)
+<p align="center">
+  <a href="https://arxiv.org/abs/2503.05066"><img src="https://img.shields.io/badge/arXiv-2503.05066-b31b1b.svg" alt="arXiv"></a>
+  <img src="https://img.shields.io/badge/ICLR-2026-blue" alt="ICLR 2026">
+  <img src="https://img.shields.io/badge/Python-3.10+-green" alt="Python 3.10+">
+</p>
 
-[Shwai He](https://shwai-he.github.io/), [Weilin Cai](https://withinmiaov.github.io/), [Jiayi Huang](https://jyhuang91.github.io/), [Ang Li](https://www.ang-li.com/)
+<p align="center">
+  <a href="#-introduction">📖 Introduction</a> •
+  <a href="#-why-this-repo">✨ Why</a> •
+  <a href="#-core-methods">🔍 Methods</a> •
+  <a href="#-quick-start">🚀 Quick Start</a> •
+  <a href="#-repro-checklist">✅ Repro</a> •
+  <a href="#-citation">📄 Citation</a>
+</p>
 
-> This is the official implementation of the paper [**Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture of Experts**](https://arxiv.org/abs/2503.05066), published in *International Conference on Learning Representations (ICLR) 2026*. We provide a practical inference-time framework for balancing expert load in Mixture-of-Experts models and reducing straggler-driven latency without retraining.
+<p align="center">
+  <a href="https://shwai-he.github.io/">Shwai He</a>, <a href="https://withinmiaov.github.io/">Weilin Cai</a>, <a href="https://jyhuang91.github.io/">Jiayi Huang</a>, <a href="https://www.ang-li.com/">Ang Li</a>
+</p>
+
+## 📖 Introduction
+
+This is the official implementation of the paper [**Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture of Experts**](https://arxiv.org/abs/2503.05066), published in *International Conference on Learning Representations (ICLR) 2026*. We provide a practical inference-time framework for balancing expert load in Mixture-of-Experts models and reducing straggler-driven latency without retraining.
 
 <p align="center">
   <img src="Figures/straggler_effect.svg" alt="Straggler effect in MoE inference" width="52%">
