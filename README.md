@@ -7,16 +7,16 @@
 </p>
 
 <p align="center">
+  <a href="https://shwai-he.github.io/">Shwai He</a>, <a href="https://withinmiaov.github.io/">Weilin Cai</a>, <a href="https://jyhuang91.github.io/">Jiayi Huang</a>, <a href="https://www.ang-li.com/">Ang Li</a>
+</p>
+
+<p align="center">
   <a href="#-introduction">📖 Introduction</a> •
   <a href="#-why-this-repo">✨ Why</a> •
   <a href="#-core-methods">🔍 Methods</a> •
   <a href="#-quick-start">🚀 Quick Start</a> •
   <a href="#-repro-checklist">✅ Repro</a> •
   <a href="#-citation">📄 Citation</a>
-</p>
-
-<p align="center">
-  <a href="https://shwai-he.github.io/">Shwai He</a>, <a href="https://withinmiaov.github.io/">Weilin Cai</a>, <a href="https://jyhuang91.github.io/">Jiayi Huang</a>, <a href="https://www.ang-li.com/">Ang Li</a>
 </p>
 
 ## 📖 Introduction
