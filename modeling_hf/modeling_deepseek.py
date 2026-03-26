@@ -418,9 +418,23 @@ class MoEGate(nn.Module):
             if hasattr(config, "expert_capacity") and isinstance(config.expert_capacity, float) else None
         
         self.strategy = (config.strategy if hasattr(config, "strategy") else "") or ""
-        self.rounds = config.rounds if hasattr(config, "rounds") else None
-        default_drop_n = 1 if self.expert_capacity is None else int(0.1 * config.n_routed_experts * self.expert_capacity)
-        self.drop_n = config.drop_n if hasattr(config, "drop_n") else default_drop_n
+        self.rounds = config.rounds if hasattr(config, "rounds") else 1
+        self.renormalize_after_capacity_drop = bool(
+            getattr(config, "renormalize_after_capacity_drop", getattr(config, "capacity_renormalize", False))
+        )
+
+    def _get_local_expert_indices(self, device: torch.device) -> torch.LongTensor:
+        local_ids = getattr(self, "local_expert_indices", None)
+        if local_ids is None:
+            local_ids = getattr(self.config, "local_expert_indices", None)
+        if local_ids is None and hasattr(self.config, "ep_size") and self.config.ep_size > 1 and dist.is_initialized():
+            experts_per_rank = self.n_routed_experts // self.config.ep_size
+            ep_rank = dist.get_rank()
+            start = ep_rank * experts_per_rank
+            local_ids = list(range(start, start + experts_per_rank))
+        if local_ids is None:
+            local_ids = list(range(self.n_routed_experts))
+        return torch.tensor(local_ids, device=device, dtype=torch.long)
 
     def reset_parameters(self) -> None:
         import torch.nn.init as init
@@ -452,17 +466,8 @@ class MoEGate(nn.Module):
 
         ### select top-k experts
         if self.topk_method == "greedy":
-                        ### 🔍🔍🔍
-            if self.strategy == "skip_experts" and seq_len != 1:
-                masked_weights = torch.zeros_like(scores, dtype=scores.dtype)
-                topk_weight, topk_idx = torch.topk(scores, k=self.top_k, dim=-1, sorted=False)
-                masked_weights.scatter_(dim=-1, index=topk_idx, value=1)
-                masked_weights = masked_weights.sum(-1).flatten()
-                _, expert_idxes = torch.topk(masked_weights, k=self.n_routed_experts - self.drop_n, dim=-1, sorted=False)
-            else: 
-                topk_weight, topk_idx = self.adjust_tokens(expert_capacity, scores)
-                expert_idxes = range(self.n_routed_experts)
-            ###
+            topk_weight, topk_idx = self.adjust_tokens(expert_capacity, scores)
+            expert_idxes = range(self.n_routed_experts)
             
         elif self.topk_method == "group_limited_greedy":
             group_scores = (
@@ -486,22 +491,12 @@ class MoEGate(nn.Module):
             # topk_weight, topk_idx = torch.topk(
             #     tmp_scores, k=self.top_k, dim=-1, sorted=False
             # )
-            ### 🔍🔍🔍
-            if self.strategy == "skip_experts" and seq_len != 1:
-                masked_weights = torch.zeros_like(tmp_scores, dtype=scores.dtype)
-                topk_weight, topk_idx = torch.topk(tmp_scores, k=self.top_k, dim=-1, sorted=False)
-                masked_weights.scatter_(dim=-1, index=topk_idx, value=1)
-                masked_weights = masked_weights.sum(-1).flatten()
-                _, expert_idxes = torch.topk(masked_weights, k=self.n_routed_experts - self.drop_n, dim=-1, sorted=False)
-            ### 🔍🔍🔍
-            else: 
-                topk_weight, topk_idx = self.adjust_tokens(expert_capacity, tmp_scores)
-                expert_idxes = range(self.n_routed_experts)
-            ###
+            topk_weight, topk_idx = self.adjust_tokens(expert_capacity, tmp_scores)
+            expert_idxes = range(self.n_routed_experts)
             
         ### norm gate to sum 1
-        if self.top_k > 1 and self.norm_topk_prob:
-            denominator = topk_weight.sum(dim=-1, keepdim=True) + 1e-20
+        if (self.top_k > 1 and self.norm_topk_prob) or self.renormalize_after_capacity_drop:
+            denominator = topk_weight.sum(dim=-1, keepdim=True).clamp_min(1e-20)
             topk_weight = topk_weight / denominator
         else:
             topk_weight = topk_weight * self.routed_scaling_factor
@@ -511,6 +506,8 @@ class MoEGate(nn.Module):
             aux_topk = self.top_k
             # always compute aux loss based on the naive greedy topk method
             topk_idx_for_aux_loss = topk_idx.view(bsz, -1)
+            valid_aux_mask = topk_idx_for_aux_loss != self.n_routed_experts
+            safe_topk_idx_for_aux_loss = topk_idx_for_aux_loss.masked_fill(~valid_aux_mask, 0)
             if self.seq_aux:
                 scores_for_seq_aux = scores_for_aux.view(bsz, seq_len, -1)
                 ce = torch.zeros(
@@ -518,17 +515,17 @@ class MoEGate(nn.Module):
                 )
                 ce.scatter_add_(
                     1,
-                    topk_idx_for_aux_loss,
-                    torch.ones(bsz, seq_len * aux_topk, device=hidden_states.device),
+                    safe_topk_idx_for_aux_loss,
+                    valid_aux_mask.to(scores_for_aux.dtype),
                 ).div_(seq_len * aux_topk / self.n_routed_experts)
                 aux_loss = (ce * scores_for_seq_aux.mean(dim=1)).sum(
                     dim=1
                 ).mean() * self.alpha
             else:
                 mask_ce = F.one_hot(
-                    topk_idx_for_aux_loss.view(-1), num_classes=self.n_routed_experts
+                    safe_topk_idx_for_aux_loss.view(-1), num_classes=self.n_routed_experts
                 )
-                ce = mask_ce.float().mean(0)
+                ce = (mask_ce * valid_aux_mask.view(-1, 1)).float().mean(0)
                 Pi = scores_for_aux.mean(0)
                 fi = ce * self.n_routed_experts
                 aux_loss = (Pi * fi).sum() * self.alpha
@@ -538,15 +535,46 @@ class MoEGate(nn.Module):
         return topk_idx, topk_weight, aux_loss, expert_idxes
     
     def adjust_tokens(self, expert_capacity, scores):
+        strategy = self.strategy or ""
 
         if expert_capacity is None: 
             topk_weight, topk_idx = torch.topk(scores, k=self.top_k, dim=-1, sorted=False)
             return topk_weight, topk_idx
         
-        def _reroute_common(scores, expert_capacity, top_k):
+        def expanded_token_drop(scores, expert_capacity):
+            T, _ = scores.shape
+            topk_weight, topk_idx = torch.topk(scores, k=self.top_k, dim=-1, sorted=False)
+            local_idx = self._get_local_expert_indices(scores.device).unsqueeze(0).expand(T, -1)
+            expanded_idx = torch.cat([topk_idx, local_idx], dim=-1)
+
+            expanded_mask = torch.zeros_like(scores, dtype=torch.bool)
+            expanded_mask.scatter_(-1, expanded_idx, True)
+
+            masked_scores = scores * expanded_mask
+            _, keep_idx = masked_scores.topk(expert_capacity, dim=0)
+            cap_mask = torch.zeros_like(scores, dtype=torch.bool)
+            cap_mask.scatter_(0, keep_idx, True)
+
+            final_map = expanded_mask & cap_mask
+            expanded_weight = scores.gather(-1, expanded_idx)
+            expanded_keep = final_map.gather(-1, expanded_idx)
+
+            for pos in range(expanded_idx.shape[1]):
+                if pos == 0:
+                    continue
+                duplicate_mask = (expanded_idx[:, :pos] == expanded_idx[:, pos : pos + 1]).any(dim=1)
+                expanded_keep[duplicate_mask, pos] = False
+
+            expanded_weight = expanded_weight * expanded_keep
+            expanded_idx = expanded_idx.masked_fill(~expanded_keep, self.n_routed_experts)
+            return expanded_weight, expanded_idx
+
+        def token_drop_by_score(scores, expert_capacity, top_k, rounds):
             
             T, K = scores.shape
-            top_k_all = top_k  
+            top_k_all = top_k
+            if "overselect" in strategy:
+                top_k_all = min(K, max(top_k, int(math.ceil(top_k * max(rounds, 1)))))
             
             topk_weight, topk_idx = torch.topk(scores, k=top_k_all, dim=-1, sorted=False)
             mask_buffer = torch.zeros((T, K), dtype=torch.bool, device=scores.device)
@@ -562,7 +590,8 @@ class MoEGate(nn.Module):
 
             topk_weight = scores.gather(-1, topk_idx)
             top_mask = mask_buffer.gather(-1, topk_idx)
-            topk_idx = topk_idx.masked_fill(~top_mask, self.num_experts)
+            topk_weight = topk_weight * top_mask
+            topk_idx = topk_idx.masked_fill(~top_mask, self.n_routed_experts)
 
             return topk_weight, topk_idx
         
@@ -578,7 +607,7 @@ class MoEGate(nn.Module):
 
             return capacity_indices
         
-        def reroute_random(scores, expert_capacity, top_k):
+        def token_drop_random(scores, expert_capacity, top_k):
             
             T, K = scores.shape
 
@@ -600,15 +629,13 @@ class MoEGate(nn.Module):
             # Step 4: Final top_k gathering
             topk_weight = scores.gather(-1, topk_idx)
             top_mask = mask_buffer.gather(-1, topk_idx)
-            topk_idx = topk_idx.masked_fill(~top_mask, self.num_experts)
+            topk_weight = topk_weight * top_mask
+            topk_idx = topk_idx.masked_fill(~top_mask, self.n_routed_experts)
 
             return topk_weight, topk_idx
 
-        def reroute_sequential_order(scores, expert_capacity, top_k, mode):
-            
+        def token_drop_sequential(scores, expert_capacity, topk_weight, topk_idx, mode):
             T, K = scores.shape
-            # Step 1: Initial top-k_all selection
-            topk_weight, topk_idx = torch.topk(scores, self.top_k, dim=-1, sorted=False)
             mask_buffer = torch.zeros((T, K), dtype=torch.bool, device=scores.device)
             mask_buffer.scatter_(-1, topk_idx, True)
             
@@ -633,26 +660,28 @@ class MoEGate(nn.Module):
             # Step 4: Final top_k gathering
             topk_weight = scores.gather(-1, topk_idx)
             top_mask = mask_buffer.gather(-1, topk_idx)
-            topk_idx = topk_idx.masked_fill(~top_mask, self.num_experts)
+            topk_weight = topk_weight * top_mask
+            topk_idx = topk_idx.masked_fill(~top_mask, self.n_routed_experts)
 
             return topk_weight, topk_idx
         
-        strategy = self.strategy or ""
         strategy_list = ["score", "last", "first", "random", "overselect"]
         if expert_capacity is None or not any(s in strategy for s in strategy_list):
             return torch.topk(scores, self.top_k, dim=-1, sorted=False)
 
         if "random" in strategy:
-            return reroute_random(scores, expert_capacity, self.top_k)
+            return token_drop_random(scores, expert_capacity, self.top_k)
+        elif "overselect" in strategy:
+            topk_weight, topk_idx = expanded_token_drop(scores, expert_capacity)
         elif "score" in strategy:
-            topk_weight, topk_idx = _reroute_common(scores, expert_capacity, self.top_k)
+            topk_weight, topk_idx = token_drop_by_score(scores, expert_capacity, self.top_k, 1)
         else:
             topk_weight, topk_idx = torch.topk(scores, self.top_k, dim=-1, sorted=False)
 
         if "first" in strategy:
-            return reroute_sequential_order(scores, expert_capacity, self.top_k, mode="first")
+            return token_drop_sequential(scores, expert_capacity, topk_weight, topk_idx, mode="first")
         elif "last" in strategy:
-            return reroute_sequential_order(scores, expert_capacity, self.top_k, mode="last")
+            return token_drop_sequential(scores, expert_capacity, topk_weight, topk_idx, mode="last")
         else:
             return topk_weight, topk_idx
     
@@ -742,9 +771,9 @@ class DeepseekV2MoE(nn.Module):
         flat_topk_idx = topk_idx.view(-1)
         if self.training:
             hidden_states = hidden_states.repeat_interleave(
-                self.num_experts_per_tok, dim=0
+                topk_idx.shape[1], dim=0
             )
-            y = torch.empty_like(hidden_states)
+            y = torch.zeros_like(hidden_states)
             for i, expert in enumerate(self.experts):
                 if i in expert_idxes:         ### 🔍🔍🔍
                     y[flat_topk_idx == i] = expert(hidden_states[flat_topk_idx == i])
@@ -761,11 +790,18 @@ class DeepseekV2MoE(nn.Module):
 
     @torch.no_grad()
     def moe_infer(self, x, topk_ids, topk_weight, expert_idxes=None):
+        sentinel_expert = len(self.experts)
+        valid_mask = topk_ids != sentinel_expert
+        safe_topk_ids = topk_ids.masked_fill(~valid_mask, 0)
+
         cnts = topk_ids.new_zeros((topk_ids.shape[0], len(self.experts)))
-        cnts.scatter_(1, topk_ids, 1)
+        cnts.scatter_(1, safe_topk_ids, valid_mask.to(cnts.dtype))
         tokens_per_expert = cnts.sum(dim=0)
-        idxs = topk_ids.view(-1).argsort()
-        sorted_tokens = x[idxs // topk_ids.shape[1]]
+        token_positions = torch.arange(topk_ids.shape[0], device=x.device).repeat_interleave(topk_ids.shape[1])
+        valid_token_positions = token_positions[valid_mask.view(-1)]
+        valid_topk_ids = topk_ids.view(-1)[valid_mask.view(-1)]
+        idxs = valid_topk_ids.argsort()
+        sorted_tokens = x[valid_token_positions[idxs]]
         sorted_tokens_shape = sorted_tokens.shape
         if self.ep_size > 1:
             tokens_per_ep_rank = tokens_per_expert.view(self.ep_size, -1).sum(dim=1)
@@ -832,12 +868,14 @@ class DeepseekV2MoE(nn.Module):
 
         new_x = torch.empty_like(outs)
         new_x[idxs] = outs
+        expanded_out = x.new_zeros((topk_ids.numel(), x.shape[-1]))
+        expanded_out[valid_mask.view(-1)] = new_x
         final_out = (
-            new_x.view(*topk_ids.shape, -1)
+            expanded_out.view(*topk_ids.shape, -1)
             .type(topk_weight.dtype)
             .mul_(topk_weight.unsqueeze(dim=-1))
             .sum(dim=1)
-            .type(new_x.dtype)
+            .type(x.dtype)
         )
         return final_out
 

@@ -617,6 +617,7 @@ class MixtralSparseMoeBlock(nn.Module):
     def __init__(self, config, layer_idx):
         super().__init__()
         self.layer_idx = layer_idx
+        self.config = config
         
         self.hidden_dim = config.hidden_size
         self.ffn_dim = config.intermediate_size
@@ -636,9 +637,19 @@ class MixtralSparseMoeBlock(nn.Module):
         self.expert_capacity = config.expert_capacity \
             if hasattr(config, "expert_capacity") and isinstance(config.expert_capacity, float) else None
         self.strategy = (config.strategy if hasattr(config, "strategy") else "") or ""
-        self.rounds = config.rounds if hasattr(config, "rounds") else None
-        self.drop_n = config.drop_n if hasattr(config, "drop_n") else 1
+        self.rounds = config.rounds if hasattr(config, "rounds") else 1
+        self.renormalize_after_capacity_drop = bool(
+            getattr(config, "renormalize_after_capacity_drop", getattr(config, "capacity_renormalize", False))
+        )
         ###
+
+    def _get_local_expert_indices(self, device: torch.device) -> torch.LongTensor:
+        local_ids = getattr(self, "local_expert_indices", None)
+        if local_ids is None:
+            local_ids = getattr(self.config, "local_expert_indices", None)
+        if local_ids is None:
+            local_ids = list(range(self.num_experts))
+        return torch.tensor(local_ids, device=device, dtype=torch.long)
         
     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
         """ """
@@ -657,19 +668,11 @@ class MixtralSparseMoeBlock(nn.Module):
         router_logits = self.gate(hidden_states)
 
         routing_weights = F.softmax(router_logits, dim=1, dtype=torch.float)
-        ### 🔍🔍🔍
-        if self.strategy == "skip_experts" and sequence_length != 1:
-            masked_weights = torch.zeros_like(routing_weights, dtype=routing_weights.dtype)
-            routing_weights, selected_experts = torch.topk(routing_weights, k=self.top_k, dim=-1, sorted=False)
-            masked_weights.scatter_(dim=-1, index=selected_experts, value=1)
-            masked_weights = masked_weights.sum(-1).flatten()
-            _, expert_idxes = torch.topk(masked_weights, k=self.num_experts - self.drop_n, dim=-1, sorted=False)
-        else: 
-            routing_weights, selected_experts = self.adjust_tokens(expert_capacity, routing_weights)
-            expert_idxes = range(self.num_experts)
-        ######
+        routing_weights, selected_experts = self.adjust_tokens(expert_capacity, routing_weights)
+        expert_idxes = range(self.num_experts)
 
-        routing_weights /= routing_weights.sum(dim=-1, keepdim=True)
+        if self.renormalize_after_capacity_drop:
+            routing_weights /= routing_weights.sum(dim=-1, keepdim=True).clamp_min(1e-20)
         # we cast back to the input dtype
         routing_weights = routing_weights.to(hidden_states.dtype)
 
@@ -679,7 +682,7 @@ class MixtralSparseMoeBlock(nn.Module):
 
         # One hot encode the selected experts to create an expert mask
         # this will be used to easily index which expert is going to be sollicitated
-        expert_mask = torch.nn.functional.one_hot(selected_experts, num_classes=self.num_experts).permute(2, 1, 0)
+        expert_mask = torch.nn.functional.one_hot(selected_experts, num_classes=self.num_experts + 1).permute(2, 1, 0)
 
         # Loop over all available experts in the model and perform the computation on each expert
         # for expert_idx in range(self.num_experts):
@@ -701,15 +704,46 @@ class MixtralSparseMoeBlock(nn.Module):
         return final_hidden_states, router_logits
     
     def adjust_tokens(self, expert_capacity, scores):
+        strategy = self.strategy or ""
 
         if expert_capacity is None: 
             topk_weight, topk_idx = torch.topk(scores, k=self.top_k, dim=-1, sorted=False)
             return topk_weight, topk_idx
         
-        def _reroute_common(scores, expert_capacity, top_k):
+        def expanded_token_drop(scores, expert_capacity):
+            T, _ = scores.shape
+            topk_weight, topk_idx = torch.topk(scores, k=self.top_k, dim=-1, sorted=False)
+            local_idx = self._get_local_expert_indices(scores.device).unsqueeze(0).expand(T, -1)
+            expanded_idx = torch.cat([topk_idx, local_idx], dim=-1)
+
+            expanded_mask = torch.zeros_like(scores, dtype=torch.bool)
+            expanded_mask.scatter_(-1, expanded_idx, True)
+
+            masked_scores = scores * expanded_mask
+            _, keep_idx = masked_scores.topk(expert_capacity, dim=0)
+            cap_mask = torch.zeros_like(scores, dtype=torch.bool)
+            cap_mask.scatter_(0, keep_idx, True)
+
+            final_map = expanded_mask & cap_mask
+            expanded_weight = scores.gather(-1, expanded_idx)
+            expanded_keep = final_map.gather(-1, expanded_idx)
+
+            for pos in range(expanded_idx.shape[1]):
+                if pos == 0:
+                    continue
+                duplicate_mask = (expanded_idx[:, :pos] == expanded_idx[:, pos : pos + 1]).any(dim=1)
+                expanded_keep[duplicate_mask, pos] = False
+
+            expanded_weight = expanded_weight * expanded_keep
+            expanded_idx = expanded_idx.masked_fill(~expanded_keep, self.num_experts)
+            return expanded_weight, expanded_idx
+
+        def token_drop_by_score(scores, expert_capacity, top_k, rounds):
             
             T, K = scores.shape
-            top_k_all = top_k  
+            top_k_all = top_k
+            if "overselect" in strategy:
+                top_k_all = min(K, max(top_k, int(math.ceil(top_k * max(rounds, 1)))))
             
             topk_weight, topk_idx = torch.topk(scores, k=top_k_all, dim=-1, sorted=False)
             mask_buffer = torch.zeros((T, K), dtype=torch.bool, device=scores.device)
@@ -725,6 +759,7 @@ class MixtralSparseMoeBlock(nn.Module):
 
             topk_weight = scores.gather(-1, topk_idx)
             top_mask = mask_buffer.gather(-1, topk_idx)
+            topk_weight = topk_weight * top_mask
             topk_idx = topk_idx.masked_fill(~top_mask, self.num_experts)
 
             return topk_weight, topk_idx
@@ -741,7 +776,7 @@ class MixtralSparseMoeBlock(nn.Module):
 
             return capacity_indices
         
-        def reroute_random(scores, expert_capacity, top_k):
+        def token_drop_random(scores, expert_capacity, top_k):
             
             T, K = scores.shape
 
@@ -763,16 +798,13 @@ class MixtralSparseMoeBlock(nn.Module):
             # Step 4: Final top_k gathering
             topk_weight = scores.gather(-1, topk_idx)
             top_mask = mask_buffer.gather(-1, topk_idx)
+            topk_weight = topk_weight * top_mask
             topk_idx = topk_idx.masked_fill(~top_mask, self.num_experts)
 
             return topk_weight, topk_idx
 
-        def reroute_sequential_order(scores, expert_capacity, top_k, mode):
-            
+        def token_drop_sequential(scores, expert_capacity, topk_weight, topk_idx, mode):
             T, K = scores.shape
-            
-            # Step 1: Initial top-k_all selection
-            topk_weight, topk_idx = torch.topk(scores, self.top_k, dim=-1, sorted=False)
             mask_buffer = torch.zeros((T, K), dtype=torch.bool, device=scores.device)
             mask_buffer.scatter_(-1, topk_idx, True)
             
@@ -797,26 +829,28 @@ class MixtralSparseMoeBlock(nn.Module):
             # Step 4: Final top_k gathering
             topk_weight = scores.gather(-1, topk_idx)
             top_mask = mask_buffer.gather(-1, topk_idx)
+            topk_weight = topk_weight * top_mask
             topk_idx = topk_idx.masked_fill(~top_mask, self.num_experts)
 
             return topk_weight, topk_idx
         
-        strategy = self.strategy or ""
         strategy_list = ["score", "last", "first", "random", "overselect"]
         if expert_capacity is None or not any(s in strategy for s in strategy_list):
             return torch.topk(scores, self.top_k, dim=-1, sorted=False)
 
         if "random" in strategy:
-            return reroute_random(scores, expert_capacity, self.top_k)
+            return token_drop_random(scores, expert_capacity, self.top_k)
+        elif "overselect" in strategy:
+            topk_weight, topk_idx = expanded_token_drop(scores, expert_capacity)
         elif "score" in strategy:
-            topk_weight, topk_idx = _reroute_common(scores, expert_capacity, self.top_k)
+            topk_weight, topk_idx = token_drop_by_score(scores, expert_capacity, self.top_k, 1)
         else:
             topk_weight, topk_idx = torch.topk(scores, self.top_k, dim=-1, sorted=False)
 
         if "first" in strategy:
-            return reroute_sequential_order(scores, expert_capacity, self.top_k, mode="first")
+            return token_drop_sequential(scores, expert_capacity, topk_weight, topk_idx, mode="first")
         elif "last" in strategy:
-            return reroute_sequential_order(scores, expert_capacity, self.top_k, mode="last")
+            return token_drop_sequential(scores, expert_capacity, topk_weight, topk_idx, mode="last")
         else:
             return topk_weight, topk_idx
     

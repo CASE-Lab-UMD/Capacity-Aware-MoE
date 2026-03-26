@@ -827,7 +827,10 @@ class MolmoeSparseMoeBlock(nn.Module):
         
         # print(self.expert_capacity)
         self.strategy = (config.strategy if hasattr(config, "strategy") else "") or ""
-        self.rounds = config.rounds if hasattr(config, "rounds") else None
+        self.rounds = config.rounds if hasattr(config, "rounds") else 1
+        self.renormalize_after_capacity_drop = bool(
+            getattr(config, "renormalize_after_capacity_drop", getattr(config, "capacity_renormalize", False))
+        )
         default_drop_n = int(0.1 * config.moe_num_experts)
         self.drop_n = config.drop_n if hasattr(config, "drop_n") else default_drop_n
         ###
@@ -857,6 +860,8 @@ class MolmoeSparseMoeBlock(nn.Module):
 
         routing_weights = F.softmax(router_logits, dim=1, dtype=torch.float)   
         routing_weights, selected_experts = self.adjust_tokens(expert_capacity, routing_weights, image_token_mask)
+        if self.renormalize_after_capacity_drop:
+            routing_weights = routing_weights / routing_weights.sum(dim=-1, keepdim=True).clamp_min(1e-20)
  
         # we cast back to the input dtype
         routing_weights = routing_weights.to(hidden_states.dtype)
