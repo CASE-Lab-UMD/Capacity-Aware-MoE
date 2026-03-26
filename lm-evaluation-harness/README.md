@@ -1,6 +1,15 @@
-# Language Model Evaluation Harness
+<h1 align="center">Language Model Evaluation Harness</h1>
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10256836.svg)](https://doi.org/10.5281/zenodo.10256836)
+<p align="center">
+  <a href="https://doi.org/10.5281/zenodo.10256836"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.10256836.svg" alt="DOI"></a>
+</p>
+
+<p align="center">
+  <a href="#announcement">📣 Announcement</a> •
+  <a href="#overview">🔎 Overview</a> •
+  <a href="#install">⚙️ Install</a> •
+  <a href="#basic-usage">🚀 Basic Usage</a>
+</p>
 
 ## Announcement
 **A new v0.4.0 release of lm-evaluation-harness is available** !

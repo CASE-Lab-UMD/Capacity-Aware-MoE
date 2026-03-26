@@ -1,3 +1,10 @@
+<h1 align="center">Training Data Janitor</h1>
+
+<p align="center">
+  <a href="#algorithm">🧪 Algorithm</a> •
+  <a href="#compiling">🛠️ Compiling</a>
+</p>
+
 janitor.py contains a script to remove benchmark data contamination from training data sets.
 It uses the approach described in the [GPT-3 paper](https://arxiv.org/abs/2005.14165).
 

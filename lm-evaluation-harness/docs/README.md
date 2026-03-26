@@ -1,4 +1,12 @@
-# Eval Harness Documentation
+<h1 align="center">Eval Harness Documentation</h1>
+
+<p align="center">
+  <a href="#table-of-contents">🧭 Table of Contents</a> •
+  <a href="./interface.md">🔌 Interface</a> •
+  <a href="./model_guide.md">🧠 Model Guide</a> •
+  <a href="./new_task_guide.md">🧩 New Task Guide</a> •
+  <a href="./task_guide.md">🧰 Task Guide</a>
+</p>
 
 Welcome to the docs for the LM Evaluation Harness!
 

@@ -1,4 +1,4 @@
-# Task-name
+<h1 align="center">Task-name</h1>
 
 ### Paper
 
