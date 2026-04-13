@@ -33,6 +33,7 @@
       background: var(--paper);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       line-height: 1.6;
+      overflow-x: hidden;
     }
 
     a {
@@ -98,7 +99,7 @@
 
     .hero {
       position: relative;
-      min-height: 78vh;
+      min-height: 680px;
       display: grid;
       align-items: center;
       overflow: hidden;
@@ -109,11 +110,11 @@
     .hero::before {
       content: "";
       position: absolute;
-      inset: 0 0 0 30%;
-      opacity: 0.2;
-      background-image: url("Figures/main_results.png");
+      inset: 0 0 0 34%;
+      opacity: 0.24;
+      background-image: url("Figures/straggler_effect.svg");
       background-position: center right;
-      background-size: min(1080px, 84vw) auto;
+      background-size: min(900px, 70vw) auto;
       background-repeat: no-repeat;
     }
 
@@ -157,6 +158,7 @@
       font-size: 5.2rem;
       line-height: 0.98;
       letter-spacing: 0;
+      overflow-wrap: anywhere;
     }
 
     .lead {
@@ -164,6 +166,11 @@
       margin-bottom: 26px;
       color: #343941;
       font-size: 1.22rem;
+      overflow-wrap: anywhere;
+    }
+
+    .title-part {
+      display: inline;
     }
 
     .authors {
@@ -242,6 +249,7 @@
       font-size: 3rem;
       line-height: 1.08;
       letter-spacing: 0;
+      overflow-wrap: anywhere;
     }
 
     h3 {
@@ -249,6 +257,7 @@
       font-size: 1.18rem;
       line-height: 1.22;
       letter-spacing: 0;
+      overflow-wrap: anywhere;
     }
 
     .muted {
@@ -269,6 +278,7 @@
 
     .method-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
     }
 
     .result-grid {
@@ -293,6 +303,10 @@
       grid-template-rows: minmax(230px, auto) 1fr;
     }
 
+    .method-card {
+      grid-template-rows: minmax(310px, auto) 1fr;
+    }
+
     .media {
       display: grid;
       min-height: 230px;
@@ -306,9 +320,19 @@
       min-height: 180px;
     }
 
+    .method-card .media {
+      min-height: 310px;
+      padding: 30px;
+    }
+
     .media img {
       max-height: 360px;
       object-fit: contain;
+    }
+
+    .method-card .media img {
+      width: 100%;
+      max-height: 300px;
     }
 
     .caption {
@@ -342,21 +366,40 @@
     }
 
     .equation {
-      display: inline-flex;
-      max-width: 100%;
-      margin: 8px 0 18px;
+      display: grid;
+      gap: 10px;
+      max-width: 520px;
+      margin: 18px 0 8px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 8px 12px;
-      background: #f4f6f8;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      overflow-wrap: anywhere;
+      padding: 18px;
+      background: #f7f9fa;
+    }
+
+    .math-symbol {
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 2.2rem;
+      line-height: 1.05;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+
+    .overline {
+      text-decoration: overline;
+      text-decoration-thickness: 0.08em;
+    }
+
+    .equation-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
     }
 
     .wide-figure {
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 22px;
+      padding: 18px;
       background: #ffffff;
       box-shadow: var(--shadow);
     }
@@ -367,8 +410,49 @@
 
     .wide-figure img {
       margin: 0 auto;
-      max-height: 520px;
+      width: 100%;
+      max-height: 560px;
       object-fit: contain;
+    }
+
+    .supporting-results {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+      margin-top: 28px;
+    }
+
+    .result-feature {
+      display: grid;
+      grid-template-rows: minmax(250px, auto) 1fr;
+      align-items: stretch;
+    }
+
+    .result-feature .media {
+      min-height: 250px;
+      border-bottom: 1px solid var(--line);
+      padding: 22px;
+    }
+
+    .result-feature .media img {
+      width: 100%;
+      max-height: 300px;
+    }
+
+    .full-row {
+      grid-column: 1 / -1;
+    }
+
+    .full-row .media {
+      min-height: 300px;
+    }
+
+    .full-row .media img {
+      max-height: 340px;
+    }
+
+    .control-strip {
+      margin-top: 24px;
     }
 
     .resource-grid {
@@ -413,7 +497,7 @@
       }
 
       .hero {
-        min-height: 72vh;
+        min-height: 620px;
       }
 
       .hero::before {
@@ -445,6 +529,7 @@
       .problem-grid,
       .method-grid,
       .result-grid,
+      .supporting-results,
       .stat-row,
       .resource-grid {
         grid-template-columns: 1fr;
@@ -457,21 +542,50 @@
       .figure-card {
         grid-template-rows: auto auto;
       }
+
+      .method-card .media {
+        min-height: 240px;
+      }
+
     }
 
     @media (max-width: 520px) {
       .nav,
       .wrap,
       .hero-inner {
-        width: min(100% - 24px, 1120px);
+        width: calc(100vw - 24px);
+        max-width: calc(100vw - 24px);
       }
 
       h1 {
-        font-size: 2.7rem;
+        font-size: 2rem;
+        line-height: 1.08;
       }
 
       h2 {
-        font-size: 2rem;
+        font-size: 1.72rem;
+      }
+
+      .title-part {
+        display: block;
+      }
+
+      .lead {
+        font-size: 1rem;
+      }
+
+      h1,
+      h2,
+      h3,
+      p,
+      .lead,
+      .muted {
+        word-break: break-word;
+      }
+
+      .math-symbol {
+        font-size: 1.7rem;
+        white-space: normal;
       }
 
       .actions,
@@ -505,7 +619,7 @@
     <section class="hero" aria-labelledby="title">
       <div class="hero-inner">
         <div class="eyebrow">ICLR 2026</div>
-        <h1 id="title">Capacity-Aware Inference for Mixture-of-Experts Models</h1>
+        <h1 id="title"><span class="title-part">Capacity-Aware</span> <span class="title-part">Inference for</span> <span class="title-part">Mixture-of-Experts</span> <span class="title-part">Models</span></h1>
         <p class="lead">Mitigating the straggler effect in sparse MoE inference by bounding overloaded experts at inference time, with no retraining.</p>
         <ul class="authors" aria-label="Authors">
           <li><a href="https://shwai-he.github.io/">Shwai He</a></li>
@@ -565,10 +679,13 @@
           <div class="kicker">Method</div>
           <h2>Capacity bounds make overload explicit.</h2>
           <p class="muted">Capacity-Aware Inference regulates expert load through a capacity factor and then either drops overflow tokens or redirects candidates to underused local experts before dropping.</p>
-          <div class="equation">C = gamma * mean expert load</div>
+          <div class="equation" aria-label="Expert capacity equals capacity factor times mean expert load">
+            <div class="math-symbol">C = &gamma;<span class="overline">N</span>, &nbsp; <span class="overline">N</span> = Tk / E</div>
+            <p class="equation-note"><strong>C</strong> is the per-expert capacity, <strong>&gamma;</strong> is the capacity factor, <strong>T</strong> is the token count, <strong>k</strong> is top-k routing, and <strong>E</strong> is the number of experts.</p>
+          </div>
         </div>
         <div class="method-grid">
-          <article class="card figure-card">
+          <article class="card figure-card method-card">
             <div class="media">
               <img src="Figures/token_drop.svg" alt="Capacity-aware token drop">
             </div>
@@ -577,7 +694,7 @@
               <p class="muted">Bound each expert by capacity and drop overflow tokens routed to already overloaded experts.</p>
             </div>
           </article>
-          <article class="card figure-card">
+          <article class="card figure-card method-card">
             <div class="media">
               <img src="Figures/expanded_drop.svg" alt="Capacity-aware expanded drop">
             </div>
@@ -600,9 +717,9 @@
         <div class="wide-figure">
           <img src="Figures/main_results.png" alt="Main results comparing baseline, Token Drop, and Expanded Drop">
         </div>
-        <div class="result-grid" style="margin-top: 26px;">
-          <article class="card figure-card">
-            <div class="media compact">
+        <div class="supporting-results">
+          <article class="card result-feature">
+            <div class="media">
               <img src="Figures/speedup_layer.png" alt="Layer-level inference speedup">
             </div>
             <div class="caption">
@@ -610,8 +727,17 @@
               <p class="muted">Capacity-aware control reduces overloaded expert work across MoE layers.</p>
             </div>
           </article>
-          <article class="card figure-card">
-            <div class="media compact">
+          <article class="card result-feature">
+            <div class="media">
+              <img src="Figures/E2E_Speedup.svg" alt="End-to-end inference speedup">
+            </div>
+            <div class="caption">
+              <h3>End-to-end speedup</h3>
+              <p class="muted">Capacity-aware inference reduces the wall-clock latency impact of overloaded experts.</p>
+            </div>
+          </article>
+          <article class="card result-feature full-row">
+            <div class="media">
               <img src="Figures/multimodal.png" alt="Multimodal results on MMBench">
             </div>
             <div class="caption">
@@ -619,12 +745,12 @@
               <p class="muted">The same inference-time idea transfers to multimodal MoE evaluation.</p>
             </div>
           </article>
-          <article class="card pad">
-            <h3>Practical controls</h3>
-            <p class="muted">Set <code>EXPERT_CAPACITY</code> and <code>STRATEGY</code> in the evaluation scripts to choose the latency-quality operating point.</p>
-            <p class="muted">Lower capacity factors reduce overload more aggressively. Expanded Drop tends to use underloaded experts before removing routed tokens.</p>
-          </article>
         </div>
+        <article class="card pad control-strip">
+          <h3>Practical controls</h3>
+          <p class="muted">Set <code>EXPERT_CAPACITY</code> and <code>STRATEGY</code> in the evaluation scripts to choose the latency-quality operating point.</p>
+          <p class="muted">Lower capacity factors reduce overload more aggressively. Expanded Drop tends to use underloaded experts before removing routed tokens.</p>
+        </article>
       </div>
     </section>
 
