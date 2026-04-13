@@ -1,6 +1,7 @@
 <h1 align="center">[ICLR2026] Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture of Experts</h1>
 
 <p align="center">
+  <a href="https://case-lab-umd.github.io/Capacity-Aware-MoE/"><img src="https://img.shields.io/badge/Project-Page-0d7f62" alt="Project Page"></a>
   <a href="https://arxiv.org/abs/2503.05066"><img src="https://img.shields.io/badge/arXiv-2503.05066-b31b1b.svg" alt="arXiv"></a>
   <img src="https://img.shields.io/badge/ICLR-2026-blue" alt="ICLR 2026">
   <img src="https://img.shields.io/badge/Python-3.10+-green" alt="Python 3.10+">
@@ -11,6 +12,7 @@
 </p>
 
 <p align="center">
+  <a href="https://case-lab-umd.github.io/Capacity-Aware-MoE/">🌐 Homepage</a> •
   <a href="#-introduction">📖 Introduction</a> •
   <a href="#-why-this-repo">✨ Why</a> •
   <a href="#-core-methods">🔍 Methods</a> •
