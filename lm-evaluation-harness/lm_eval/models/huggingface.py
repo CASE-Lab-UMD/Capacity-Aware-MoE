@@ -36,6 +36,7 @@ from lm_eval.models.utils import (
     stop_sequences_criteria,
 )
 from lm_eval.models_extra.convert_semi_structured import convert_semi_structured_weights
+from lm_eval.capacity_aware.capacity_patch import apply_capacity_aware_moe_patch
 
 from lm_eval.models_extra.deepseek.configuration_deepseek import DeepseekConfig
 from lm_eval.models_extra.deepseek.modeling_deepseek import DeepseekModel, DeepseekForCausalLM
@@ -185,7 +186,8 @@ class HFLM(TemplateLM):
             autogptq: Optional[Union[bool, str]] = False,
             autoawq: Optional[Union[bool, str]] = False,  # 🔍
             expert_capacity: Optional[Union[float]] = None,  # 🔍
-            strategy: Optional[Union[int]] = None,  # 🔍
+            strategy: Optional[Union[str]] = None,  # 🔍
+            rounds: Optional[Union[int]] = 1,  # 🔍
             **kwargs,
     ) -> None:
         super().__init__()
@@ -229,13 +231,6 @@ class HFLM(TemplateLM):
             if router_dir and router_dir != pretrained: ### 🔍🔍🔍
                 eval_logger.info(f"copy config.json from {router_dir} to {pretrained}")
                 shutil.copyfile(os.path.join(router_dir, 'config.json'), os.path.join(pretrained, 'config.json'))
-            
-            if expert_capacity is not None: 
-                config = AutoConfig.from_pretrained(pretrained)
-                setattr(config, "expert_capacity", expert_capacity)
-                setattr(config, "norm_topk_prob", False)
-                setattr(config, "strategy", strategy)
-                config.save_pretrained(pretrained)
             
             gpus = torch.cuda.device_count()
             accelerator_kwargs = InitProcessGroupKwargs(timeout=timedelta(weeks=52))
@@ -283,6 +278,11 @@ class HFLM(TemplateLM):
                 revision=revision,
                 trust_remote_code=trust_remote_code,
             )
+            if expert_capacity is not None:
+                setattr(self._config, "expert_capacity", float(expert_capacity))
+                setattr(self._config, "norm_topk_prob", False)
+                setattr(self._config, "strategy", strategy if strategy is not None else "score")
+                setattr(self._config, "rounds", int(rounds if rounds is not None else 1))
 
         # determine which of 'causal' and 'seq2seq' backends to use
         self._get_backend(
@@ -331,6 +331,15 @@ class HFLM(TemplateLM):
                 #         eval_logger.info(param)
                 # eval_logger.info(
                 #     f"self._model: {self._model}" )
+
+        # Apply capacity-aware gate patch for MoE modules without per-model rewrites.
+        patched_blocks = apply_capacity_aware_moe_patch(self.model, self.config)
+        if patched_blocks > 0:
+            eval_logger.info(f"Applied capacity-aware patch to {patched_blocks} MoE blocks.")
+        elif getattr(self.config, "expert_capacity", None) is not None:
+            eval_logger.warning(
+                "expert_capacity is set, but no patchable MoE blocks were found (no module with both `gate` and `top_k`)."
+            )
 
         # access self._model through self.model property outside this method
         if isinstance(self.model, torch.nn.Module):
@@ -716,6 +725,7 @@ class HFLM(TemplateLM):
             self._model = self.AUTO_MODEL_CLASS.from_pretrained(
                 pretrained,
                 revision=revision,
+                config=self.config,
                 torch_dtype=get_dtype(dtype),
                 trust_remote_code=trust_remote_code,
                 **model_kwargs,

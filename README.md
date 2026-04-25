@@ -26,7 +26,7 @@
 This is the official implementation of the paper [**Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture of Experts**](https://arxiv.org/abs/2503.05066), published in *International Conference on Learning Representations (ICLR) 2026*. We provide a practical inference-time framework for balancing expert load in Mixture-of-Experts models and reducing straggler-driven latency without retraining.
 
 <p align="center">
-  <img src="Figures/straggler_effect.svg" alt="Straggler effect in MoE inference" width="52%">
+  <img src="docs/Figures/straggler_effect.svg" alt="Straggler effect in MoE inference" width="52%">
 </p>
 
 ## 📰 News
@@ -65,8 +65,8 @@ We regulate expert load using a capacity factor `γ`:
 Lower `γ` reduces overload and latency more aggressively, while higher `γ` retains more routed tokens.
 
 <p align="center">
-  <img src="Figures/token_drop.svg" alt="Token Drop" width="45%">&nbsp;&nbsp;
-  <img src="Figures/expanded_drop.svg" alt="Expanded Drop" width="45%">
+  <img src="docs/Figures/token_drop.svg" alt="Token Drop" width="45%">&nbsp;&nbsp;
+  <img src="docs/Figures/expanded_drop.svg" alt="Expanded Drop" width="45%">
 </p>
 
 ## 🧠 Contributions
@@ -76,11 +76,11 @@ Lower `γ` reduces overload and latency more aggressively, while higher `γ` ret
 
 ## 📦 Repository Structure
 - `modeling_hf/`: modified Hugging Face MoE modeling files.
+- `capacity_aware/`: top-level entry for the generic capacity-aware patch (runtime code is under `lm-evaluation-harness/lm_eval/capacity_aware/`).
 - `lm-evaluation-harness/`: language evaluation pipeline and scripts.
 - `VLMEvalKit/`: multimodal evaluation pipeline.
-- `Figures/`: method and effect visualizations.
-- `requirement.txt`: pinned root dependencies.
-- `requirements.txt`: compatibility wrapper (`-r requirement.txt`).
+- `docs/Figures/`: method and effect visualizations.
+- `requirements.txt`: pinned root dependencies.
 
 ## ⚙️ Installation
 ```bash
@@ -131,7 +131,7 @@ Expected outputs are written under:
 ### 1) Main Results
 
 <p align="center">
-  <img src="Figures/main_results.png" alt="Main results overview" width="88%">
+  <img src="docs/Figures/main_results.png" alt="Main results overview" width="88%">
 </p>
 
 - Main comparison across baseline, Token Drop, and Expanded Drop under different capacity settings.
@@ -143,7 +143,7 @@ Expanded Drop is often stronger than direct drop because it first uses low-load 
 This behavior generally improves utilization and reduces synchronization bottlenecks.
 
 <p align="center">
-  <img src="Figures/speedup_layer.png" alt="Layer-level speedup across models" width="88%">
+  <img src="docs/Figures/speedup_layer.png" alt="Layer-level speedup across models" width="88%">
 </p>
 
 - Layer-level speedup under different capacity-aware settings across multiple MoE models (e.g., up to ~30% on OLMoE-Instruct and ~1.85x on Mixtral-8x7B-Instruct).
@@ -153,7 +153,7 @@ This behavior generally improves utilization and reduces synchronization bottlen
 Our capacity-aware inference methods are also effective for multimodal MoE models.
 
 <p align="center">
-  <img src="Figures/multimodal.png" alt="Multimodal performance on MMBench" width="88%">
+  <img src="docs/Figures/multimodal.png" alt="Multimodal performance on MMBench" width="88%">
 </p>
 
 - Multimodal result on **MMBench performance**, comparing Baseline, Token Drop, and Expanded Drop.
