@@ -28,6 +28,20 @@ def _compute_indices(scores_sub: torch.Tensor, mask_sub: torch.Tensor, expert_ca
     return capacity_indices
 
 
+def _finalize_capacity_selection(
+    scores: torch.Tensor,
+    mask_buffer: torch.Tensor,
+    top_k: int,
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    num_experts = scores.shape[-1]
+    masked_scores = scores.masked_fill(~mask_buffer, float("-inf"))
+    topk_weight, topk_idx = torch.topk(masked_scores, k=top_k, dim=-1, sorted=False)
+    valid = torch.isfinite(topk_weight)
+    topk_weight = torch.where(valid, scores.gather(-1, topk_idx), torch.zeros_like(topk_weight))
+    topk_idx = topk_idx.masked_fill(~valid, num_experts)
+    return topk_weight, topk_idx
+
+
 def _token_drop_by_score(
     scores: torch.Tensor,
     expert_capacity: int,
@@ -52,11 +66,7 @@ def _token_drop_by_score(
         capacity_indices = _compute_indices(scores_sub, mask_sub, expert_capacity)
         mask_buffer[:, cols] = torch.zeros_like(mask_sub).scatter(0, capacity_indices, True)
 
-    topk_weight = scores.gather(-1, topk_idx)
-    top_mask = mask_buffer.gather(-1, topk_idx)
-    topk_weight = topk_weight * top_mask
-    topk_idx = topk_idx.masked_fill(~top_mask, k)
-    return topk_weight, topk_idx
+    return _finalize_capacity_selection(scores, mask_buffer, top_k)
 
 
 def _token_drop_random(scores: torch.Tensor, expert_capacity: int, top_k: int) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -73,11 +83,7 @@ def _token_drop_random(scores: torch.Tensor, expert_capacity: int, top_k: int) -
         capacity_indices = _compute_indices(scores_sub, mask_sub, expert_capacity)
         mask_buffer[:, cols] = torch.zeros_like(mask_sub).scatter(0, capacity_indices, True)
 
-    topk_weight = scores.gather(-1, topk_idx)
-    top_mask = mask_buffer.gather(-1, topk_idx)
-    topk_weight = topk_weight * top_mask
-    topk_idx = topk_idx.masked_fill(~top_mask, k)
-    return topk_weight, topk_idx
+    return _finalize_capacity_selection(scores, mask_buffer, top_k)
 
 
 def _token_drop_sequential(
@@ -106,11 +112,7 @@ def _token_drop_sequential(
         capacity_indices = _compute_indices(scores_sub.float(), mask_sub, expert_capacity)
         mask_buffer[:, cols] = torch.zeros_like(mask_sub).scatter(0, capacity_indices, True)
 
-    topk_weight = scores.gather(-1, topk_idx)
-    top_mask = mask_buffer.gather(-1, topk_idx)
-    topk_weight = topk_weight * top_mask
-    topk_idx = topk_idx.masked_fill(~top_mask, k)
-    return topk_weight, topk_idx
+    return _finalize_capacity_selection(scores, mask_buffer, topk_idx.shape[-1])
 
 
 def _select_with_capacity(
@@ -138,11 +140,6 @@ def _select_with_capacity(
     elif "last" in strategy:
         _, topk_idx = _token_drop_sequential(scores, expert_capacity, topk_idx, mode="last")
 
-    num_experts = scores.shape[-1]
-    dropped = topk_idx == num_experts
-    if dropped.any():
-        fallback = torch.topk(scores, k=top_k, dim=-1, sorted=False).indices
-        topk_idx = torch.where(dropped, fallback, topk_idx)
     return topk_idx
 
 
@@ -196,7 +193,10 @@ def _patch_single_gate(moe_module, capacity_factor: float, strategy: str, rounds
                     strategy=strategy,
                     rounds=rounds,
                 )
-                selected_w = scores.gather(-1, selected_idx)
+                num_experts = raw_logits.shape[-1]
+                valid = selected_idx != num_experts
+                safe_idx = selected_idx.masked_fill(~valid, 0)
+                selected_w = scores.gather(-1, safe_idx).masked_fill(~valid, 0.0)
 
                 norm_topk_prob = bool(getattr(self, "norm_topk_prob", False))
                 if top_k > 1 and norm_topk_prob:
@@ -228,8 +228,17 @@ def _patch_single_gate(moe_module, capacity_factor: float, strategy: str, rounds
 
         min_val = torch.finfo(logits.dtype).min
         masked_logits = torch.full_like(logits, min_val)
-        selected_logits = logits.gather(-1, selected_idx)
-        masked_logits.scatter_(-1, selected_idx, selected_logits)
+        valid = selected_idx != num_experts
+        safe_idx = selected_idx.masked_fill(~valid, 0)
+
+        row_idx = torch.arange(logits.shape[0], device=logits.device).unsqueeze(1).expand_as(safe_idx)
+        if valid.any():
+            masked_logits[row_idx[valid], safe_idx[valid]] = logits[row_idx[valid], safe_idx[valid]]
+
+        empty_rows = ~valid.any(dim=-1)
+        if empty_rows.any():
+            fallback_idx = torch.argmax(scores[empty_rows], dim=-1)
+            masked_logits[empty_rows, fallback_idx] = logits[empty_rows, fallback_idx]
         return masked_logits
 
     gate.forward = types.MethodType(patched_forward, gate)
