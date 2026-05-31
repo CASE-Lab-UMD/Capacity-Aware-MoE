@@ -1,9 +1,19 @@
+"""Runtime capacity-aware routing patch for Hugging Face-style MoE models.
+
+This module is the source of truth for the repository. The copy under
+`lm-evaluation-harness/lm_eval/capacity_aware/` only re-exports this file so
+the evaluation harness can import it without maintaining a fork.
+"""
+
 import math
 import types
 from typing import Optional, Tuple, List
 
 import torch
 import torch.nn.functional as F
+
+
+__all__ = ["apply_capacity_aware_moe_patch"]
 
 
 def _compute_capacity(
@@ -22,9 +32,25 @@ def _compute_capacity(
     return max(cap, 1)
 
 
+def _compute_device_capacity(
+    total_tokens: int,
+    top_k: int,
+    num_devices: int,
+    capacity_factor: Optional[float],
+) -> Optional[int]:
+    if capacity_factor is None:
+        return None
+    if total_tokens <= 1:
+        return None
+    if num_devices <= 0:
+        return None
+    cap = int(math.ceil(float(capacity_factor) * top_k * (total_tokens / num_devices)))
+    return max(cap, 1)
+
+
 def _compute_indices(scores_sub: torch.Tensor, mask_sub: torch.Tensor, expert_capacity: int) -> torch.Tensor:
     masked_scores = scores_sub.masked_fill(~mask_sub, float("-inf"))
-    _, capacity_indices = torch.topk(masked_scores, k=expert_capacity, dim=0, sorted=False)
+    _, capacity_indices = torch.topk(masked_scores, k=min(expert_capacity, masked_scores.shape[0]), dim=0, sorted=False)
     return capacity_indices
 
 
@@ -65,6 +91,48 @@ def _token_drop_by_score(
         mask_sub = mask_buffer[:, cols]
         capacity_indices = _compute_indices(scores_sub, mask_sub, expert_capacity)
         mask_buffer[:, cols] = torch.zeros_like(mask_sub).scatter(0, capacity_indices, True)
+
+    return _finalize_capacity_selection(scores, mask_buffer, top_k)
+
+
+def _token_drop_by_device(
+    scores: torch.Tensor,
+    device_capacity: int,
+    top_k: int,
+    strategy: str,
+    rounds: int,
+    num_devices: int,
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    t, num_experts = scores.shape
+    num_devices = max(1, min(int(num_devices), num_experts))
+    top_k_all = top_k
+    if "overselect" in strategy:
+        top_k_all = min(num_experts, max(top_k, int(math.ceil(top_k * max(rounds, 1)))))
+
+    topk_weight, topk_idx = torch.topk(scores, k=top_k_all, dim=-1, sorted=False)
+    mask_buffer = torch.zeros((t, num_experts), dtype=torch.bool, device=scores.device)
+    expert_device = torch.div(
+        torch.arange(num_experts, device=scores.device) * num_devices,
+        num_experts,
+        rounding_mode="floor",
+    )
+    flat_weight = topk_weight.reshape(-1)
+    flat_expert = topk_idx.reshape(-1)
+    flat_device = expert_device.index_select(0, flat_expert)
+    num_routes = flat_weight.numel()
+    if device_capacity >= num_routes:
+        mask_buffer.scatter_(-1, topk_idx, True)
+        return _finalize_capacity_selection(scores, mask_buffer, top_k)
+
+    route_ids = torch.arange(num_routes, device=scores.device)
+    device_scores = scores.new_full((num_devices, num_routes), float("-inf"))
+    device_scores.view(-1).scatter_(0, flat_device * num_routes + route_ids, flat_weight)
+    keep_k = min(device_capacity, num_routes)
+    _, keep_idx = torch.topk(device_scores, k=keep_k, dim=1, sorted=False)
+    keep = torch.zeros_like(device_scores, dtype=torch.bool)
+    keep.scatter_(1, keep_idx, True)
+    keep_route = keep.any(dim=0) & torch.isfinite(flat_weight)
+    mask_buffer.scatter_(-1, topk_idx, keep_route.view_as(topk_idx))
 
     return _finalize_capacity_selection(scores, mask_buffer, top_k)
 
@@ -143,7 +211,34 @@ def _select_with_capacity(
     return topk_idx
 
 
-def _patch_single_gate(moe_module, capacity_factor: float, strategy: str, rounds: int) -> bool:
+def _select_with_capacity_scope(
+    scores: torch.Tensor,
+    top_k: int,
+    capacity: Optional[int],
+    strategy: str,
+    rounds: int,
+    capacity_scope: str,
+    capacity_devices: int,
+) -> torch.Tensor:
+    if capacity_scope == "device" and capacity is not None:
+        _, topk_idx = _token_drop_by_device(scores, capacity, top_k, strategy, rounds, capacity_devices)
+        if "first" in strategy:
+            _, topk_idx = _token_drop_sequential(scores, capacity, topk_idx, mode="first")
+        elif "last" in strategy:
+            _, topk_idx = _token_drop_sequential(scores, capacity, topk_idx, mode="last")
+        return topk_idx
+
+    return _select_with_capacity(scores, top_k, capacity, strategy, rounds)
+
+
+def _patch_single_gate(
+    moe_module,
+    capacity_factor: float,
+    strategy: str,
+    rounds: int,
+    capacity_scope: str,
+    capacity_devices: int,
+) -> bool:
     gate = _find_gate_module(moe_module)
     top_k = _find_top_k(moe_module)
     if gate is None or not hasattr(gate, "forward") or top_k <= 0:
@@ -157,6 +252,47 @@ def _patch_single_gate(moe_module, capacity_factor: float, strategy: str, rounds
     def patched_forward(self, hidden_states, *args, **kwargs):
         logits = original_forward(hidden_states, *args, **kwargs)
         if not isinstance(logits, torch.Tensor) or logits.ndim != 2:
+            # Qwen3.5-like routers return tuple(router_scores, topk_weight, topk_idx).
+            if (
+                isinstance(logits, tuple)
+                and len(logits) >= 3
+                and isinstance(logits[0], torch.Tensor)
+                and isinstance(logits[1], torch.Tensor)
+                and isinstance(logits[2], torch.Tensor)
+                and logits[0].ndim == 2
+                and logits[1].ndim == 2
+                and logits[2].ndim == 2
+                and torch.is_floating_point(logits[0])
+                and hasattr(self, "weight")
+            ):
+                scores = F.softmax(logits[0], dim=-1, dtype=torch.float)
+                num_experts = scores.shape[-1]
+                capacity = (
+                    _compute_device_capacity(scores.shape[0], top_k, capacity_devices, capacity_factor)
+                    if capacity_scope == "device"
+                    else _compute_capacity(scores.shape[0], num_experts, top_k, capacity_factor)
+                )
+                if capacity is None:
+                    return logits
+
+                selected_idx = _select_with_capacity_scope(
+                    scores=scores,
+                    top_k=min(top_k, num_experts),
+                    capacity=capacity,
+                    strategy=strategy,
+                    rounds=rounds,
+                    capacity_scope=capacity_scope,
+                    capacity_devices=capacity_devices,
+                )
+                valid = selected_idx != num_experts
+                safe_idx = selected_idx.masked_fill(~valid, 0)
+                selected_w = scores.gather(-1, safe_idx).masked_fill(~valid, 0.0)
+                selected_w = selected_w / selected_w.sum(dim=-1, keepdim=True).clamp_min(1e-20)
+                selected_w = selected_w.to(logits[1].dtype)
+
+                tail = logits[3:] if len(logits) > 3 else ()
+                return (logits[0], selected_w, safe_idx, *tail)
+
             # DeepSeek-like gates return tuple(topk_idx, topk_weight, aux_loss) instead of logits.
             if (
                 isinstance(logits, tuple)
@@ -176,22 +312,23 @@ def _patch_single_gate(moe_module, capacity_factor: float, strategy: str, rounds
 
                 raw_logits = F.linear(hs, self.weight, None)
                 num_experts = raw_logits.shape[-1]
-                expert_capacity = _compute_capacity(
-                    total_tokens=raw_logits.shape[0],
-                    num_experts=num_experts,
-                    top_k=top_k,
-                    capacity_factor=capacity_factor,
+                capacity = (
+                    _compute_device_capacity(raw_logits.shape[0], top_k, capacity_devices, capacity_factor)
+                    if capacity_scope == "device"
+                    else _compute_capacity(raw_logits.shape[0], num_experts, top_k, capacity_factor)
                 )
-                if expert_capacity is None:
+                if capacity is None:
                     return logits
 
                 scores = F.softmax(raw_logits, dim=-1, dtype=torch.float)
-                selected_idx = _select_with_capacity(
+                selected_idx = _select_with_capacity_scope(
                     scores=scores,
                     top_k=min(top_k, num_experts),
-                    expert_capacity=expert_capacity,
+                    capacity=capacity,
                     strategy=strategy,
                     rounds=rounds,
+                    capacity_scope=capacity_scope,
+                    capacity_devices=capacity_devices,
                 )
                 num_experts = raw_logits.shape[-1]
                 valid = selected_idx != num_experts
@@ -208,22 +345,23 @@ def _patch_single_gate(moe_module, capacity_factor: float, strategy: str, rounds
             return logits
 
         num_experts = logits.shape[-1]
-        expert_capacity = _compute_capacity(
-            total_tokens=logits.shape[0],
-            num_experts=num_experts,
-            top_k=top_k,
-            capacity_factor=capacity_factor,
+        capacity = (
+            _compute_device_capacity(logits.shape[0], top_k, capacity_devices, capacity_factor)
+            if capacity_scope == "device"
+            else _compute_capacity(logits.shape[0], num_experts, top_k, capacity_factor)
         )
-        if expert_capacity is None:
+        if capacity is None:
             return logits
 
         scores = F.softmax(logits, dim=-1, dtype=torch.float)
-        selected_idx = _select_with_capacity(
+        selected_idx = _select_with_capacity_scope(
             scores=scores,
             top_k=min(top_k, num_experts),
-            expert_capacity=expert_capacity,
+            capacity=capacity,
             strategy=strategy,
             rounds=rounds,
+            capacity_scope=capacity_scope,
+            capacity_devices=capacity_devices,
         )
 
         min_val = torch.finfo(logits.dtype).min
@@ -247,6 +385,8 @@ def _patch_single_gate(moe_module, capacity_factor: float, strategy: str, rounds
         "capacity_factor": capacity_factor,
         "strategy": strategy,
         "rounds": rounds,
+        "capacity_scope": capacity_scope,
+        "capacity_devices": capacity_devices,
     }
     return True
 
@@ -260,12 +400,17 @@ def _first_positive_int(values: List[Optional[int]]) -> int:
 
 def _find_top_k(moe_module) -> int:
     # Common names across HF MoE variants.
+    gate = _find_gate_module(moe_module)
     return _first_positive_int(
         [
             getattr(moe_module, "top_k", None),
             getattr(moe_module, "topk", None),
             getattr(moe_module, "num_experts_per_tok", None),
             getattr(moe_module, "num_selected_experts", None),
+            getattr(gate, "top_k", None) if gate is not None else None,
+            getattr(gate, "topk", None) if gate is not None else None,
+            getattr(gate, "num_experts_per_tok", None) if gate is not None else None,
+            getattr(gate, "num_selected_experts", None) if gate is not None else None,
         ]
     )
 
@@ -297,10 +442,23 @@ def apply_capacity_aware_moe_patch(model, config) -> int:
 
     strategy = str(getattr(config, "strategy", "score") or "score")
     rounds = int(getattr(config, "rounds", 1) or 1)
+    capacity_scope = str(getattr(config, "capacity_scope", "expert") or "expert")
+    if capacity_scope not in {"expert", "device"}:
+        raise ValueError(f"Unsupported capacity_scope={capacity_scope!r}; expected 'expert' or 'device'.")
+    capacity_devices = int(getattr(config, "capacity_devices", 0) or 0)
+    if capacity_scope == "device" and capacity_devices <= 0:
+        capacity_devices = torch.cuda.device_count() if torch.cuda.is_available() else 1
 
     patched = 0
     for module in model.modules():
         if _is_moe_like_module(module):
-            if _patch_single_gate(module, float(capacity_factor), strategy, rounds):
+            if _patch_single_gate(
+                module,
+                float(capacity_factor),
+                strategy,
+                rounds,
+                capacity_scope,
+                capacity_devices,
+            ):
                 patched += 1
     return patched

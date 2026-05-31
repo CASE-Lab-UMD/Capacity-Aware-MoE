@@ -75,8 +75,8 @@ Lower `γ` reduces overload and latency more aggressively, while higher `γ` ret
 3. We propose **Capacity-Aware Expanded Drop**, which leverages underused local experts before dropping, improving both balance and efficiency.
 
 ## 📦 Repository Structure
-- `modeling_hf/`: modified Hugging Face MoE modeling files.
-- `capacity_aware/`: top-level entry for the generic capacity-aware patch (runtime code is under `lm-evaluation-harness/lm_eval/capacity_aware/`).
+- `capacity_aware/`: source-of-truth runtime capacity-aware MoE patch.
+- `lm-evaluation-harness/lm_eval/capacity_aware/`: thin compatibility wrapper used by lm-eval.
 - `lm-evaluation-harness/`: language evaluation pipeline and scripts.
 - `VLMEvalKit/`: multimodal evaluation pipeline.
 - `docs/Figures/`: method and effect visualizations.
@@ -104,6 +104,24 @@ bash runs_prune/eval_capacity.sh
 ```
 
 Both scripts support environment variable overrides such as `CUDA_VISIBLE_DEVICES`, `PRETRAINED`, `OUTPUT_PATH`, `BATCH_SIZE`, `EXPERT_CAPACITY`, and `STRATEGY`.
+
+The generic patch can also be used directly:
+
+```python
+from types import SimpleNamespace
+from capacity_aware import apply_capacity_aware_moe_patch
+
+patched_blocks = apply_capacity_aware_moe_patch(
+    model,
+    SimpleNamespace(
+        expert_capacity=0.75,
+        strategy="score",
+        rounds=1,
+        capacity_scope="expert",  # or "device"
+        capacity_devices=8,
+    ),
+)
+```
 
 ### 3) Quick Demo
 ```bash
