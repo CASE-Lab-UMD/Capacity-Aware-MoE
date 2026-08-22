@@ -221,22 +221,22 @@
           <div class="glass-panel p-4 sm:p-5 rounded-2xl text-center shadow-sm border border-slate-200/80">
             <div class="font-heading font-extrabold text-2xl sm:text-3xl text-emerald-600 mb-1">1.85×</div>
             <div class="text-xs sm:text-sm font-medium text-slate-600">End-to-End Speedup</div>
-            <div class="text-[11px] text-slate-400 mt-0.5">Mixtral-8x7B-Instruct</div>
+            <div class="text-xs text-slate-600 mt-0.5">Mixtral-8x7B-Instruct</div>
           </div>
           <div class="glass-panel p-4 sm:p-5 rounded-2xl text-center shadow-sm border border-slate-200/80">
             <div class="font-heading font-extrabold text-2xl sm:text-3xl text-indigo-600 mb-1">30%</div>
             <div class="text-xs sm:text-sm font-medium text-slate-600">MoE Layer Latency Drop</div>
-            <div class="text-[11px] text-slate-400 mt-0.5">OLMoE-1B-7B</div>
+            <div class="text-xs text-slate-600 mt-0.5">OLMoE-1B-7B</div>
           </div>
           <div class="glass-panel p-4 sm:p-5 rounded-2xl text-center shadow-sm border border-slate-200/80">
             <div class="font-heading font-extrabold text-2xl sm:text-3xl text-amber-600 mb-1">&lt;0.2%</div>
             <div class="text-xs sm:text-sm font-medium text-slate-600">Accuracy Degradation</div>
-            <div class="text-[11px] text-slate-400 mt-0.5">Lossless Quality Retention</div>
+            <div class="text-xs text-slate-500 mt-0.5 font-medium">Lossless Quality Retention</div>
           </div>
           <div class="glass-panel p-4 sm:p-5 rounded-2xl text-center shadow-sm border border-slate-200/80">
             <div class="font-heading font-extrabold text-2xl sm:text-3xl text-rose-600 mb-1">0</div>
             <div class="text-xs sm:text-sm font-medium text-slate-600">Retraining Needed</div>
-            <div class="text-[11px] text-slate-400 mt-0.5">Zero-shot Inference Patch</div>
+            <div class="text-xs text-slate-500 mt-0.5 font-medium">Zero-shot Inference Patch</div>
           </div>
         </div>
 
@@ -245,47 +245,47 @@
   </section>
 
   <!-- Interactive Section: The Straggler Simulator -->
-  <section id="simulator" class="py-16 md:py-24 bg-slate-900 text-white relative overflow-hidden">
+  <section id="simulator" class="py-16 md:py-24 bg-slate-50 text-slate-900 border-b border-slate-200 relative overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
       <div class="text-center max-w-3xl mx-auto mb-12">
-        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold uppercase tracking-wider mb-3">
+        <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold uppercase tracking-wider mb-3">
           <i class="fa-solid fa-sliders"></i> Live Interactive Experiment
         </div>
-        <h2 class="font-heading font-bold text-3xl sm:text-4xl tracking-tight text-white mb-4">
+        <h2 class="font-heading font-extrabold text-3xl sm:text-4xl tracking-tight text-slate-900 mb-4">
           Interactive Straggler & Load Balancing Visualizer
         </h2>
-        <p class="text-slate-300 text-sm sm:text-base">
+        <p class="text-slate-600 text-base leading-relaxed">
           Adjust the MoE architecture, token batch size, and capacity factor $\gamma$ in real time. Compare how <strong>Vanilla Top-$k$</strong> routing creates severe synchronization stragglers, while <strong>Token Drop</strong> and <strong>Expanded Drop</strong> balance multi-GPU workloads.
         </p>
       </div>
 
       <!-- Simulator Interactive App Container -->
-      <div class="bg-slate-800/90 border border-slate-700/80 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+      <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
         
         <!-- Controls Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 border-b border-slate-700/80 pb-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 border-b border-slate-200 pb-8">
           
           <!-- Control 1: Model Preset -->
           <div>
-            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">1. Model Architecture</label>
-            <select id="simModelSelect" class="w-full bg-slate-900 border border-slate-600 rounded-xl px-3.5 py-2.5 text-sm text-white font-medium focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all">
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">1. Model Architecture</label>
+            <select id="simModelSelect" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all shadow-sm">
               <option value="mixtral" selected>Mixtral-8x7B (8 Experts, Top-2)</option>
               <option value="deepseek">DeepSeek-V2-Lite (16 Experts, Top-6)</option>
               <option value="olmoe">OLMoE-1B-7B (64 Experts, Top-8)</option>
               <option value="qwen">Qwen-MoE-Chat (32 Experts, Top-4)</option>
             </select>
-            <p class="text-[11px] text-slate-400 mt-1.5" id="simModelDesc">8 total experts distributed across 4 GPU ranks.</p>
+            <p class="text-xs text-slate-500 mt-1.5 font-medium" id="simModelDesc">8 total experts distributed across 4 GPU ranks.</p>
           </div>
 
           <!-- Control 2: Token Count / Batch Load -->
           <div>
             <div class="flex justify-between items-center mb-2">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">2. Token Batch ($T$)</label>
-              <span id="simTokenCountDisplay" class="font-mono text-xs font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800">512 tokens</span>
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">2. Token Batch ($T$)</label>
+              <span id="simTokenCountDisplay" class="font-mono text-xs font-bold text-emerald-700 font-semibold bg-emerald-50 text-emerald-800 px-2.5 py-0.5 rounded border border-emerald-300">512 tokens</span>
             </div>
-            <input type="range" id="simTokenRange" min="128" max="2048" step="64" value="512" class="w-full accent-emerald-500 bg-slate-700 h-2 rounded-lg cursor-pointer">
-            <div class="flex justify-between text-[10px] text-slate-400 mt-1 font-mono">
+            <input type="range" id="simTokenRange" min="128" max="2048" step="64" value="512" class="w-full accent-emerald-500 bg-slate-200 h-2 rounded-lg cursor-pointer">
+            <div class="flex justify-between text-xs text-slate-600 mt-1 font-mono">
               <span>128</span>
               <span>1024</span>
               <span>2048</span>
@@ -295,11 +295,11 @@
           <!-- Control 3: Capacity Factor gamma -->
           <div>
             <div class="flex justify-between items-center mb-2">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">3. Capacity Factor ($\gamma$)</label>
-              <span id="simGammaDisplay" class="font-mono text-xs font-bold text-indigo-400 bg-indigo-950/80 px-2 py-0.5 rounded border border-indigo-800">1.00×</span>
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">3. Capacity Factor ($\gamma$)</label>
+              <span id="simGammaDisplay" class="font-mono text-xs font-bold text-indigo-700 font-semibold bg-indigo-50 text-indigo-800 px-2.5 py-0.5 rounded border border-indigo-300">1.00×</span>
             </div>
-            <input type="range" id="simGammaRange" min="0.5" max="2.0" step="0.05" value="1.0" class="w-full accent-indigo-500 bg-slate-700 h-2 rounded-lg cursor-pointer">
-            <div class="flex justify-between text-[10px] text-slate-400 mt-1 font-mono">
+            <input type="range" id="simGammaRange" min="0.5" max="2.0" step="0.05" value="1.0" class="w-full accent-indigo-500 bg-slate-200 h-2 rounded-lg cursor-pointer">
+            <div class="flex justify-between text-xs text-slate-600 mt-1 font-mono">
               <span>0.50 (Aggressive)</span>
               <span>1.00 (Balanced)</span>
               <span>2.00 (Loose)</span>
@@ -308,21 +308,21 @@
 
           <!-- Control 4: Routing Strategy Tabs -->
           <div>
-            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">4. Routing Strategy</label>
-            <div class="grid grid-cols-3 gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-700">
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">4. Routing Strategy</label>
+            <div class="grid grid-cols-3 gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
               <button type="button" class="sim-strat-btn active text-xs font-semibold py-1.5 rounded-lg transition-all bg-emerald-600 text-white" data-strategy="baseline">
                 Vanilla Top-k
               </button>
-              <button type="button" class="sim-strat-btn text-xs font-semibold py-1.5 rounded-lg transition-all text-slate-400 hover:text-white" data-strategy="token_drop">
+              <button type="button" class="sim-strat-btn text-xs font-semibold py-1.5 rounded-lg transition-all text-slate-700 hover:bg-slate-200/60" data-strategy="token_drop">
                 Token Drop
               </button>
-              <button type="button" class="sim-strat-btn text-xs font-semibold py-1.5 rounded-lg transition-all text-slate-400 hover:text-white" data-strategy="expanded_drop">
+              <button type="button" class="sim-strat-btn text-xs font-semibold py-1.5 rounded-lg transition-all text-slate-700 hover:bg-slate-200/60" data-strategy="expanded_drop">
                 Expanded Drop
               </button>
             </div>
             <div class="mt-2 flex gap-2">
-              <button id="simShuffleBtn" type="button" class="w-full text-xs font-semibold py-1.5 px-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 transition-colors flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-shuffle text-[10px]"></i> Randomize Skew
+              <button id="simShuffleBtn" type="button" class="w-full text-xs font-semibold py-1.5 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition-colors flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-shuffle text-xs"></i> Randomize Skew
               </button>
             </div>
           </div>
@@ -331,48 +331,49 @@
 
         <!-- Live Simulation Stats HUD -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          <div class="bg-slate-900/90 border border-slate-700/60 p-4 rounded-2xl">
-            <div class="text-xs text-slate-400 font-medium">Avg Expert Load ($ar{N}$)</div>
-            <div id="hudAvgLoad" class="text-xl sm:text-2xl font-mono font-bold text-white mt-0.5">128 tokens</div>
-            <div class="text-[11px] text-slate-400 mt-1">Theoretical ideal balance</div>
+          <div class="bg-slate-50 border border-slate-200/80 p-4 rounded-2xl">
+            <div class="text-xs text-slate-600 font-bold uppercase tracking-wider">Avg Expert Load ($ar{N}$)</div>
+            <div id="hudAvgLoad" class="text-xl sm:text-2xl font-mono font-black text-slate-900 mt-0.5">128 tokens</div>
+            <div class="text-xs text-slate-500 mt-1 font-medium">Theoretical ideal balance</div>
           </div>
-          <div class="bg-slate-900/90 border border-slate-700/60 p-4 rounded-2xl">
-            <div class="text-xs text-slate-400 font-medium">Expert Capacity Bound ($C$)</div>
-            <div id="hudCapBound" class="text-xl sm:text-2xl font-mono font-bold text-indigo-400 mt-0.5">128 tokens</div>
-            <div class="text-[11px] text-indigo-300/80 mt-1">$C = \lceil \gamma \cdot ar{N} ceil$</div>
+          <div class="bg-slate-50 border border-slate-200/80 p-4 rounded-2xl">
+            <div class="text-xs text-slate-600 font-bold uppercase tracking-wider">Expert Capacity Bound ($C$)</div>
+            <div id="hudCapBound" class="text-xl sm:text-2xl font-mono font-black text-indigo-700 mt-0.5">128 tokens</div>
+            <div class="text-xs text-indigo-300/80 mt-1">$C = \lceil \gamma \cdot ar{N} 
+ceil$</div>
           </div>
-          <div class="bg-slate-900/90 border border-slate-700/60 p-4 rounded-2xl">
-            <div class="text-xs text-slate-400 font-medium">Straggler Bottleneck ($N_{\max}$)</div>
-            <div id="hudMaxLoad" class="text-xl sm:text-2xl font-mono font-bold text-rose-400 mt-0.5">264 tokens</div>
-            <div id="hudStragglerNote" class="text-[11px] text-rose-300 mt-1">Straggler causes 2.06× idle wait</div>
+          <div class="bg-slate-50 border border-slate-200/80 p-4 rounded-2xl">
+            <div class="text-xs text-slate-600 font-bold uppercase tracking-wider">Straggler Bottleneck ($N_{\max}$)</div>
+            <div id="hudMaxLoad" class="text-xl sm:text-2xl font-mono font-black text-rose-700 mt-0.5">264 tokens</div>
+            <div id="hudStragglerNote" class="text-xs text-rose-700 mt-1 font-semibold">Straggler causes 2.06× idle wait</div>
           </div>
-          <div class="bg-slate-900/90 border border-slate-700/60 p-4 rounded-2xl">
-            <div class="text-xs text-slate-400 font-medium">Effective Speedup vs Baseline</div>
-            <div id="hudSpeedup" class="text-xl sm:text-2xl font-mono font-bold text-emerald-400 mt-0.5">1.00×</div>
-            <div id="hudDroppedStat" class="text-[11px] text-emerald-300 mt-1">0% dropped tokens</div>
+          <div class="bg-slate-50 border border-slate-200/80 p-4 rounded-2xl">
+            <div class="text-xs text-slate-600 font-bold uppercase tracking-wider">Effective Speedup vs Baseline</div>
+            <div id="hudSpeedup" class="text-xl sm:text-2xl font-mono font-black text-emerald-700 mt-0.5">1.00×</div>
+            <div id="hudDroppedStat" class="text-xs text-emerald-700 mt-1 font-semibold">0% dropped tokens</div>
           </div>
         </div>
 
         <!-- Real-time Expert Load Histogram Visualization -->
-        <div class="relative bg-slate-950/80 border border-slate-800 rounded-2xl p-6">
+        <div class="relative bg-slate-50 border border-slate-200 rounded-2xl p-6">
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-2">
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-              <h3 class="text-sm font-semibold text-white">Distributed Expert Load Profile</h3>
+              <h3 class="text-sm font-bold text-slate-900">Distributed Expert Load Profile</h3>
             </div>
             <div class="flex items-center gap-4 text-xs">
-              <span class="flex items-center gap-1 text-emerald-400"><span class="w-3 h-3 rounded bg-emerald-500 inline-block"></span> Normal Load</span>
-              <span class="flex items-center gap-1 text-amber-400"><span class="w-3 h-3 rounded bg-amber-500 inline-block"></span> Near Cap</span>
-              <span class="flex items-center gap-1 text-rose-400"><span class="w-3 h-3 rounded bg-rose-500 inline-block"></span> Straggler / Overflow</span>
-              <span class="flex items-center gap-1 text-indigo-400 font-mono"><span class="w-3 h-0.5 bg-indigo-400 inline-block"></span> Capacity Line</span>
+              <span class="flex items-center gap-1 text-emerald-700 font-semibold"><span class="w-3 h-3 rounded bg-emerald-500 inline-block"></span> Normal Load</span>
+              <span class="flex items-center gap-1 text-amber-700 font-semibold"><span class="w-3 h-3 rounded bg-amber-500 inline-block"></span> Near Cap</span>
+              <span class="flex items-center gap-1 text-rose-700 font-semibold"><span class="w-3 h-3 rounded bg-rose-500 inline-block"></span> Straggler / Overflow</span>
+              <span class="flex items-center gap-1 text-indigo-700 font-semibold font-mono"><span class="w-3 h-0.5 bg-indigo-400 inline-block"></span> Capacity Line</span>
             </div>
           </div>
 
           <!-- Dynamic Bars Wrapper -->
-          <div class="relative h-64 sm:h-72 w-full flex items-end justify-between gap-1 sm:gap-2 pt-8 pb-6 px-2 border-b border-slate-800">
+          <div class="relative h-64 sm:h-72 w-full flex items-end justify-between gap-1 sm:gap-2 pt-8 pb-6 px-2 border-b border-slate-300">
             <!-- Dynamic Horizontal Capacity Line -->
-            <div id="simCapacityLine" class="absolute left-0 right-0 border-b-2 border-dashed border-indigo-400 pointer-events-none transition-all duration-300 z-10 flex justify-end pr-2" style="bottom: 50%;">
-              <span class="bg-indigo-950 text-indigo-300 text-[10px] font-mono px-1.5 py-0.5 rounded border border-indigo-700 -translate-y-1/2">Capacity Limit C</span>
+            <div id="simCapacityLine" class="absolute left-0 right-0 border-b-2 border-dashed border-indigo-600 pointer-events-none transition-all duration-300 z-10 flex justify-end pr-2" style="bottom: 50%;">
+              <span class="bg-indigo-50 text-indigo-800 text-xs font-mono font-bold px-2 py-0.5 rounded border border-indigo-300 -translate-y-1/2">Capacity Limit C</span>
             </div>
 
             <!-- Dynamic Bars rendered by JS -->
@@ -382,12 +383,12 @@
           </div>
 
           <!-- Strategy Description & Insight footer -->
-          <div class="mt-4 p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-            <div class="flex items-center gap-2 text-slate-300">
-              <i class="fa-solid fa-circle-info text-emerald-400 text-sm"></i>
+          <div class="mt-4 p-4 rounded-xl bg-white border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs sm:text-sm">
+            <div class="flex items-center gap-2 text-slate-700 font-medium">
+              <i class="fa-solid fa-circle-info text-emerald-700 font-semibold text-sm"></i>
               <span id="simStrategyExplainer"><strong>Vanilla Top-k:</strong> Unconstrained routing allows hot experts to accumulate huge token backlogs, forcing all GPUs to synchronize on the slowest worker.</span>
             </div>
-            <div class="font-mono text-emerald-400 shrink-0" id="simSummaryPill">
+            <div class="font-mono text-emerald-700 font-semibold shrink-0" id="simSummaryPill">
               Synchronization Idle: 51.5%
             </div>
           </div>
@@ -514,7 +515,7 @@
                 </span>
               </div>
             </div>
-            <p class="text-[11px] text-slate-500 mt-2 text-center">Figure: Layer-wise token routing frequency across all available expert slots.</p>
+            <p class="text-xs text-slate-500 mt-2 text-center">Figure: Layer-wise token routing frequency across all available expert slots.</p>
           </div>
 
           <!-- Analytical Insights & Highlights (4 Cols) -->
@@ -528,7 +529,7 @@
                 <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
                   <div class="font-semibold text-slate-900 mb-1 flex items-center justify-between">
                     <span>1. Layer Skew Hotspots</span>
-                    <span id="skewBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-100 text-rose-700">4.2x Peak Skew</span>
+                    <span id="skewBadge" class="text-xs font-bold px-2 py-0.5 rounded-md bg-rose-100 text-rose-700">4.2x Peak Skew</span>
                   </div>
                   <p class="text-slate-600">In intermediate and deep layers, router logits heavily polarize. Up to 78% of tokens route to only 15% of active experts.</p>
                 </div>
@@ -536,7 +537,7 @@
                 <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
                   <div class="font-semibold text-slate-900 mb-1 flex items-center justify-between">
                     <span>2. Sync Tail Latency</span>
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-700">45% Idle Stall</span>
+                    <span class="text-xs font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-700">45% Idle Stall</span>
                   </div>
                   <p class="text-slate-600">Under Expert Parallelism (EP), All-to-All communication blocks on the most saturated worker, stalling healthy GPUs.</p>
                 </div>
@@ -544,7 +545,7 @@
                 <div class="p-3 rounded-xl bg-emerald-50/70 border border-emerald-100">
                   <div class="font-semibold text-emerald-950 mb-1 flex items-center justify-between">
                     <span>3. Capacity Bounding</span>
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-200/80 text-emerald-800">1.85x Speedup</span>
+                    <span class="text-xs font-bold px-2 py-0.5 rounded-md bg-emerald-200/80 text-emerald-800">1.85x Speedup</span>
                   </div>
                   <p class="text-emerald-900">Enforcing $\gamma \in [1.0, 1.2]$ caps the long tail and reallocates excess tokens with negligible perturbation to downstream accuracy.</p>
                 </div>
@@ -553,12 +554,12 @@
 
             <!-- Architecture Info Badge -->
             <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-5 shadow-sm">
-              <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">Model Architecture</div>
+              <div class="text-xs uppercase tracking-wider text-slate-600 font-semibold mb-2">Model Architecture</div>
               <div id="archTitle" class="text-base font-bold text-white mb-1">OLMoE-1B-7B-Instruct</div>
               <div class="text-xs text-slate-300 mb-3" id="archSub">64 Experts, Top-8 routing per token</div>
               <div class="pt-3 border-t border-slate-700/80 flex items-center justify-between text-xs">
-                <span class="text-slate-400">Serving Speedup:</span>
-                <span id="speedVal" class="font-bold text-emerald-400">+72% Token/s</span>
+                <span class="text-slate-600">Serving Speedup:</span>
+                <span id="speedVal" class="font-bold text-emerald-700 font-semibold">+72% Token/s</span>
               </div>
             </div>
           </div>
@@ -585,7 +586,11 @@
 
         <div class="mt-6 inline-block bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm">
           <div class="text-lg sm:text-xl font-mono text-slate-800">
-            $$C = \left\lceil \gamma \cdot ar{N} ightceil = \left\lceil \gamma \cdot rac{T \cdot k}{E} ightceil$$
+            $$C = \left\lceil \gamma \cdot ar{N} 
+ight
+ceil = \left\lceil \gamma \cdot rac{T \cdot k}{E} 
+ight
+ceil$$
           </div>
           <div class="text-xs text-slate-500 mt-2">
             $T$: Token Batch &nbsp;|&nbsp; $k$: Active Experts &nbsp;|&nbsp; $E$: Total Experts &nbsp;|&nbsp; $\gamma$: Capacity Multiplier
@@ -897,7 +902,7 @@ python run.py --data MMBench_DEV_EN --model DeepSeek-VL-7B --mode all</code></pr
 
   <!-- Toast Notification element -->
   <div id="toastNotification" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-2.5 text-sm font-medium">
-    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+    <i class="fa-solid fa-circle-check text-emerald-700 font-semibold"></i>
     <span id="toastMessage">Copied to clipboard!</span>
   </div>
 
@@ -910,7 +915,7 @@ python run.py --data MMBench_DEV_EN --model DeepSeek-VL-7B --mode all</code></pr
         </div>
         <div>
           <span class="font-semibold text-slate-800">Capacity-Aware Inference</span> &copy; 2026
-          <div class="text-xs text-slate-400"><a href="https://case-lab-umd.github.io/" target="_blank" class="hover:text-emerald-600">CASE Lab</a> @ University of Maryland, College Park</div>
+          <div class="text-xs text-slate-600"><a href="https://case-lab-umd.github.io/" target="_blank" class="hover:text-emerald-600">CASE Lab</a> @ University of Maryland, College Park</div>
         </div>
       </div>
       
@@ -1103,9 +1108,9 @@ python run.py --data MMBench_DEV_EN --model DeepSeek-VL-7B --mode all</code></pr
           const col = document.createElement("div");
           col.className = "flex-1 flex flex-col items-center h-full justify-end group relative";
           col.innerHTML = `
-            <div class="text-[9px] font-mono text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity mb-1">${load}</div>
+            <div class="text-xs font-mono text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity mb-1">${load}</div>
             <div class="w-full ${barColor} rounded-t-md expert-bar-transition" style="height: ${heightPct}%;"></div>
-            <div class="text-[8px] font-mono text-slate-400 mt-1 truncate w-full text-center">E${i+1}</div>
+            <div class="text-xs font-mono text-slate-600 mt-1 truncate w-full text-center">E${i+1}</div>
           `;
           simBarsContainer.appendChild(col);
         }
@@ -1124,10 +1129,10 @@ python run.py --data MMBench_DEV_EN --model DeepSeek-VL-7B --mode all</code></pr
         btn.addEventListener("click", () => {
           simStratBtns.forEach(b => {
             b.classList.remove("active", "bg-emerald-600", "text-white");
-            b.classList.add("text-slate-400");
+            b.classList.add("text-slate-600");
           });
           btn.classList.add("active", "bg-emerald-600", "text-white");
-          btn.classList.remove("text-slate-400");
+          btn.classList.remove("text-slate-600");
           currentStrategy = btn.dataset.strategy;
           updateSimulation();
         });
@@ -1320,7 +1325,7 @@ python run.py --data MMBench_DEV_EN --model DeepSeek-VL-7B --mode all</code></pr
           <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
           <span id="lightboxTitle" class="text-sm font-bold text-slate-800">OLMoE-1B-7B Layer-Wise Distribution (High-Resolution)</span>
         </div>
-        <button id="closeLightboxBtn" class="text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 p-2 rounded-xl text-sm transition-colors cursor-pointer">
+        <button id="closeLightboxBtn" class="text-slate-600 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 p-2 rounded-xl text-sm transition-colors cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
@@ -1332,7 +1337,7 @@ python run.py --data MMBench_DEV_EN --model DeepSeek-VL-7B --mode all</code></pr
 
   <!-- Toast Notification element -->
   <div id="toastNotification" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-2.5 text-sm font-medium">
-    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+    <i class="fa-solid fa-circle-check text-emerald-700 font-semibold"></i>
     <span id="toastMessage">Action completed!</span>
   </div>
 
@@ -1467,9 +1472,9 @@ python run.py --data MMBench_DEV_EN --model DeepSeek-VL-7B --mode all</code></pr
           const col = document.createElement("div");
           col.className = "flex flex-col items-center flex-1 h-full justify-end group/bar relative";
           col.innerHTML = `
-            <div class="text-[10px] font-mono text-slate-500 mb-1 opacity-80 group-hover/bar:opacity-100">${load}</div>
+            <div class="text-xs font-mono text-slate-500 mb-1 opacity-80 group-hover/bar:opacity-100">${load}</div>
             <div class="w-full rounded-t-lg transition-all duration-300 ${isBounded ? 'bg-gradient-to-t from-emerald-600 to-teal-400 shadow-sm' : 'bg-gradient-to-t from-slate-300 to-slate-400'}" style="height: ${heightPct}%"></div>
-            <div class="text-[11px] font-mono font-bold text-slate-700 mt-2">E${idx}</div>
+            <div class="text-xs font-mono font-bold text-slate-700 mt-2">E${idx}</div>
           `;
           simBarsContainer.appendChild(col);
         });
