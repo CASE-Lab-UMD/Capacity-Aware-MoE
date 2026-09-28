@@ -1,10 +1,10 @@
 # 🧩 Capacity-Aware-MoE: 每日前沿文献关联与 MoE 容量感知路由/专家剪枝/硬件分块落地库 (2026-09)
 
-**Document ID:** `CAPMOE-LIT-202609` | **Last Updated:** `2026-09-27` | **Target Path:** `docs/frontier_literature_connections_2026_09.md` | **Total Routed Papers:** `12`
+**Document ID:** `CAPMOE-LIT-202609` | **Last Updated:** `2026-09-28` | **Target Path:** `docs/frontier_literature_connections_2026_09.md` | **Total Routed Papers:** `14`
 
 > [!IMPORTANT]
 > **🔗 跨仓库文献引用链闭环 (Cross-Repository Reference Chain Closure)**
-> 本文件由每日 AI 前沿论文精读流水线自动路由生成，专门收录与我们 **ICLR 2026 / ICML 2026 代表作 (*Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture-of-Experts* & *DualSparse-MoE*, `CASE-Lab-UMD/Capacity-Aware-MoE`)** 直接关联的稀疏 MoE 动态容量路由、博弈论专家协同剪枝（`SHAPE`, `REAP`, `CARE`）、低秩路由器压缩（`L2R`）、多维笛卡尔专家路由（`MoE-nD`）及 GPU Warp 对齐硬件分块调度（`MoE-Tile`, `MoE-OS`）最新 arXiv 论文笔记。
+> 本文件由每日 AI 前沿论文精读流水线自动路由生成，专门收录与我们 **ICLR 2026 / ICML 2026 代表作 (*Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture-of-Experts* & *DualSparse-MoE*, `CASE-Lab-UMD/Capacity-Aware-MoE`)** 直接关联的稀疏 MoE 动态容量路由、博弈论专家协同剪枝（`SHAPE`, `REAP`, `CARE`）、低秩路由器压缩（`L2R`）、多维笛卡尔专家路由（`MoE-nD`）及 GPU Warp 对齐硬件分块调度与专家感知 KV 系统（`MoE-Tile`, `MoE-OS`, `PiKV`）最新 arXiv 论文笔记。
 > 每一篇收录文献均包含：**核心痛点、底层数学公式、ASCII 架构图、关键实测指标**，以及**与 `Capacity-Aware-MoE` 仓库具体代码模块和我们已发表代表作（Our Works）的双向锚定**。
 
 ---
@@ -13,6 +13,8 @@
 
 | 收录日期 | 论文标题与 arXiv 链接 | 关键实测收益 / 核心结论 | 锚定本仓库代码模块与文档路径 (`Target Module`) | 原始精读归档 |
 | :---: | :--- | :--- | :--- | :---: |
+| `2026-09-28` | [**🧩 PiKV**](https://arxiv.org/abs/2508.06526) (`arXiv:2508.06526`) | 在多机多卡 Mixtral-8x22B 与 DeepSeek-MoE 长上下文服务基准上，PiKV 将单卡 KV 显存占用降低 **54%**，跨节点通信开销削减 **62%**，在 32K–64K 长序列高并发场景下实现... | `capacity_aware/` & `scripts/` (Expert-Sharded KV Cache Compression + All-to-All Pipeline Overlap) | [2026-09-28](https://github.com/Shwai-He/scholar-odyssey/blob/main/intelligence/papers/2026-09-28_ai_paper_notes.md) |
+| `2026-09-28` | [**🌍 WorldAgen**](https://arxiv.org/abs/2609.08162) (`arXiv:2609.08162`) | 在包含未知负载质量变化、表面摩擦力突变及视觉遮挡扰动的具身操作基准上，WorldAgen 凭借每步耗时仅 `< 1.8 ms` 的轻量级测试时自校准，将分布外（OOD）物理环境下的任务成功率从冻结模型的 54.6% 跃升至... | `capacity_aware/` & `scripts/` (`CASE-Lab-UMD/Capacity-Aware-MoE`) | [2026-09-28](https://github.com/Shwai-He/scholar-odyssey/blob/main/intelligence/papers/2026-09-28_ai_paper_notes.md) |
 | `2026-09-27` | [**SHAPE**](https://arxiv.org/abs/2606.09886) (`arXiv:2606.09886`) | **跨架构零训练稳健性**：在 **Qwen3-30B-A3B**、**DeepSeek-V2-Lite** 与 **GPT-OSS-20B** 三大主流细粒度 MoE 模型上，仅需 128 条 C4/WikiText2 校准样本... | `capacity_aware/` (Shapley Coalition-Aware Expert Pruning + Token Capacity Bound) | [2026-09-27](https://github.com/Shwai-He/scholar-odyssey/blob/main/intelligence/papers/2026-09-27_ai_paper_notes.md) |
 | `2026-09-27` | [**L2R**](https://arxiv.org/abs/2601.21349) (`arXiv:2601.21349`) | **语言与视觉双模态全面验证**：在基于 **OLMoE** 的语言模型预训练/微调以及 **ImageNet** 视觉 MoE 骨干网络上，L2R 将路由器参数量削减 **60%–75%**，同时在相同激活专家预算下将下游任务困... | `capacity_aware/` (Low-Rank Latent Anchor + SIPS Lipschitz Router) | [2026-09-27](https://github.com/Shwai-He/scholar-odyssey/blob/main/intelligence/papers/2026-09-27_ai_paper_notes.md) |
 | `2026-09-26` | [**🔄 LoopMoE**](https://arxiv.org/abs/2606.04438) (`arXiv:2606.04438`) | **等参数量与等 FLOPs 双向碾压**：在语言建模基准与常识推理任务上，循环 $K=2\sim 4$ 步的 `LoopMoE` 在相同活跃参数量下显著优于标准稠密 Looped 模型，且在相同总参数预算下逼近非共享深层 MoE... | `capacity_aware/` (Recurrent Step-Specific Low-Rank Calibrated MoE) | [2026-09-26](https://github.com/Shwai-He/scholar-odyssey/blob/main/intelligence/papers/2026-09-26_ai_paper_notes.md) |
@@ -30,7 +32,97 @@
 
 ## 📐 2. 逐篇论文深度机制解构、数学公式与本仓库落地指南 (Per-Paper Deep-Dive Cards)
 
-### 2.1 [2026-09-27] SHAPE: Coalition-Aware Expert Pruning for Sparse Mixture-of-Experts LLMs
+### 2.1 [2026-09-28] 🧩 *PiKV: KV Cache Management System for Mixture of Experts*
+> 🏷️ **核心关键词**：Mixture-of-Experts (MoE) · Expert-Sharded KV Cache · Distributed Serving · Memory & Communication Co-Design  
+> 🔗 **arXiv 链接**：[`arXiv:2508.06526`](https://arxiv.org/abs/2508.06526) (2026 v3)
+
+```
+  分布式 MoE 节点 (EP + TP) ──► 传统方案: 每张 GPU 复制全量同步 KV Cache (显存爆炸 + All-Gather 阻塞)
+                            ──► PiKV 方案: [ 专家分片 KV 存储 (Expert-Sharded KV) ] + [ PiKV 路由感知调度 ]
+                                          ──► 按专家亲和度局部缓存活跃 Token KV ──► 跨卡通信降低 62%
+```
+
+#### 🎯 背景与痛点 (Problem Statement)
+在超大规模稀疏混合专家模型（如 DeepSeek-V3、Mixtral、Qwen3-MoE）的分布式专家并行（Expert Parallelism, EP）服务中，尽管 FFN 专家权重被分片到不同 GPU 上，但现有的推理框架仍要求在每个节点上维护全局同步的注意力 KV Cache。随着长上下文并发请求增加，全局复制或频繁 All-Gather 同步 KV Cache 不仅耗尽了原本用于存放专家权重的 HBM 显存，更使跨节点通信成为拖垮解码吞吐量（Throughput）的首要瓶颈。
+
+#### 💡 核心方法与数学公式 (Core Methodology & Formulation)
+* **专家分片 KV 存储（Expert-Sharded KV Storage）**：
+  PiKV 打破了“注意力 KV 必须与专家并行完全解耦并全局复制”的传统范式，利用相邻层间 MoE 路由器的**跨层专家拓扑亲和性（Cross-Layer Expert Affinity）**，将 KV Cache 分页块按 Token 历史激活的主导专家簇分片存储在对应 GPU 节点的本地显存池 $\mathcal{M} _ e$ 中：
+
+$$
+\mathcal{M} _ e = \left\lbrace \left( k _ t^{(l)}, v _ t^{(l)} \right) \middle| e = \arg\max _ {j \in \lbrace 1, \dots, E \rbrace} G _ j^{(l-1)}(x _ t) \right\rbrace
+$$
+
+* **PiKV 路由与通信掩盖流水线调度（PiKV Routing & Scheduling）**：
+  对于跨节点远端 KV 访问，PiKV 引入**重要性感知稀疏 KV 拉取门控**：仅对当前查询 $q _ t$ 预测注意力内积超过阈值 $\gamma$ 的远端分片发起异步 RDMA 拉取，并将 KV 分片传输与本地活跃专家的 GEMM 计算在 CUDA Stream 上完全重叠（Overlap）：
+
+$$
+\hat{o} _ t = \mathrm{Attn}\left( q _ t, K _ {\text{local}}, V _ {\text{local}} \right) \oplus \mathrm{Attn}\left( q _ t, \mathrm{TopM} _ {\gamma}\left( K _ {\text{remote}}, V _ {\text{remote}} \right) \right)
+$$
+
+#### 📊 关键实验与结论 (Key Results & Conclusions)
+* 在多机多卡 Mixtral-8x22B 与 DeepSeek-MoE 长上下文服务基准上，PiKV 将单卡 KV 显存占用降低 **54%**，跨节点通信开销削减 **62%**，在 32K–64K 长序列高并发场景下实现 **1.85×–2.30×** 的端到端吞吐量提升。
+
+#### 🔗 与我们工作（Our Works）的直接关联与落地启发 (Connection to Our Works)
+* **锚定我们的代表作**：与我们的 ***Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture-of-Experts***（`ICLR 2026`, `Capacity-Aware-MoE`）、***Unified-MoE-Compression*** 以及 ***MEO: Memory-Efficient Optimization***（`EMNLP 2023 Oral`, `MEO`）形成系统层闭环。
+* **落地到 `Capacity-Aware-MoE` 与 `efficient_ads`**：在 `Capacity-Aware-MoE` 的过载专家 Token 丢弃与重路由（Drop & Replenish）机制中，可联合考虑 **目标专家的本地 PiKV 缓存命中率**——优先将边缘 Token 重路由至本地已持有其上下文 KV 分片的次优专家，从而同时消除计算掉队者（Straggler）与跨卡 KV 拉取延迟。
+
+---
+
+## 🔥 板块二：全球前沿热点精选 (Trending Frontier)
+
+> [!TIP]
+> **🎯 `Capacity-Aware-MoE` 仓库代码级落地点 (`Target Module`)**：`capacity_aware/` & `scripts/` (Expert-Sharded KV Cache Compression + All-to-All Pipeline Overlap)  
+> **📚 上游精读归档 (`Upstream Source`)**：`scholar-odyssey/intelligence/papers/2026-09-28_ai_paper_notes.md`
+
+
+---
+
+### 2.2 [2026-09-28] 🌍 *WorldAgen: Unified State-Action Prediction with Test-Time World Model Training*
+> 🏷️ **核心关键词**：Embodied World Models · Unified State-Action Prediction · Test-Time Training (TTT) · Online Sim-to-Real Adaptation  
+> 🔗 **arXiv 链接**：[`arXiv:2609.08162`](https://arxiv.org/abs/2609.08162)
+
+```
+  当前潜状态 s_t ──► [ 共享自回归/循环骨干 + 动作头 π_θ / 世界模型头 W_φ ] ──► 预测下一状态 ŝ_{t+1}, 动作 a_t
+                                  ▲                                                        │
+                                  │ (测试时单步梯度自校准 Δθ, Δφ)                             ▼
+                        [ 物理转移预测残差 L_TTT = ||s_{t+1} - ŝ_{t+1}||_2^2 ] ◄── 环境真实反馈状态 s_{t+1}
+```
+
+#### 🎯 背景与痛点 (Problem Statement)
+现有的具身世界模型—动作联合模型（World-Action Models）在离线训练完成后即完全冻结参数。然而在真实机器人部署（Sim-to-Real 或新物体摩擦系数/质量突变）时，环境物理动力学 $P(s _ {t+1} \mid s _ t, a _ t)$ 往往发生未见漂移，冻结的世界模型产生的内部想象轨迹（Imagined Rollouts）迅速偏离真实物理世界，进而误导下游动作规划。
+
+#### 💡 核心方法与数学公式 (Core Methodology & Formulation)
+* **状态—动作统一预测架构**：
+  WorldAgen 将多模态观测编码至紧凑潜状态 $s _ t = E(o _ t)$ ，由共享骨干 $f _ \theta$ 同时驱动未来潜状态预测头 $W _ \phi(s _ t, a _ t)$ 与动作生成头 $\pi _ \psi(s _ t, g)$ 。
+* **测试时世界模型在线自监督校准（Test-Time World Model Training, TTT）**：
+  在部署执行周期 $t \to t+1$ 中，当动作 $a _ t$ 在真实环境中执行并观测到真实下一帧潜状态 $s _ {t+1}$ 时，WorldAgen 立即以**真实状态转移残差**作为无标签自监督信号，对共享骨干的高阶低秩适配层（Fast Weights / LoRA $\Delta \theta _ t$ ）执行单步测试时梯度更新：
+
+$$
+\mathcal{L} _ {\text{TTT}}\left( \theta _ t, \phi _ t \right) = \left\lVert \mathrm{sg}\left( s _ {t+1} \right) - W _ {\phi _ t}\left( f _ {\theta _ t}(s _ t), a _ t \right) \right\rVert _ 2^2 + \lambda _ {\text{kl}} \mathrm{KL}\left( f _ {\theta _ t}(s _ t) \parallel f _ {\theta _ 0}(s _ t) \right)
+$$
+
+$$
+\theta _ {t+1} \leftarrow \theta _ t - \eta _ {\text{ttt}} \nabla _ {\theta _ t} \mathcal{L} _ {\text{TTT}}\left( \theta _ t, \phi _ t \right)
+$$
+
+#### 📊 关键实验与结论 (Key Results & Conclusions)
+* 在包含未知负载质量变化、表面摩擦力突变及视觉遮挡扰动的具身操作基准上，WorldAgen 凭借每步耗时仅 `< 1.8 ms` 的轻量级测试时自校准，将分布外（OOD）物理环境下的任务成功率从冻结模型的 54.6% 跃升至 **78.9%（+24.3%）**。
+
+#### 🔗 与我们工作（Our Works）的直接关联与落地启发 (Connection to Our Works)
+* **锚定我们的活跃研究线**：直接对应我们的 **`axon_v2` / `axon` (`vla-loop` — Looped Action Expert & Control-Variate Trajectory Completion)** 与 **`mera` (`MerA` 低秩子空间初始化)**。
+* **落地到 `axon_v2` 的 Looped VLA 控制器**：我们在 `vla-loop` 中设计了跨步循环残差校准器（Outer-LoRA Trajectory Completion）；结合 WorldAgen 的思路，可在实际闭环控制中利用上一时刻观测到的本体感知（Proprioception）状态残差，在线微调循环步专属低秩矩阵 $A _ k B _ k$ 的缩放门控，实现零样本物理扰动自适应。
+
+---
+
+> [!TIP]
+> **🎯 `Capacity-Aware-MoE` 仓库代码级落地点 (`Target Module`)**：`capacity_aware/` & `scripts/` (`CASE-Lab-UMD/Capacity-Aware-MoE`)  
+> **📚 上游精读归档 (`Upstream Source`)**：`scholar-odyssey/intelligence/papers/2026-09-28_ai_paper_notes.md`
+
+
+---
+
+### 2.3 [2026-09-27] SHAPE: Coalition-Aware Expert Pruning for Sparse Mixture-of-Experts LLMs
 
 * **论文信息**：`arXiv:2606.09886` (2026-06, 开源仓库：`github.com/Alizen-1009/Shapley-Moe`)
 * **核心关键词**：Sparse MoE、Cooperative Game Theory、Shapley Value Attribution、Coalition-Aware Expert Pruning、Quality-Coverage Bisection
@@ -130,7 +222,7 @@ $$
 
 ---
 
-### 2.2 [2026-09-27] L2R: Low-Rank and Lipschitz-Controlled Routing for Mixture-of-Experts
+### 2.4 [2026-09-27] L2R: Low-Rank and Lipschitz-Controlled Routing for Mixture-of-Experts
 
 * **论文信息**：Minghao Yang, Ren Togo, Guang Li, Takahiro Ogawa, Miki Haseyama (`arXiv:2601.21349`, 2026-01)
 * **核心关键词**：MoE Routing Geometry、Low-Rank Latent Space、Lipschitz Continuity、Saturated Inner-Product Scoring (SIPS)、Multi-Anchor Routing
@@ -223,7 +315,7 @@ $$
 
 ---
 
-### 2.3 [2026-09-26] 🔄 *LoopMoE: Unifying Iterative Computation with Mixture-of-Experts for Language Modeling*
+### 2.5 [2026-09-26] 🔄 *LoopMoE: Unifying Iterative Computation with Mixture-of-Experts for Language Modeling*
 > **聚焦领域**：Looped Transformers · Mixture of Experts (MoE) · Iterative Depth Scaling · Weight Sharing  
 > **arXiv**：[`arXiv:2606.04438`](https://arxiv.org/abs/2606.04438)
 
@@ -276,7 +368,7 @@ $$
 
 ---
 
-### 2.4 [2026-09-26] 🤖 *VLA-Pruner: Temporal-Aware Dual-Level Visual Token Pruning for Efficient Vision-Language-Action Inference*
+### 2.6 [2026-09-26] 🤖 *VLA-Pruner: Temporal-Aware Dual-Level Visual Token Pruning for Efficient Vision-Language-Action Inference*
 > **聚焦领域**：Vision-Language-Action (VLA) · Embodied AI · Visual Token Pruning · Temporal Consistency  
 > **arXiv**：[`arXiv:2511.16449`](https://arxiv.org/abs/2511.16449)
 
@@ -332,7 +424,7 @@ $$
 
 ---
 
-### 2.5 [2026-09-26] 🧩 *MoE-nD: Per-Layer Mixture-of-Experts Routing for Multi-Axis KV Cache Compression*
+### 2.7 [2026-09-26] 🧩 *MoE-nD: Per-Layer Mixture-of-Experts Routing for Multi-Axis KV Cache Compression*
 > **聚焦领域**：Multi-Axis KV Cache Compression · Per-Layer Routing · Heterogeneous Quantization  
 > **arXiv**：[`arXiv:2604.17695`](https://arxiv.org/abs/2604.17695)
 
@@ -349,7 +441,7 @@ $$
 
 ---
 
-### 2.6 [2026-09-24] DriveMoE: Mixture-of-Experts for Vision-Language-Action Model in End-to-End Autonomous Driving
+### 2.8 [2026-09-24] DriveMoE: Mixture-of-Experts for Vision-Language-Action Model in End-to-End Autonomous Driving
 
 * **论文信息**：`arXiv:2505.16278` (2025/2026)
 * **核心关键词**：End-to-End Autonomous Driving、Scene-Specialized Vision MoE、Skill-Specialized Action MoE、Flow-Matching Planner
@@ -397,7 +489,7 @@ $$
 
 ---
 
-### 2.7 [2026-09-23] HiMoE-VLA: Hierarchical Mixture-of-Experts for Generalist Vision-Language-Action Policies
+### 2.9 [2026-09-23] HiMoE-VLA: Hierarchical Mixture-of-Experts for Generalist Vision-Language-Action Policies
 
 * **论文信息**：`arXiv:2512.05693` (2025/2026)
 * **核心关键词**：Hierarchical MoE、Generalist VLA Policy、Task-Skill Decoupled Routing、Gradient Conflict Mitigation
@@ -445,7 +537,7 @@ $$
 
 ---
 
-### 2.8 [2026-09-23] D-Cut: Adaptive Verification Depth Pruning for Batched Speculative Decoding
+### 2.10 [2026-09-23] D-Cut: Adaptive Verification Depth Pruning for Batched Speculative Decoding
 
 * **论文信息**：`arXiv:2607.14647` (2026-07)
 * **核心关键词**：Speculative Decoding、Verification Depth Pruning、Cross-Request Budget Allocation
@@ -491,7 +583,7 @@ $$
 
 ---
 
-### 2.9 [2026-09-21] MoE-FM: Towards Faster Language Model Inference Using Mixture-of-Experts Flow Matching
+### 2.11 [2026-09-21] MoE-FM: Towards Faster Language Model Inference Using Mixture-of-Experts Flow Matching
 
 * **论文信息**：`arXiv:2604.15009` (2026-04)
 * **核心关键词**：Mixture-of-Experts Flow Matching、Piecewise-Linear Vector Fields、Latent Flow Language Models
@@ -542,7 +634,7 @@ $$
 
 ---
 
-### 2.10 [2026-09-20] CARE: Spend Experts Where You Are Unsure — Confidence-Adaptive Routing for MoE-LoRA
+### 2.12 [2026-09-20] CARE: Spend Experts Where You Are Unsure — Confidence-Adaptive Routing for MoE-LoRA
 
 * **论文信息**：`arXiv:2607.26052` (2026-07)
 * **核心关键词**：Confidence-Adaptive Routing、MoE-LoRA、Nucleus Expert Activation、Router Uncertainty Entropy
@@ -601,7 +693,7 @@ $$
 
 ---
 
-### 2.11 [2026-09-19] REAP: Router-Weighted Expert Activation Pruning for Sparse MoE Models
+### 2.13 [2026-09-19] REAP: Router-Weighted Expert Activation Pruning for Sparse MoE Models
 
 * **论文信息**：`arXiv:2510.13999` (2025/2026)
 * **核心关键词**：MoE Expert Pruning、Router Gate Weighting、Expert Activation Norm、Generative Reasoning Preservation
@@ -658,7 +750,7 @@ $$
 
 ---
 
-### 2.12 [2026-09-18] 🧩 *MoE-Tile: Warp-Aligned Tensor Slicing for Zero-Overhead Dynamic Sparse Routing on Modern Accelerators*
+### 2.14 [2026-09-18] 🧩 *MoE-Tile: Warp-Aligned Tensor Slicing for Zero-Overhead Dynamic Sparse Routing on Modern Accelerators*
 > **聚焦领域**：Mixture of Experts (MoE) · GPU Kernel Optimization · Warp Divergence · Hardware-Aware Sparsity  
 > **arXiv**：[`arXiv:2609.09112`](https://arxiv.org/abs/2609.09112)
 
