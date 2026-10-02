@@ -1,10 +1,10 @@
 # 🧩 Capacity-Aware-MoE: 每日前沿文献关联与 MoE 容量感知路由/专家剪枝/硬件分块落地库 (2026-09 — 2026-10)
 
-**Document ID:** `CAPMOE-LIT-202609` | **Last Updated:** `2026-10-01` | **Target Path:** `docs/frontier_literature_connections_2026_09.md` | **Total Routed Papers:** `22`
+**Document ID:** `CAPMOE-LIT-202609` | **Last Updated:** `2026-10-02` | **Target Path:** `docs/frontier_literature_connections_2026_09.md` | **Total Routed Papers:** `22`
 
 > [!IMPORTANT]
 > **🔗 跨仓库文献引用链闭环 (Cross-Repository Reference Chain Closure)**
-> 本文件由每日 AI 前沿论文精读流水线自动路由生成，专门收录与我们 **ICLR 2026 / ICML 2026 代表作 (*Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture-of-Experts* & *DualSparse-MoE*, `CASE-Lab-UMD/Capacity-Aware-MoE`)** 直接关联的稀疏 MoE 动态容量路由、博弈论与阶段解耦专家剪枝（`SHAPE`, `REAP`, `CARE`, `SlimWise`, `AIMER`, `EvoESAP`）、低秩路由器压缩（`L2R`）、多维笛卡尔专家路由（`MoE-nD`）及 GPU Warp 对齐硬件分块调度与异步流水系统（`MoE-Tile`, `MoE-OS`, `PiKV`, `CoMoE-Spec`, `CascadeEP`）最新 arXiv 论文笔记。
+> 本文件由每日 AI 前沿论文精读流水线自动路由生成，专门收录与我们 **ICLR 2026 / ICML 2026 代表作 (*Capacity-Aware Inference: Mitigating the Straggler Effect in Mixture-of-Experts* & *DualSparse-MoE*, `CASE-Lab-UMD/Capacity-Aware-MoE`)** 直接关联的稀疏 MoE 动态容量路由、博弈论与阶段解耦专家剪枝（`SHAPE`, `REAP`, `CARE`, `SlimWise`, `AIMER`, `EvoESAP`, `SlimQwen`, `MAESTRO`）、低秩路由器压缩（`L2R`）、多维笛卡尔专家路由（`MoE-nD`）及 GPU Warp 对齐硬件分块调度与异步流水系统（`MoE-Tile`, `MoE-OS`, `PiKV`, `CoMoE-Spec`, `CascadeEP`）最新 arXiv 论文笔记。
 > 每一篇收录文献均包含：**核心痛点、底层数学公式、ASCII 架构图、关键实测指标**，以及**与 `Capacity-Aware-MoE` 仓库具体代码模块和我们已发表代表作（Our Works）的双向锚定**。
 
 ---
@@ -13,7 +13,7 @@
 
 | 收录日期 | 论文标题与 arXiv 链接 | 关键实测收益 / 核心结论 | 锚定本仓库代码模块与文档路径 (`Target Module`) | 原始精读归档 |
 | :---: | :--- | :--- | :--- | :---: |
-| `2026-10-02` | [**🧩 SlimQwen & MAESTRO**](https://arxiv.org/abs/2605.08738) (`arXiv:2605.08738`) | **预训练规模下后剪枝显著优于从头训练**：`SlimQwen` 证实，在完全相同的千亿级 Token 预训练算力预算下，对预训练完成的 `Qwen3-Next-80A3B` 实施渐进专家剪枝所得的 `23A2B` 模型，在 MM... | `capacity_aware/` (Shapley Coalition-Aware Expert Pruning + Token Capacity Bound) | [2026-10-02](https://github.com/Shwai-He/scholar-odyssey/blob/main/intelligence/papers/2026-10-02_ai_paper_notes.md) |
+| `2026-10-02` | [**🧩 SlimQwen & MAESTRO**](https://arxiv.org/abs/2605.08738) (`arXiv:2605.08738`) | **预训练规模下后剪枝显著优于从头训练**：`SlimQwen` 证实，在完全相同的千亿级 Token 预训练算力预算下，对预训练完成的 `Qwen3-Next-80A3B` 实施渐进专家剪枝所得的 `23A2B` 模型，在 MM... | `capacity_aware/` (Pretraining-Scale Partial-Preservation Expert Merging & MTP Distillation, Qwen3-Next-80A3B -> 23A2B) | [2026-10-02](https://github.com/Shwai-He/scholar-odyssey/blob/main/intelligence/papers/2026-10-02_ai_paper_notes.md) |
 | `2026-10-02` | [**🗄️ LookaheadKV & RAP**](https://arxiv.org/abs/2603.10899) (`arXiv:2603.10899`) | **驱逐开销与首字延迟（TTFT）大幅降低**：在各大长文本理解基准（LongBench、L-Eval）上，`LookaheadKV` 相比依赖草稿生成的代表性基线，将 KV 驱逐耗时降低高达 **`14.5×`**，同时在复杂长... | `capacity_aware/` (Shapley Coalition-Aware Expert Pruning + Token Capacity Bound) | [2026-10-02](https://github.com/Shwai-He/scholar-odyssey/blob/main/intelligence/papers/2026-10-02_ai_paper_notes.md) |
 | `2026-10-02` | [**🌊 Transition Flow Matching & Recursive Flow Matching**](https://arxiv.org/abs/2603.15689) (`arXiv:2603.15689`) | **科学仿真 20x 速度飞跃**：在复杂的跨尺度时空流体仿真（Navier-Stokes 与气候动力学预测）基准测试中，`RecFM` 在 1–4 步生成下，相比目前领先的扩散基线实现了高达... | `capacity_aware/` (Shapley Coalition-Aware Expert Pruning + Token Capacity Bound) | [2026-10-02](https://github.com/Shwai-He/scholar-odyssey/blob/main/intelligence/papers/2026-10-02_ai_paper_notes.md) |
 | `2026-10-01` | [**AIMER & EvoESAP**](https://arxiv.org/abs/2603.18492) (`arXiv:2603.18492`) | **`AIMER` 超越基于 C4 校准集的强基线且速度快几个数量级**：在涵盖 `7B` 至 `47B` 不同架构的 MoE 语言模型及 **16 个多样化基准**上，免校准的 `AIMER` 不仅全面超越现有免校准方法，更在跨... | `capacity_aware/` (Calibration-Free Weight-Centroid Cosine Similarity for Overflow Expert Rerouting & Merging) | [2026-10-01](https://github.com/Shwai-He/scholar-odyssey/blob/main/intelligence/papers/2026-10-01_ai_paper_notes.md) |
@@ -237,7 +237,7 @@ def compute_maestro_stationary_scores(expert_activations_seq, num_experts):
 ---
 
 > [!TIP]
-> **🎯 `Capacity-Aware-MoE` 仓库代码级落地点 (`Target Module`)**：`capacity_aware/` (Shapley Coalition-Aware Expert Pruning + Token Capacity Bound)  
+> **🎯 `Capacity-Aware-MoE` 仓库代码级落地点 (`Target Module`)**：`capacity_aware/` (Pretraining-Scale Partial-Preservation Expert Merging & MTP Distillation, Qwen3-Next-80A3B -> 23A2B)  
 > **📚 上游精读归档 (`Upstream Source`)**：`scholar-odyssey/intelligence/papers/2026-10-02_ai_paper_notes.md`
 
 
